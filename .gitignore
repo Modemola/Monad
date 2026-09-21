@@ -1,0 +1,16 @@
+# Foundry
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+contracts/.env
+
+# Node / Next.js
+node_modules/
+web/.next/
+web/out/
+web/.env*.local
+.pnpm-store/
+
+# Misc
+.DS_Store
+*.log
