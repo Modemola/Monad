@@ -1,0 +1,8 @@
+# bufferutil, keccak and utf-8-validate are optional native addons pulled in by the wallet
+# stack. They are performance accelerators with pure-JS fallbacks, and Ingot does not need
+# them compiled — declaring them here keeps `pnpm install` from failing on a toolchain that
+# cannot build native modules, which includes most CI images.
+ignoredBuiltDependencies:
+  - bufferutil
+  - keccak
+  - utf-8-validate

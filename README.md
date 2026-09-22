@@ -108,3 +108,21 @@ cd contracts
 forge build
 forge test
 ```
+
+### If `pnpm install` refuses to run
+
+pnpm 12 enforces a minimum release age on every entry in the lockfile, and will fail the whole
+install if any transitive dependency was published too recently:
+
+```
+ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION
+```
+
+That is the supply-chain policy doing its job, not a defect here — the offending package is
+usually `electron-to-chromium`, a Chromium version-mapping data package reached through
+`next → browserslist`, which publishes most days. Deleting and regenerating the lockfile does not
+help: pnpm re-resolves to the same release and rejects it again.
+
+It clears once the package ages past the window. To install before then, add `minimumReleaseAge: 0`
+to `web/pnpm-workspace.yaml` for that one run and take it out afterwards — rather than leaving the
+check disabled for everything.
