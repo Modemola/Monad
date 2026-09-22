@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
+
 /// @title Units
 /// @notice Shared scaling conventions for Ingot.
 ///
@@ -14,6 +16,9 @@ pragma solidity ^0.8.30;
 ///
 ///      size (1e18) * price (1e18) = 1e36, and USDC is 1e6, so notional divides by 1e30.
 library Units {
+    using SafeCast for uint256;
+    using SafeCast for int256;
+
     /// @notice GPU-hours in one contract lot (CME Silicon Data parity).
     int256 internal constant LOT_HOURS = 730e18;
 
@@ -26,7 +31,7 @@ library Units {
     /// @dev Truncates toward zero, which is the same direction for longs and shorts, so rounding
     ///      does not systematically favour either side of the book.
     function notional(int256 size, uint256 price) internal pure returns (int256) {
-        return (size * int256(price)) / NOTIONAL_DIVISOR;
+        return (size * price.toInt256()) / NOTIONAL_DIVISOR;
     }
 
     /// @notice Absolute notional value in USDC of `size` GPU-hours at `price`.

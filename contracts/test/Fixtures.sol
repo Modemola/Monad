@@ -8,7 +8,6 @@ import {IngotIndex} from "../src/IngotIndex.sol";
 import {IngotMarket} from "../src/IngotMarket.sol";
 import {IIngotIndex} from "../src/interfaces/IIngotIndex.sol";
 import {MockUSDC} from "../src/mocks/MockUSDC.sol";
-import {Units} from "../src/libraries/Units.sol";
 
 /// @notice Shared deployment and helpers for market-level tests.
 abstract contract Fixtures is Test {
