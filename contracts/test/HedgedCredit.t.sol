@@ -262,6 +262,20 @@ contract HedgedCreditTest is Fixtures {
         }
     }
 
+    /// @dev The ceiling exists because the ratio is asserted rather than proven, and it scales
+    ///      the advance directly. It sits just above the highest real provider level measured.
+    function test_basis_ceilingAllowsRealLevelsAndNothingAbsurd() public {
+        uint16 ceiling = credit.maxBasisRatioBps();
+        assertEq(ceiling, 25_000, "just above the +237% observed at AWS");
+
+        vm.prank(neocloud);
+        credit.open(seriesId, 10_000e18, ceiling, 60_000 * USDC_ONE, 0);
+
+        vm.prank(neocloud);
+        vm.expectRevert(HedgedCredit.InvalidParameter.selector);
+        credit.open(seriesId, 10_000e18, ceiling + 1, 60_000 * USDC_ONE, 0);
+    }
+
     function test_basis_rejectsNonsense() public {
         vm.prank(neocloud);
         vm.expectRevert(HedgedCredit.InvalidParameter.selector);

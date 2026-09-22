@@ -25,6 +25,12 @@ contract Deploy is Script {
     uint32 internal constant TESTNET_FINALITY_DELAY = 60;
     uint32 internal constant TESTNET_MIN_INTERVAL = 60;
 
+    /// @dev Chains where deploying the freely mintable MockUSDC is acceptable.
+    uint256 internal constant MONAD_TESTNET = 10143;
+    uint256 internal constant ANVIL = 31337;
+
+    error MockCollateralOutsideTestnet(uint256 chainId);
+
     function run() external {
         uint256 deployerKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         address deployer = vm.addr(deployerKey);
@@ -36,6 +42,13 @@ contract Deploy is Script {
 
         address usdc = vm.envOr("USDC_ADDRESS", address(0));
         if (usdc == address(0)) {
+            // MockUSDC has an unrestricted mint, which is right for a testnet a judge has to
+            // get funds on and catastrophic anywhere else. The same command that produces a
+            // correct testnet deployment would otherwise produce a mainnet one backed by a
+            // token anyone can print, so the guard is here rather than in the runbook.
+            if (block.chainid != MONAD_TESTNET && block.chainid != ANVIL) {
+                revert MockCollateralOutsideTestnet(block.chainid);
+            }
             usdc = address(new MockUSDC());
             console.log("usdc     (mock deployed)", usdc);
         } else {

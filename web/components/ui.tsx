@@ -186,3 +186,33 @@ export function Empty({ children }: { children: ReactNode }) {
     <div className="py-8 text-center text-[13px] text-ink-muted">{children}</div>
   );
 }
+
+/// A small segmented control, used for slippage tolerance.
+export function Segmented<T extends string | number>({
+  options,
+  value,
+  onChange,
+  render,
+}: {
+  options: readonly T[];
+  value: T;
+  onChange: (next: T) => void;
+  render: (option: T) => string;
+}) {
+  return (
+    <div className="flex items-center gap-1 rounded bg-plane p-0.5">
+      {options.map((option) => (
+        <button
+          key={String(option)}
+          type="button"
+          onClick={() => onChange(option)}
+          className={`tnum rounded px-2 py-0.5 text-[11px] transition-colors ${
+            option === value ? "bg-raised text-ink" : "text-ink-muted hover:text-ink-secondary"
+          }`}
+        >
+          {render(option)}
+        </button>
+      ))}
+    </div>
+  );
+}

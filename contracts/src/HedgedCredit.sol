@@ -90,9 +90,14 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
     uint16 public hedgeMarginBps = 4_000;
     /// @notice Grace period after maturity before a delinquent loan can be seized.
     uint32 public gracePeriod = 3 days;
-    /// @notice Ceiling on a loan's basis ratio. Hyperscalers post rates well above the index, so
-    ///         this allows for it, while still rejecting a typo that would short the market.
-    uint16 public maxBasisRatioBps = 40_000;
+    /// @notice Ceiling on a loan's basis ratio.
+    ///
+    /// @dev The ratio is asserted by the borrower, not proven, and it scales the advance
+    ///      directly — so it is the one self-reported input that can be used to borrow against
+    ///      revenue that does not exist. Measured across 23 providers over 78 days the highest
+    ///      real level was +237% of the index (AWS), so the ceiling sits just above that.
+    ///      Anything higher is not a hedger and should be underwritten by hand.
+    uint16 public maxBasisRatioBps = 25_000;
 
     Loan[] internal _loans;
 
