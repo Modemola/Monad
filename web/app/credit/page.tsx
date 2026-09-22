@@ -19,6 +19,8 @@ import { formatHours, formatPrice, formatUsdc, parseDecimal } from "@/lib/format
 type Loan = {
   borrower: `0x${string}`;
   seriesId: bigint;
+  offtakeHours: bigint;
+  basisRatioBps: number;
   hedgeSize: bigint;
   hedgeEntryPrice: bigint;
   principal: bigint;
@@ -135,7 +137,9 @@ export default function CreditDesk() {
               <thead className="text-ink-muted">
                 <tr className="border-b border-hairline">
                   <th className="pb-2 font-normal">Offtake</th>
-                  <th className="pb-2 font-normal">Hedged at</th>
+                  <th className="pb-2 font-normal">Basis</th>
+                  <th className="pb-2 font-normal">Hedge</th>
+                  <th className="pb-2 font-normal">Struck at</th>
                   <th className="pb-2 font-normal">Principal</th>
                   <th className="pb-2 font-normal">Debt</th>
                   <th className="pb-2 font-normal">Margin</th>
@@ -145,6 +149,8 @@ export default function CreditDesk() {
               <tbody className="tnum">
                 {open.map(({ id, loan }) => (
                   <tr key={id.toString()} className="border-b border-hairline/60 last:border-0">
+                    <td className="py-2">{formatHours(loan.offtakeHours)} hrs</td>
+                    <td className="py-2">{(loan.basisRatioBps / 100).toFixed(0)}%</td>
                     <td className="py-2">{formatHours(loan.hedgeSize)} hrs</td>
                     <td className="py-2">{formatPrice(loan.hedgeEntryPrice)}</td>
                     <td className="py-2">{formatUsdc(loan.principal)}</td>
@@ -199,9 +205,21 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
   const { deployment } = useDeployment();
   const [hours, setHours] = useState("");
   const [margin, setMargin] = useState("");
+  const [basis, setBasis] = useState("100");
 
   const parsedHours = parseDecimal(hours, 18);
   const parsedMargin = parseDecimal(margin, 6);
+
+  // Basis is entered as a percentage of the index and stored in bps.
+  const parsedBasisPct = parseDecimal(basis, 2);
+  const basisBps = parsedBasisPct === null ? null : Number(parsedBasisPct);
+  const basisValid = basisBps !== null && basisBps > 0 && basisBps <= 40_000;
+
+  // The hedge — and the advance — track exposure, not the headline hour count.
+  const hedgeSize =
+    parsedHours !== null && basisBps !== null
+      ? (parsedHours * BigInt(basisBps)) / 10_000n
+      : null;
 
   const { data: terms } = useReadContracts({
     contracts: deployment
@@ -216,7 +234,7 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
   const ltvBps = terms?.[0]?.result as number | undefined;
   const minMarginBps = terms?.[1]?.result as number | undefined;
 
-  const revenue = parsedHours !== null && mark ? (parsedHours * mark) / 10n ** 30n : undefined;
+  const revenue = hedgeSize !== null && mark ? (hedgeSize * mark) / 10n ** 30n : undefined;
   const principal =
     revenue !== undefined && ltvBps !== undefined ? (revenue * BigInt(ltvBps)) / 10_000n : undefined;
   const marginRequired =
@@ -252,6 +270,23 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
       </Field>
 
       <div className="mt-3">
+        <Field label="Your realized rate" hint="% of the index">
+          <TextInput
+            value={basis}
+            onChange={setBasis}
+            placeholder="100"
+            suffix="% of index"
+            invalid={basis !== "" && !basisValid}
+          />
+        </Field>
+        <p className="mt-1 text-[11px] leading-relaxed text-ink-muted">
+          What you actually sell at, relative to the index. Across 23 providers over 78 days,
+          levels ran from 45% below the index to 237% above it — so the hedge is sized to your
+          exposure, not your hour count.
+        </p>
+      </div>
+
+      <div className="mt-3">
         <Field label="Your margin" hint="USDC">
           <TextInput
             value={margin}
@@ -265,6 +300,12 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
 
       <div className="mt-3 border-t border-hairline pt-2">
         <Row label="Forward rate" value={mark === undefined ? "—" : formatPrice(mark)} />
+        <Row
+          label="Hedge size"
+          value={hedgeSize === null ? "—" : `${formatHours(hedgeSize)} hrs`}
+          hint="index hours"
+          tone="muted"
+        />
         <Row label="Hedged revenue" value={revenue === undefined ? "—" : formatUsdc(revenue)} />
         <Row label="You receive" value={principal === undefined ? "—" : formatUsdc(principal)} />
         <Row
@@ -297,6 +338,7 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
               seriesId === undefined ||
               parsedHours === null ||
               parsedHours === 0n ||
+              !basisValid ||
               parsedMargin === null ||
               marginShort ||
               busy
@@ -305,12 +347,13 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
               deployment &&
               seriesId !== undefined &&
               parsedHours !== null &&
+              basisBps !== null &&
               parsedMargin !== null &&
               writeContract({
                 address: deployment.hedgedCredit,
                 abi: hedgedCreditAbi,
                 functionName: "open",
-                args: [seriesId, parsedHours, parsedMargin, 0n],
+                args: [seriesId, parsedHours, basisBps, parsedMargin, 0n],
               })
             }
           >
