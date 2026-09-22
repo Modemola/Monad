@@ -35,6 +35,15 @@ import {Units} from "./libraries/Units.sol";
 ///      cancellation is visible in the code rather than asserted in a pitch — and the test suite
 ///      pins it across a +/-60% index range.
 ///
+///      One refinement the data forced. An operator's rate is not the index: measured across
+///      23 providers over 78 days of posted H100 rates, provider levels sit anywhere from 45%
+///      below the index to 237% above it. What they do share is movement — median tracking
+///      error of 3.1%. So a hedge sized 1:1 on raw GPU-hours over-hedges a discount operator by
+///      nearly a factor of two, and the residual is not small. Each loan therefore carries a
+///      basis ratio, and the hedge is sized `offtake x basis`, which is also the quantity the
+///      advance is measured against. A borrower at 55% of the index shorts 55% as many index
+///      hours, and the cancellation in `totalAssets()` holds exactly as before.
+///
 ///      What this does *not* remove is counterparty risk. If rates rise, the hedge loses, the
 ///      borrower's offchain revenue rises to match, and the protocol needs them to actually hand
 ///      that revenue over. That is why borrowers post margin, and why the production design routes
@@ -47,7 +56,13 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
     struct Loan {
         address borrower;
         uint256 seriesId;
-        /// @dev GPU-hours of offtake hedged. The pool holds a short of this size.
+        /// @dev The borrower's own offtake, in GPU-hours. Informational: the hedge is sized
+        ///      from it and the basis ratio, not from it alone.
+        uint256 offtakeHours;
+        /// @dev The borrower's realized rate as a share of the index, in bps. 5,500 means this
+        ///      operator sells at 55% of the index level.
+        uint16 basisRatioBps;
+        /// @dev Index GPU-hours actually shorted: offtake x basis ratio.
         uint256 hedgeSize;
         /// @dev Fill price of the hedge. This is the rate the borrower's revenue is locked at.
         uint256 hedgeEntryPrice;
@@ -75,6 +90,9 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
     uint16 public hedgeMarginBps = 4_000;
     /// @notice Grace period after maturity before a delinquent loan can be seized.
     uint32 public gracePeriod = 3 days;
+    /// @notice Ceiling on a loan's basis ratio. Hyperscalers post rates well above the index, so
+    ///         this allows for it, while still rejecting a typo that would short the market.
+    uint16 public maxBasisRatioBps = 40_000;
 
     Loan[] internal _loans;
 
@@ -282,26 +300,56 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
     /// @notice Draw against an offtake, hedged in the same transaction.
     /// @param seriesId Series whose delivery window the offtake falls in.
     /// @param gpuHours Offtake size, 18 decimals.
+    /// @param basisRatioBps The borrower's realized rate as a share of the index, in bps.
+    ///        10,000 means they sell at the index; 5,500 means 45% below it.
     /// @param margin USDC posted by the borrower.
     /// @param minHedgePrice Worst acceptable fill on the hedge.
-    function open(uint256 seriesId, uint256 gpuHours, uint256 margin, uint256 minHedgePrice)
-        external
-        nonReentrant
-        returns (uint256 loanId)
-    {
+    function open(
+        uint256 seriesId,
+        uint256 gpuHours,
+        uint16 basisRatioBps,
+        uint256 margin,
+        uint256 minHedgePrice
+    ) external nonReentrant returns (uint256 loanId) {
         if (gpuHours == 0 || margin == 0) revert ZeroAmount();
+        if (basisRatioBps == 0 || basisRatioBps > maxBasisRatioBps) revert InvalidParameter();
 
-        uint256 hedgedRevenue = Units.absNotional(gpuHours.toInt256(), market.markPrice(seriesId));
+        // The hedge tracks the borrower's exposure, not their headline hour count.
+        uint256 hedgeSize = (gpuHours * basisRatioBps) / Units.BPS;
+        if (hedgeSize == 0) revert ZeroAmount();
+
+        uint256 hedgedRevenue = Units.absNotional(hedgeSize.toInt256(), market.markPrice(seriesId));
         uint256 principal = (hedgedRevenue * ltvBps) / Units.BPS;
 
         _collectMargin(margin, principal);
         _fundHedge(hedgedRevenue, principal);
 
         // The hedge opens here, in the same call as the drawdown. There is no unhedged moment.
-        uint256 entryPrice = market.trade(seriesId, -gpuHours.toInt256(), minHedgePrice);
+        uint256 entryPrice = market.trade(seriesId, -hedgeSize.toInt256(), minHedgePrice);
 
-        loanId = _record(seriesId, gpuHours, entryPrice, principal, margin);
+        loanId = _record(
+            LoanTerms({
+                seriesId: seriesId,
+                offtakeHours: gpuHours,
+                basisRatioBps: basisRatioBps,
+                hedgeSize: hedgeSize,
+                entryPrice: entryPrice,
+                principal: principal,
+                margin: margin
+            })
+        );
         usdc.safeTransfer(msg.sender, principal);
+    }
+
+    /// @dev Grouped to keep `open` inside the stack limit.
+    struct LoanTerms {
+        uint256 seriesId;
+        uint256 offtakeHours;
+        uint16 basisRatioBps;
+        uint256 hedgeSize;
+        uint256 entryPrice;
+        uint256 principal;
+        uint256 margin;
     }
 
     /// @dev Take the borrower's margin and check it covers the required share of principal.
@@ -323,31 +371,35 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
         market.deposit(hedgeMargin);
     }
 
-    function _record(
-        uint256 seriesId,
-        uint256 gpuHours,
-        uint256 entryPrice,
-        uint256 principal,
-        uint256 margin
-    ) internal returns (uint256 loanId) {
+    function _record(LoanTerms memory terms) internal returns (uint256 loanId) {
         loanId = _loans.length;
         _loans.push(
             Loan({
                 borrower: msg.sender,
-                seriesId: seriesId,
-                hedgeSize: gpuHours,
-                hedgeEntryPrice: entryPrice,
-                principal: principal,
-                interest: (principal * rateBps) / Units.BPS,
-                margin: margin,
+                seriesId: terms.seriesId,
+                offtakeHours: terms.offtakeHours,
+                basisRatioBps: terms.basisRatioBps,
+                hedgeSize: terms.hedgeSize,
+                hedgeEntryPrice: terms.entryPrice,
+                principal: terms.principal,
+                interest: (terms.principal * rateBps) / Units.BPS,
+                margin: terms.margin,
                 openedAt: uint64(block.timestamp),
-                maturity: market.seriesAt(seriesId).expiry,
+                maturity: market.seriesAt(terms.seriesId).expiry,
                 closed: false
             })
         );
         _loansOf[msg.sender].push(loanId);
 
-        emit LoanOpened(loanId, msg.sender, seriesId, gpuHours, entryPrice, principal, margin);
+        emit LoanOpened(
+            loanId,
+            msg.sender,
+            terms.seriesId,
+            terms.hedgeSize,
+            terms.entryPrice,
+            terms.principal,
+            terms.margin
+        );
     }
 
     /// @notice Settle a matured loan: realize the hedge, net it against the debt, square up.
@@ -455,6 +507,11 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
 
     function setGracePeriod(uint32 period) external onlyOwner {
         gracePeriod = period;
+    }
+
+    function setMaxBasisRatio(uint16 bps) external onlyOwner {
+        if (bps == 0) revert InvalidParameter();
+        maxBasisRatioBps = bps;
     }
 
     /// @notice Add margin to the pool's market account if a hedge drifts close to its limit.
