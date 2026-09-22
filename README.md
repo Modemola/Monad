@@ -55,9 +55,27 @@ docs/hackathon/ Track briefs, resource index, build plan
 | `IngotIndex` — index oracle | Built, 19 tests passing |
 | `IngotMarket` — swaps, margin, settlement, liquidation | Built, 23 tests passing |
 | `UnderwriterVault` — LP accounting over the vault account | Built, 11 tests passing |
-| `HedgedCredit` — loans with auto-hedge | Next |
-| Front end | Planned |
+| `HedgedCredit` — loans with auto-hedge | Built, 16 tests passing |
+| Front end | Next |
 | Backtest over historical rental data | Planned |
+
+## The number that makes the case
+
+A 100,000 GPU-hour monthly offtake, hedged at $2.48/hr, financed at 70% LTV — $175,000 of
+principal, $183,750 of debt, $60,000 of borrower margin. Recovery by settlement price, straight
+out of `HedgedCredit.project()`:
+
+| Settlement rate | Hedged recovery | Unhedged recovery |
+|---|---|---|
+| $0.80/hr | $183,750 | $140,000 |
+| $1.20/hr | $183,750 | $180,000 |
+| $1.80/hr and above | $183,750 | $183,750 |
+
+At $0.80/hr the unhedged lender is down $43,750 — a quarter of the principal. That is not a
+contrived stress case: H100 listings have been observed between $0.72 and $15.14 per GPU-hour on
+the same day.
+
+Reproduce it with `forge test --match-test test_demo_projectionTable -vv`.
 
 ## Local development
 
