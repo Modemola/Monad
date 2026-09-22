@@ -44,9 +44,22 @@ contracts/      Foundry workspace — index, market, vault, credit
   src/          Contracts
   test/         Test suite
   script/       Deployment and seeding
-web/            Next.js front end
+web/            Next.js front end — terminal, credit desk, underwriter vault
 docs/hackathon/ Track briefs, resource index, build plan
 ```
+
+## Running the front end
+
+```bash
+cd web
+pnpm install
+node scripts/abis.mjs        # regenerate ABIs after a contract change
+node scripts/addresses.mjs   # pick up contracts/deployments/<chainid>.json
+pnpm dev
+```
+
+With no wallet connected the app reads the first chain it is deployed to, so the market renders
+before anyone connects.
 
 ## Status
 
@@ -56,8 +69,8 @@ docs/hackathon/ Track briefs, resource index, build plan
 | `IngotMarket` — swaps, margin, settlement, liquidation | Built, 23 tests passing |
 | `UnderwriterVault` — LP accounting over the vault account | Built, 11 tests passing |
 | `HedgedCredit` — loans with auto-hedge | Built, 16 tests passing |
-| Front end | Next |
-| Backtest over historical rental data | Planned |
+| Front end — terminal, credit desk, underwriter vault | Built, builds clean |
+| Backtest over historical rental data | Next |
 
 ## The number that makes the case
 
