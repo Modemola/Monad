@@ -14,3 +14,6 @@ web/.env*.local
 # Misc
 .DS_Store
 *.log
+
+# Local chain deployments
+contracts/deployments/31337.json
