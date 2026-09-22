@@ -24,6 +24,9 @@ contract HedgedCreditTest is Fixtures {
     /// @dev A tier-2 operator's monthly offtake: 100,000 GPU-hours, roughly 137 H100s for a month.
     uint256 internal constant OFFTAKE = 100_000e18;
 
+    /// @dev This operator sells at the index. Tests that care about basis set their own.
+    uint16 internal constant AT_INDEX = 10_000;
+
     function setUp() public {
         _deploy();
         _seedIndex(2.5 * 1e18);
@@ -61,7 +64,7 @@ contract HedgedCreditTest is Fixtures {
     function _openLoan() internal returns (uint256 loanId) {
         uint256 margin = 60_000 * USDC_ONE;
         vm.prank(neocloud);
-        loanId = credit.open(seriesId, OFFTAKE, margin, 0);
+        loanId = credit.open(seriesId, OFFTAKE, AT_INDEX, margin, 0);
     }
 
     /// @dev Settle the series around `price`.
@@ -107,13 +110,13 @@ contract HedgedCreditTest is Fixtures {
     function test_open_requiresMargin() public {
         vm.prank(neocloud);
         vm.expectRevert();
-        credit.open(seriesId, OFFTAKE, 1 * USDC_ONE, 0);
+        credit.open(seriesId, OFFTAKE, AT_INDEX, 1 * USDC_ONE, 0);
     }
 
     function test_open_boundedByPoolLiquidity() public {
         vm.prank(neocloud);
         vm.expectRevert();
-        credit.open(seriesId, OFFTAKE * 20, 400_000 * USDC_ONE, 0);
+        credit.open(seriesId, OFFTAKE * 20, AT_INDEX, 400_000 * USDC_ONE, 0);
     }
 
     // ------------------------------------------------------------------
@@ -205,6 +208,68 @@ contract HedgedCreditTest is Fixtures {
             (,,, uint256 hedged, uint256 unhedged) = credit.project(loanId, prices[i]);
             console.log(prices[i] / 1e15, hedged / 1e6, unhedged / 1e6);
         }
+    }
+
+    // ------------------------------------------------------------------
+    // Basis
+    // ------------------------------------------------------------------
+
+    /// @dev Measured across 23 providers over 78 days of real posted H100 rates, levels run from
+    ///      45% below the index to 237% above it. A discount operator hedged 1:1 on raw hours
+    ///      would be over-hedged by nearly 2x, so the hedge is sized by their basis.
+    function test_basis_sizesTheHedgeToTheBorrowersExposure() public {
+        uint16 discount = 5_500; // sells at 55% of the index, like a Voltage Park or GMI
+
+        vm.prank(neocloud);
+        uint256 loanId = credit.open(seriesId, OFFTAKE, discount, 40_000 * USDC_ONE, 0);
+
+        HedgedCredit.Loan memory loan = credit.loanAt(loanId);
+        assertEq(loan.offtakeHours, OFFTAKE, "offtake recorded as stated");
+        assertEq(loan.basisRatioBps, discount, "basis recorded");
+        assertEq(loan.hedgeSize, (OFFTAKE * discount) / 10_000, "hedge scaled to exposure");
+
+        assertEq(
+            market.positionOf(address(credit), seriesId).size,
+            -int256((OFFTAKE * discount) / 10_000),
+            "short is the scaled size, not the raw hour count"
+        );
+    }
+
+    function test_basis_advanceScalesWithIt() public {
+        vm.prank(neocloud);
+        uint256 atIndex = credit.open(seriesId, OFFTAKE, AT_INDEX, 60_000 * USDC_ONE, 0);
+        uint256 fullPrincipal = credit.loanAt(atIndex).principal;
+
+        vm.prank(neocloud);
+        uint256 discounted = credit.open(seriesId, OFFTAKE, 5_000, 40_000 * USDC_ONE, 0);
+        uint256 halfPrincipal = credit.loanAt(discounted).principal;
+
+        // Same hours, half the realized rate, half the advance.
+        assertApproxEqRel(halfPrincipal * 2, fullPrincipal, 2e16, "advance tracks real revenue");
+    }
+
+    /// @dev Index invariance must survive the scaling, or the refinement broke the product.
+    function test_basis_recoveryStillIndexInvariant() public {
+        vm.prank(neocloud);
+        uint256 loanId = credit.open(seriesId, OFFTAKE, 5_500, 40_000 * USDC_ONE, 0);
+
+        uint256 debt = credit.debtOf(loanId);
+        uint256[3] memory prices = [uint256(1e18), uint256(3.6e18), uint256(9e18)];
+
+        for (uint256 i = 0; i < prices.length; ++i) {
+            (,,, uint256 hedged,) = credit.project(loanId, prices[i]);
+            assertEq(hedged, debt, "still whole at every settlement price");
+        }
+    }
+
+    function test_basis_rejectsNonsense() public {
+        vm.prank(neocloud);
+        vm.expectRevert(HedgedCredit.InvalidParameter.selector);
+        credit.open(seriesId, OFFTAKE, 0, 60_000 * USDC_ONE, 0);
+
+        vm.prank(neocloud);
+        vm.expectRevert(HedgedCredit.InvalidParameter.selector);
+        credit.open(seriesId, OFFTAKE, 50_000, 60_000 * USDC_ONE, 0);
     }
 
     // ------------------------------------------------------------------
