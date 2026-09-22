@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22" width="22" height="22">
+  <title>Ingot</title>
+  <desc>A silicon ingot in section: the bar compute is cut from, and the bar a commodity market trades.</desc>
+  <path d="M4 14.5 L7 7.5 L15 7.5 L18 14.5 Z" fill="#3987e5"/>
+  <path d="M7 7.5 L9 5 L17 5 L15 7.5 Z" fill="#3987e5" opacity="0.55"/>
+  <path d="M15 7.5 L17 5 L20 12 L18 14.5 Z" fill="#3987e5" opacity="0.3"/>
+</svg>

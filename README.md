@@ -37,6 +37,12 @@ actually carry the exposure, across 40+ countries.
    cash flow instead of a GPU price forecast. The hedge is not a separate product the borrower has
    to go buy — it is part of the loan.
 
+## Trying it
+
+[**docs/JUDGES.md**](docs/JUDGES.md) is the five-minute walkthrough: test funds, the three
+flows, and how to check each claim against the chain or the test suite. No login, no setup beyond
+a wallet and testnet gas.
+
 ## Repository layout
 
 ```
@@ -45,7 +51,8 @@ contracts/      Foundry workspace — index, market, vault, credit
   test/         Test suite
   script/       Deployment and seeding
 web/            Next.js front end — terminal, credit desk, underwriter vault
-docs/hackathon/ Track briefs, resource index, build plan
+docs/           Judge walkthrough, deploy, backtest, security model
+  hackathon/    Track briefs and resource index
 ```
 
 ## Running the front end
@@ -68,9 +75,11 @@ before anyone connects.
 | `IngotIndex` — index oracle | Built, 19 tests passing |
 | `IngotMarket` — swaps, margin, settlement, liquidation | Built, 23 tests passing |
 | `UnderwriterVault` — LP accounting over the vault account | Built, 11 tests passing |
-| `HedgedCredit` — loans with auto-hedge | Built, 16 tests passing |
+| `HedgedCredit` — loans with auto-hedge | Built, 21 tests passing |
 | Front end — terminal, credit desk, underwriter vault | Built, builds clean |
-| Backtest over historical rental data | Next |
+| Backtest over historical rental data | Replayed over 78 days, 3 tests passing |
+
+77 tests in total, all passing. Deployment to Monad testnet is the remaining step.
 
 ## The number that makes the case
 

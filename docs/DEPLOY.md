@@ -61,3 +61,39 @@ A run of this on a fresh chain produced a 100,000 GPU-hour loan hedged at $2.247
 principal against $166,301 of debt. Borrower resources came back as $224,743.74 at $0.80/hr,
 $2.26/hr and $6.00/hr alike, and hedged recovery as $166,300.87 at all three, while unhedged
 recovery at $0.80/hr was $140,000.
+
+## Publishing the front end
+
+The app is a static-friendly Next.js client with no backend and no secrets — it reads Monad
+directly. Any Next host works; Vercel is the shortest path.
+
+```bash
+cd web
+pnpm dlx vercel --prod
+```
+
+Root directory `web`, build command `pnpm build`, framework auto-detected as Next.js.
+
+The one optional setting is `NEXT_PUBLIC_MONAD_RPC_URL`. Leave it unset and the app uses the
+public `https://testnet-rpc.monad.xyz`, which is rate-limited and shared — fine for a judge
+clicking through, worth replacing with a dedicated endpoint before a demo recording.
+
+Addresses are compiled into the bundle by `scripts/addresses.mjs`, so **redeploying the contracts
+means rebuilding the front end.** Run the sync, commit, and let the host rebuild:
+
+```bash
+node scripts/abis.mjs && node scripts/addresses.mjs
+git add ../contracts/deployments lib/addresses.ts lib/abis.ts
+```
+
+## After deploying
+
+1. Commit `contracts/deployments/<chainid>.json`, `web/lib/addresses.ts` and `web/lib/abis.ts`.
+   The app cannot find the contracts without them.
+2. Fill [JUDGES.md](JUDGES.md)'s two placeholders — `<!-- LIVE_URL -->` with the hosted app,
+   `<!-- ADDRESSES -->` with the contents of the deployment JSON.
+3. Open the app in a clean browser profile with no wallet connected and confirm the index chart,
+   the front contract and the vault all render. That is what a judge sees first, and it is the
+   fastest check that the address sync actually happened.
+4. Mint test USDC from the collateral panel and put one small trade through, so the seeded market
+   has at least one real fill in its history.
