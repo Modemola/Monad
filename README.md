@@ -53,8 +53,8 @@ docs/hackathon/ Track briefs, resource index, build plan
 | Component | State |
 |---|---|
 | `IngotIndex` — index oracle | Built, 19 tests passing |
-| `IngotMarket` — swaps, margin, settlement | In progress |
-| `UnderwriterVault` — two-sided liquidity | Planned |
+| `IngotMarket` — swaps, margin, settlement, liquidation | Built, 23 tests passing |
+| `UnderwriterVault` — LP accounting over the vault account | Next |
 | `HedgedCredit` — loans with auto-hedge | Planned |
 | Front end | Planned |
 | Backtest over historical rental data | Planned |
