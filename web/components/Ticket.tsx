@@ -2,12 +2,18 @@
 
 import { useState } from "react";
 import { useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
-import { maxUint256 } from "viem";
 
 import { ingotMarketAbi } from "@/lib/abis";
 import { useDeployment } from "@/lib/useIngot";
 import { LOT_HOURS, formatPrice, formatUsdc, parseDecimal } from "@/lib/format";
-import { Button, Disclosure, Field, Row, TextInput } from "./ui";
+import {
+  DEFAULT_SLIPPAGE_BPS,
+  SLIPPAGE_OPTIONS,
+  formatTolerance,
+  maxFill,
+  minFill,
+} from "@/lib/slippage";
+import { Button, Disclosure, Field, Row, Segmented, TextInput } from "./ui";
 
 type Side = "long" | "short";
 
@@ -30,6 +36,7 @@ export function Ticket({
   const { deployment } = useDeployment();
   const [side, setSide] = useState<Side>("long");
   const [lots, setLots] = useState("");
+  const [toleranceBps, setToleranceBps] = useState<number>(DEFAULT_SLIPPAGE_BPS);
 
   const parsedLots = parseDecimal(lots, 18);
   const magnitude = parsedLots === null ? null : (parsedLots * LOT_HOURS) / 10n ** 18n;
@@ -58,12 +65,26 @@ export function Ticket({
       : undefined;
 
   const slippage = quoted && mark ? Number(((quoted - mark) * 10_000n) / mark) / 100 : undefined;
+
+  // The bound the contract will enforce, derived from the quote actually shown above.
+  const priceLimit =
+    quoted === undefined
+      ? undefined
+      : side === "long"
+        ? maxFill(quoted, toleranceBps)
+        : minFill(quoted, toleranceBps);
   const insufficient =
     marginRequired !== undefined && freeCollateral !== undefined && marginRequired > freeCollateral;
 
   const busy = isPending || confirming;
   const canSubmit =
-    Boolean(deployment) && seriesId !== undefined && size !== null && size !== 0n && !insufficient && !busy;
+    Boolean(deployment) &&
+    seriesId !== undefined &&
+    size !== null &&
+    size !== 0n &&
+    priceLimit !== undefined &&
+    !insufficient &&
+    !busy;
 
   return (
     <div>
@@ -110,6 +131,22 @@ export function Ticket({
           tone={insufficient ? "critical" : "default"}
         />
         <Row label="Taker fee" value={fee === undefined ? "—" : formatUsdc(fee)} tone="muted" />
+        <Row
+          label={side === "long" ? "Max fill accepted" : "Min fill accepted"}
+          value={priceLimit === undefined ? "—" : formatPrice(priceLimit)}
+          hint="enforced on chain"
+          tone="muted"
+        />
+      </div>
+
+      <div className="mt-3 flex items-center justify-between">
+        <span className="text-[12px] text-ink-secondary">Slippage tolerance</span>
+        <Segmented
+          options={SLIPPAGE_OPTIONS}
+          value={toleranceBps}
+          onChange={setToleranceBps}
+          render={formatTolerance}
+        />
       </div>
 
       <div className="mt-3">
@@ -120,13 +157,12 @@ export function Ticket({
             deployment &&
             seriesId !== undefined &&
             size !== null &&
+            priceLimit !== undefined &&
             writeContract({
               address: deployment.market,
               abi: ingotMarketAbi,
               functionName: "trade",
-              // Price limit is the worst acceptable fill. Open orders use the extremes;
-              // a production ticket would let the trader tighten this.
-              args: [seriesId, size, side === "long" ? maxUint256 : 0n],
+              args: [seriesId, size, priceLimit],
             })
           }
         >
@@ -142,8 +178,8 @@ export function Ticket({
       )}
 
       <Disclosure>
-        Positions are marked continuously against the index and liquidated when equity falls
-        below the maintenance requirement. A position can lose more than its margin in a fast
+        Your order will not fill worse than the bound above. Positions are marked continuously
+        against the index and liquidated when equity falls below the maintenance requirement. A position can lose more than its margin in a fast
         move; the shortfall is absorbed by the underwriter vault. Settlement is the average
         index over the delivery window, not the spot rate on expiry day.
       </Disclosure>

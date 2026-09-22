@@ -11,8 +11,14 @@ import {
 import { maxUint256 } from "viem";
 
 import { RecoveryPanel } from "@/components/RecoveryPanel";
-import { Button, Card, Disclosure, Empty, Field, Row, Stat, TextInput } from "@/components/ui";
-import { hedgedCreditAbi, mockUSDCAbi } from "@/lib/abis";
+import { Button, Card, Disclosure, Empty, Field, Row, Segmented, Stat, TextInput } from "@/components/ui";
+import { hedgedCreditAbi, ingotMarketAbi, mockUSDCAbi } from "@/lib/abis";
+import {
+  DEFAULT_SLIPPAGE_BPS,
+  SLIPPAGE_OPTIONS,
+  formatTolerance,
+  minFill,
+} from "@/lib/slippage";
 import { useDeployment, useFrontSeries } from "@/lib/useIngot";
 import { formatHours, formatPrice, formatUsdc, parseDecimal } from "@/lib/format";
 
@@ -206,6 +212,7 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
   const [hours, setHours] = useState("");
   const [margin, setMargin] = useState("");
   const [basis, setBasis] = useState("100");
+  const [toleranceBps, setToleranceBps] = useState<number>(DEFAULT_SLIPPAGE_BPS);
 
   const parsedHours = parseDecimal(hours, 18);
   const parsedMargin = parseDecimal(margin, 6);
@@ -241,6 +248,23 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
     principal !== undefined && minMarginBps !== undefined
       ? (principal * BigInt(minMarginBps)) / 10_000n
       : undefined;
+
+  // The hedge is a short of `hedgeSize`; quote it so the on-chain bound is derived from the
+  // price the borrower is actually shown rather than left wide open.
+  const { data: hedgeQuote } = useReadContract({
+    address: deployment?.market,
+    abi: ingotMarketAbi,
+    functionName: "quote",
+    args:
+      seriesId !== undefined && hedgeSize !== null && hedgeSize > 0n
+        ? [seriesId, -hedgeSize]
+        : undefined,
+    query: {
+      enabled: Boolean(deployment) && seriesId !== undefined && hedgeSize !== null && hedgeSize > 0n,
+    },
+  });
+
+  const minHedgePrice = hedgeQuote === undefined ? undefined : minFill(hedgeQuote, toleranceBps);
 
   const { data: allowance } = useReadContract({
     address: deployment?.usdc,
@@ -313,6 +337,22 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
           value={marginRequired === undefined ? "—" : formatUsdc(marginRequired)}
           tone={marginShort ? "critical" : "muted"}
         />
+        <Row
+          label="Min hedge fill"
+          value={minHedgePrice === undefined ? "—" : formatPrice(minHedgePrice)}
+          hint="enforced on chain"
+          tone="muted"
+        />
+      </div>
+
+      <div className="mt-3 flex items-center justify-between">
+        <span className="text-[12px] text-ink-secondary">Slippage tolerance</span>
+        <Segmented
+          options={SLIPPAGE_OPTIONS}
+          value={toleranceBps}
+          onChange={setToleranceBps}
+          render={formatTolerance}
+        />
       </div>
 
       <div className="mt-3">
@@ -341,6 +381,7 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
               !basisValid ||
               parsedMargin === null ||
               marginShort ||
+              minHedgePrice === undefined ||
               busy
             }
             onClick={() =>
@@ -349,11 +390,12 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
               parsedHours !== null &&
               basisBps !== null &&
               parsedMargin !== null &&
+              minHedgePrice !== undefined &&
               writeContract({
                 address: deployment.hedgedCredit,
                 abi: hedgedCreditAbi,
                 functionName: "open",
-                args: [seriesId, parsedHours, basisBps, parsedMargin, 0n],
+                args: [seriesId, parsedHours, basisBps, parsedMargin, minHedgePrice],
               })
             }
           >
@@ -366,7 +408,8 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
       {error && <p className="mt-2 break-words text-[12px] text-critical">{error.message.split("\n")[0]}</p>}
 
       <Disclosure>
-        The hedge fixes the rate you sell compute at; it does not guarantee you sell it. If your
+        The hedge will not fill below the bound above. It fixes the rate you sell compute at; it
+        does not guarantee you sell it. If your
         offtake does not materialise you still owe the debt, and the short can lose money your
         revenue was supposed to cover. Rate risk is hedged here — delivery risk and the promise to
         repay are not.
