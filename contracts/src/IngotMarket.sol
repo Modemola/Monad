@@ -5,6 +5,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 import {IIngotIndex} from "./interfaces/IIngotIndex.sol";
 import {Units} from "./libraries/Units.sol";
@@ -33,6 +34,7 @@ import {Units} from "./libraries/Units.sol";
 ///      Settlement is lazy and per-account. Nothing in this contract ever loops over all traders.
 contract IngotMarket is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
+    using SafeCast for uint256;
     using Units for int256;
 
     // ---------------------------------------------------------------------
@@ -218,6 +220,7 @@ contract IngotMarket is Ownable, ReentrancyGuard {
         int256 realized = Units.notional(size, series.settlementPrice) - position.cost;
         balanceOf[account] += realized;
 
+        // forge-lint: disable-next-line(unsafe-typecast) — guarded positive.
         if (size > 0) series.longOpenInterest -= uint256(size);
 
         position.size = 0;
@@ -234,17 +237,17 @@ contract IngotMarket is Ownable, ReentrancyGuard {
     function deposit(uint256 amount) external nonReentrant {
         if (amount == 0) revert ZeroAmount();
         usdc.safeTransferFrom(msg.sender, address(this), amount);
-        balanceOf[msg.sender] += int256(amount);
+        balanceOf[msg.sender] += amount.toInt256();
         emit Deposited(msg.sender, amount);
     }
 
     function withdraw(uint256 amount) external nonReentrant {
         if (amount == 0) revert ZeroAmount();
-        balanceOf[msg.sender] -= int256(amount);
+        balanceOf[msg.sender] -= amount.toInt256();
 
         int256 equity_ = equity(msg.sender);
         uint256 required = marginRequirement(msg.sender, initialMarginBps);
-        if (equity_ < int256(required)) revert InsufficientMargin(equity_, required);
+        if (equity_ < required.toInt256()) revert InsufficientMargin(equity_, required);
 
         usdc.safeTransfer(msg.sender, amount);
         emit Withdrawn(msg.sender, amount);
@@ -284,18 +287,18 @@ contract IngotMarket is Ownable, ReentrancyGuard {
         int256 realized = _applyDelta(msg.sender, seriesId, size, price);
         _applyDelta(vault_, seriesId, -size, price);
 
-        balanceOf[msg.sender] -= int256(fee);
-        balanceOf[vault_] += int256(fee);
+        balanceOf[msg.sender] -= fee.toInt256();
+        balanceOf[vault_] += fee.toInt256();
 
         int256 traderEquity = equity(msg.sender);
         uint256 traderRequired = marginRequirement(msg.sender, initialMarginBps);
-        if (traderEquity < int256(traderRequired)) {
+        if (traderEquity < traderRequired.toInt256()) {
             revert InsufficientMargin(traderEquity, traderRequired);
         }
 
         // The vault's own margin is the market's capacity limit. A trade that reduces vault risk
         // always passes; one that pushes it past maintenance cannot be quoted at all.
-        if (equity(vault_) < int256(marginRequirement(vault_, maintenanceMarginBps))) {
+        if (equity(vault_) < marginRequirement(vault_, maintenanceMarginBps).toInt256()) {
             revert VaultAtCapacity();
         }
 
@@ -314,7 +317,7 @@ contract IngotMarket is Ownable, ReentrancyGuard {
 
         int256 equity_ = equity(account);
         uint256 maintenance = marginRequirement(account, maintenanceMarginBps);
-        if (equity_ >= int256(maintenance)) revert NotLiquidatable(equity_, maintenance);
+        if (equity_ >= maintenance.toInt256()) revert NotLiquidatable(equity_, maintenance);
 
         Position storage position = _positions[account][seriesId];
         int256 held = position.size;
@@ -328,10 +331,10 @@ contract IngotMarket is Ownable, ReentrancyGuard {
         _applyDelta(account, seriesId, size, price);
         _applyDelta(vault, seriesId, -size, price);
 
-        balanceOf[account] -= int256(penalty);
+        balanceOf[account] -= penalty.toInt256();
         uint256 liquidatorCut = (penalty * liquidatorShareBps) / Units.BPS;
-        balanceOf[msg.sender] += int256(liquidatorCut);
-        balanceOf[vault] += int256(penalty - liquidatorCut);
+        balanceOf[msg.sender] += liquidatorCut.toInt256();
+        balanceOf[vault] += (penalty - liquidatorCut).toInt256();
 
         emit Liquidated(account, seriesId, msg.sender, size, price, penalty);
 
@@ -339,7 +342,7 @@ contract IngotMarket is Ownable, ReentrancyGuard {
         if (_openSeries[account].length == 0 && balanceOf[account] < 0) {
             uint256 shortfall = uint256(-balanceOf[account]);
             balanceOf[account] = 0;
-            balanceOf[vault] -= int256(shortfall);
+            balanceOf[vault] -= shortfall.toInt256();
             badDebt += shortfall;
             emit BadDebtAbsorbed(account, shortfall);
         }
@@ -359,8 +362,12 @@ contract IngotMarket is Ownable, ReentrancyGuard {
 
         uint256 remaining = series.expiry - block.timestamp;
         uint256 tenor = series.expiry - series.listedAt;
+        // Widening int32 and uint64 into int256; both are far inside range.
+        // forge-lint: disable-next-line(unsafe-typecast)
         int256 effective = (int256(series.basisBps) * int256(remaining)) / int256(tenor);
 
+        // `basisBps` is clamped to +/-5000 at listing, so the multiplier stays in [5000, 15000].
+        // forge-lint: disable-next-line(unsafe-typecast)
         return (spot * uint256(int256(Units.BPS) + effective)) / Units.BPS;
     }
 
@@ -381,6 +388,8 @@ contract IngotMarket is Ownable, ReentrancyGuard {
         if (adjustment > cap) adjustment = cap;
         if (adjustment < -cap) adjustment = -cap;
 
+        // `adjustment` is clamped to +/-maxAdjBps, itself capped at 5000 on write.
+        // forge-lint: disable-next-line(unsafe-typecast)
         return (mark * uint256(int256(Units.BPS) + adjustment)) / Units.BPS;
     }
 
@@ -430,6 +439,7 @@ contract IngotMarket is Ownable, ReentrancyGuard {
     function freeCollateral(address account) external view returns (uint256) {
         int256 equity_ = equity(account);
         int256 required = int256(marginRequirement(account, initialMarginBps));
+        // forge-lint: disable-next-line(unsafe-typecast) — guarded strictly greater.
         return equity_ > required ? uint256(equity_ - required) : 0;
     }
 
@@ -496,8 +506,8 @@ contract IngotMarket is Ownable, ReentrancyGuard {
             if (closing > heldAbs) closing = heldAbs;
 
             // The slice of the existing position being removed keeps its own sign.
-            int256 removed = held > 0 ? int256(closing) : -int256(closing);
-            int256 costRemoved = (position.cost * int256(closing)) / int256(heldAbs);
+            int256 removed = held > 0 ? closing.toInt256() : -closing.toInt256();
+            int256 costRemoved = (position.cost * closing.toInt256()) / heldAbs.toInt256();
 
             realized = Units.notional(removed, price) - costRemoved;
             balanceOf[account] += realized;
@@ -527,7 +537,9 @@ contract IngotMarket is Ownable, ReentrancyGuard {
 
     function _syncOpenInterest(uint256 seriesId, int256 before, int256 current) internal {
         Series storage series = _series[seriesId];
+        // forge-lint: disable-next-line(unsafe-typecast) — guarded positive.
         if (before > 0) series.longOpenInterest -= uint256(before);
+        // forge-lint: disable-next-line(unsafe-typecast) — guarded positive.
         if (current > 0) series.longOpenInterest += uint256(current);
     }
 
@@ -549,6 +561,8 @@ contract IngotMarket is Ownable, ReentrancyGuard {
         if (removedIndex != lastIndex) {
             uint256 movedSeriesId = ids[lastIndex];
             ids[removedIndex] = movedSeriesId;
+            // Bounded by the number of listed series, which cannot approach 2^32.
+            // forge-lint: disable-next-line(unsafe-typecast)
             _positions[account][movedSeriesId].listIndex = uint32(removedIndex);
         }
 

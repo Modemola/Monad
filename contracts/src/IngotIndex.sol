@@ -90,13 +90,21 @@ contract IngotIndex is IIngotIndex, Ownable {
     error InvalidParameter();
 
     modifier onlyPublisher() {
-        if (!isPublisher[msg.sender]) revert NotPublisher();
+        _requirePublisher();
         _;
     }
 
     modifier onlyGuardian() {
-        if (msg.sender != guardian) revert NotGuardian();
+        _requireGuardian();
         _;
+    }
+
+    function _requirePublisher() internal view {
+        if (!isPublisher[msg.sender]) revert NotPublisher();
+    }
+
+    function _requireGuardian() internal view {
+        if (msg.sender != guardian) revert NotGuardian();
     }
 
     /// @param unit_ Description of the priced unit.
@@ -195,9 +203,8 @@ contract IngotIndex is IIngotIndex, Ownable {
 
     /// @inheritdoc IIngotIndex
     function latest() public view returns (uint256 price, uint64 observedAt) {
-        uint256 index = _finalizedTip();
-        Observation storage observation = _observations[index];
-        return (observation.price, observation.timestamp);
+        Observation storage print = _observations[_finalizedTip()];
+        return (print.price, print.timestamp);
     }
 
     /// @inheritdoc IIngotIndex
@@ -291,9 +298,8 @@ contract IngotIndex is IIngotIndex, Ownable {
 
     /// @dev Cumulative price-seconds at an arbitrary time within the recorded history.
     function _cumulativeAt(uint64 timestamp) internal view returns (uint256) {
-        uint256 index = _search(timestamp);
-        Observation storage observation_ = _observations[index];
-        return observation_.cumulative + observation_.price * (timestamp - observation_.timestamp);
+        Observation storage print = _observations[_search(timestamp)];
+        return print.cumulative + print.price * (timestamp - print.timestamp);
     }
 
     /// @dev Index of the newest print at or before `timestamp`. Caller guarantees the timestamp is

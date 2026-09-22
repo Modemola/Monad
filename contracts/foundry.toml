@@ -17,6 +17,11 @@ remappings = [
   "solady/=lib/solady/src/",
 ]
 
+[lint]
+# Immutables stay lowerCamelCase on purpose: they are part of the public ABI, and
+# `market.index()` reads better from a front end than `market.INDEX()`.
+exclude_lints = ["screaming-snake-case-immutable"]
+
 [fmt]
 line_length = 110
 tab_width = 4
