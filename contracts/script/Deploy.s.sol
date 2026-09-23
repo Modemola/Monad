@@ -6,6 +6,7 @@ import {console} from "forge-std/console.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {IngotIndex} from "../src/IngotIndex.sol";
+import {IngotIndexReceiver} from "../src/IngotIndexReceiver.sol";
 import {IngotMarket} from "../src/IngotMarket.sol";
 import {UnderwriterVault} from "../src/UnderwriterVault.sol";
 import {HedgedCredit} from "../src/HedgedCredit.sol";
@@ -62,44 +63,69 @@ contract Deploy is Script {
             deployer
         );
 
+        // The CRE workflow's landing pad. Installed as a publisher so a DON quorum can print;
+        // the deployer stays a publisher on testnet so the seed script can still backfill
+        // history. A production deployment would revoke the deployer and leave only this.
+        IngotIndexReceiver receiver =
+            new IngotIndexReceiver(index, bytes32("ingot-h100-index-v1"), deployer);
+
         IngotMarket market = new IngotMarket(IIngotIndex(address(index)), IERC20(usdc), deployer);
         UnderwriterVault underwriter = new UnderwriterVault(market, IERC20(usdc), deployer);
         HedgedCredit credit = new HedgedCredit(market, IERC20(usdc), deployer);
 
         market.setVault(address(underwriter));
         index.setPublisher(deployer, true);
+        index.setPublisher(address(receiver), true);
         index.setGuards(TESTNET_FINALITY_DELAY, 2_500, TESTNET_MIN_INTERVAL);
 
         vm.stopBroadcast();
 
-        _record(usdc, address(index), address(market), address(underwriter), address(credit), deployer);
+        _record(
+            Addresses({
+                usdc: usdc,
+                index: address(index),
+                indexReceiver: address(receiver),
+                market: address(market),
+                underwriter: address(underwriter),
+                credit: address(credit),
+                deployer: deployer
+            })
+        );
     }
 
-    function _record(
-        address usdc,
-        address index,
-        address market,
-        address underwriter,
-        address credit,
-        address deployer
-    ) internal {
+    struct Addresses {
+        address usdc;
+        address index;
+        address indexReceiver;
+        address market;
+        address underwriter;
+        address credit;
+        address deployer;
+    }
+
+    function _record(Addresses memory a) internal {
         string memory key = "ingot";
         vm.serializeUint(key, "chainId", block.chainid);
-        vm.serializeAddress(key, "deployer", deployer);
-        vm.serializeAddress(key, "usdc", usdc);
-        vm.serializeAddress(key, "index", index);
-        vm.serializeAddress(key, "market", market);
-        vm.serializeAddress(key, "underwriterVault", underwriter);
-        string memory json = vm.serializeAddress(key, "hedgedCredit", credit);
+        vm.serializeAddress(key, "deployer", a.deployer);
+        vm.serializeAddress(key, "usdc", a.usdc);
+        vm.serializeAddress(key, "index", a.index);
+        vm.serializeAddress(key, "indexReceiver", a.indexReceiver);
+        vm.serializeAddress(key, "market", a.market);
+        vm.serializeAddress(key, "underwriterVault", a.underwriter);
+        string memory json = vm.serializeAddress(key, "hedgedCredit", a.credit);
 
         string memory path =
             string.concat("./deployments/", vm.toString(block.chainid), ".json");
         vm.writeJson(json, path);
 
-        console.log("index           ", index);
-        console.log("market          ", market);
-        console.log("underwriterVault", underwriter);
-        console.log("hedgedCredit    ", credit);
+        console.log("index           ", a.index);
+        console.log("indexReceiver   ", a.indexReceiver);
+        console.log("market          ", a.market);
+        console.log("underwriterVault", a.underwriter);
+        console.log("hedgedCredit    ", a.credit);
         console.log("written to      ", path);
+        console.log("");
+        console.log("Set the CRE forwarder on the receiver once the workflow is registered:");
+        console.log("  cast send <indexReceiver> 'setForwarder(address)' <forwarder>");
     }
 }

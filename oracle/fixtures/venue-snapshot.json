@@ -1,0 +1,3116 @@
+{
+ "date": "2026-09-19",
+ "generated_at": "2026-09-19T09:35:37.822Z",
+ "offers": [
+  {
+   "provider": "runpod",
+   "gpu": "mi300x",
+   "vram_gb": 192,
+   "usd_hr": 2.39,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "a100-pcie-80",
+   "vram_gb": 80,
+   "usd_hr": 1.59,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "a100-pcie-80",
+   "vram_gb": 80,
+   "usd_hr": 1.19,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "a100-sxm-40",
+   "vram_gb": 40,
+   "usd_hr": 1,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "a100-sxm-80",
+   "vram_gb": 80,
+   "usd_hr": 1.59,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "a100-sxm-80",
+   "vram_gb": 80,
+   "usd_hr": 1.39,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "a40",
+   "vram_gb": 48,
+   "usd_hr": 0.49,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "b200",
+   "vram_gb": 180,
+   "usd_hr": 6.79,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "b200",
+   "vram_gb": 180,
+   "usd_hr": 5.98,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "b300",
+   "vram_gb": 288,
+   "usd_hr": 7.89,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "b300",
+   "vram_gb": 288,
+   "usd_hr": 6.94,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-3090",
+   "vram_gb": 24,
+   "usd_hr": 0.5,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-3090",
+   "vram_gb": 24,
+   "usd_hr": 0.22,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-3090-ti",
+   "vram_gb": 24,
+   "usd_hr": 0.27,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-4090",
+   "vram_gb": 24,
+   "usd_hr": 0.74,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-4090",
+   "vram_gb": 24,
+   "usd_hr": 0.34,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-5080",
+   "vram_gb": 16,
+   "usd_hr": 0.39,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-5090",
+   "vram_gb": 32,
+   "usd_hr": 0.99,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-5090",
+   "vram_gb": 32,
+   "usd_hr": 0.69,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "h100-sxm",
+   "vram_gb": 80,
+   "usd_hr": 3.49,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "h100-sxm",
+   "vram_gb": 80,
+   "usd_hr": 2.69,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "h100-nvl",
+   "vram_gb": 94,
+   "usd_hr": 3.19,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "h100-nvl",
+   "vram_gb": 94,
+   "usd_hr": 2.59,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "h100-pcie",
+   "vram_gb": 80,
+   "usd_hr": 2.89,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "h100-pcie",
+   "vram_gb": 80,
+   "usd_hr": 1.99,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 4.59,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 3.59,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "h200-nvl",
+   "vram_gb": 143,
+   "usd_hr": 3.79,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "l4",
+   "vram_gb": 24,
+   "usd_hr": 0.49,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "l40",
+   "vram_gb": 48,
+   "usd_hr": 0.82,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "l40",
+   "vram_gb": 48,
+   "usd_hr": 0.69,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "l40s",
+   "vram_gb": 48,
+   "usd_hr": 1.09,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "l40s",
+   "vram_gb": 48,
+   "usd_hr": 0.79,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-6000-ada",
+   "vram_gb": 48,
+   "usd_hr": 0.84,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-6000-ada",
+   "vram_gb": 48,
+   "usd_hr": 0.74,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-a4000",
+   "vram_gb": 16,
+   "usd_hr": 0.25,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-a4000",
+   "vram_gb": 16,
+   "usd_hr": 0.17,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-a5000",
+   "vram_gb": 24,
+   "usd_hr": 0.27,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-a5000",
+   "vram_gb": 24,
+   "usd_hr": 0.16,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-a6000",
+   "vram_gb": 48,
+   "usd_hr": 0.53,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-a6000",
+   "vram_gb": 48,
+   "usd_hr": 0.33,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-pro-4500",
+   "vram_gb": 32,
+   "usd_hr": 0.72,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-pro-6000-maxq",
+   "vram_gb": 96,
+   "usd_hr": 1.64,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-pro-6000-server",
+   "vram_gb": 96,
+   "usd_hr": 2.09,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-pro-6000-server",
+   "vram_gb": 96,
+   "usd_hr": 1.69,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-pro-6000-wk",
+   "vram_gb": 96,
+   "usd_hr": 2.19,
+   "kind": "secure",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "rtx-pro-6000-wk",
+   "vram_gb": 96,
+   "usd_hr": 1.69,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "v100-pcie",
+   "vram_gb": 16,
+   "usd_hr": 0.19,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "runpod",
+   "gpu": "v100-sxm2",
+   "vram_gb": 16,
+   "usd_hr": 0.23,
+   "kind": "community",
+   "source_url": "https://www.runpod.io/pricing",
+   "fetched_at": "2026-09-19T09:35:32.004Z"
+  },
+  {
+   "provider": "lambda",
+   "gpu": "b200",
+   "vram_gb": 180,
+   "usd_hr": 6.69,
+   "kind": "on-demand",
+   "source_url": "https://lambda.ai/service/gpu-cloud",
+   "fetched_at": "2026-09-19T09:35:31.927Z"
+  },
+  {
+   "provider": "lambda",
+   "gpu": "h100-sxm",
+   "vram_gb": 80,
+   "usd_hr": 3.99,
+   "kind": "on-demand",
+   "source_url": "https://lambda.ai/service/gpu-cloud",
+   "fetched_at": "2026-09-19T09:35:31.927Z"
+  },
+  {
+   "provider": "lambda",
+   "gpu": "a100-sxm-80",
+   "vram_gb": 80,
+   "usd_hr": 2.79,
+   "kind": "on-demand",
+   "source_url": "https://lambda.ai/service/gpu-cloud",
+   "fetched_at": "2026-09-19T09:35:31.927Z"
+  },
+  {
+   "provider": "lambda",
+   "gpu": "a100-pcie-40",
+   "vram_gb": 40,
+   "usd_hr": 1.99,
+   "kind": "on-demand",
+   "source_url": "https://lambda.ai/service/gpu-cloud",
+   "fetched_at": "2026-09-19T09:35:31.927Z"
+  },
+  {
+   "provider": "lambda",
+   "gpu": "v100",
+   "vram_gb": 16,
+   "usd_hr": 0.79,
+   "kind": "on-demand",
+   "source_url": "https://lambda.ai/service/gpu-cloud",
+   "fetched_at": "2026-09-19T09:35:31.927Z"
+  },
+  {
+   "provider": "lambda",
+   "gpu": "rtx-a6000",
+   "vram_gb": 48,
+   "usd_hr": 1.09,
+   "kind": "on-demand",
+   "source_url": "https://lambda.ai/service/gpu-cloud",
+   "fetched_at": "2026-09-19T09:35:31.927Z"
+  },
+  {
+   "provider": "lambda",
+   "gpu": "gh200",
+   "vram_gb": 96,
+   "usd_hr": 2.29,
+   "kind": "on-demand",
+   "source_url": "https://lambda.ai/service/gpu-cloud",
+   "fetched_at": "2026-09-19T09:35:31.927Z"
+  },
+  {
+   "provider": "lambda",
+   "gpu": "h100-pcie",
+   "vram_gb": 80,
+   "usd_hr": 3.29,
+   "kind": "on-demand",
+   "source_url": "https://lambda.ai/service/gpu-cloud",
+   "fetched_at": "2026-09-19T09:35:31.927Z"
+  },
+  {
+   "provider": "lambda",
+   "gpu": "a10",
+   "vram_gb": 24,
+   "usd_hr": 1.29,
+   "kind": "on-demand",
+   "source_url": "https://lambda.ai/service/gpu-cloud",
+   "fetched_at": "2026-09-19T09:35:31.927Z"
+  },
+  {
+   "provider": "lambda",
+   "gpu": "quadro-rtx-6000",
+   "vram_gb": 24,
+   "usd_hr": 0.69,
+   "kind": "on-demand",
+   "source_url": "https://lambda.ai/service/gpu-cloud",
+   "fetched_at": "2026-09-19T09:35:31.927Z"
+  },
+  {
+   "provider": "hyperstack",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 3.99,
+   "kind": "on-demand",
+   "source_url": "https://www.hyperstack.cloud/gpu-pricing",
+   "fetched_at": "2026-09-19T09:35:32.279Z"
+  },
+  {
+   "provider": "hyperstack",
+   "gpu": "h100-sxm",
+   "vram_gb": 80,
+   "usd_hr": 3.2,
+   "kind": "on-demand",
+   "source_url": "https://www.hyperstack.cloud/gpu-pricing",
+   "fetched_at": "2026-09-19T09:35:32.279Z"
+  },
+  {
+   "provider": "hyperstack",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 2.5,
+   "kind": "on-demand",
+   "source_url": "https://www.hyperstack.cloud/gpu-pricing",
+   "fetched_at": "2026-09-19T09:35:32.279Z"
+  },
+  {
+   "provider": "hyperstack",
+   "gpu": "rtx-pro-6000",
+   "vram_gb": 96,
+   "usd_hr": 1.85,
+   "kind": "on-demand",
+   "source_url": "https://www.hyperstack.cloud/gpu-pricing",
+   "fetched_at": "2026-09-19T09:35:32.279Z"
+  },
+  {
+   "provider": "hyperstack",
+   "gpu": "a100-sxm-80",
+   "vram_gb": 80,
+   "usd_hr": 1.6,
+   "kind": "on-demand",
+   "source_url": "https://www.hyperstack.cloud/gpu-pricing",
+   "fetched_at": "2026-09-19T09:35:32.279Z"
+  },
+  {
+   "provider": "hyperstack",
+   "gpu": "a100",
+   "vram_gb": 80,
+   "usd_hr": 1.35,
+   "kind": "on-demand",
+   "source_url": "https://www.hyperstack.cloud/gpu-pricing",
+   "fetched_at": "2026-09-19T09:35:32.279Z"
+  },
+  {
+   "provider": "hyperstack",
+   "gpu": "l40",
+   "vram_gb": 48,
+   "usd_hr": 1,
+   "kind": "on-demand",
+   "source_url": "https://www.hyperstack.cloud/gpu-pricing",
+   "fetched_at": "2026-09-19T09:35:32.279Z"
+  },
+  {
+   "provider": "hyperstack",
+   "gpu": "rtx-a6000",
+   "vram_gb": 48,
+   "usd_hr": 0.5,
+   "kind": "on-demand",
+   "source_url": "https://www.hyperstack.cloud/gpu-pricing",
+   "fetched_at": "2026-09-19T09:35:32.279Z"
+  },
+  {
+   "provider": "hyperstack",
+   "gpu": "rtx-a4000",
+   "vram_gb": 16,
+   "usd_hr": 0.15,
+   "kind": "on-demand",
+   "source_url": "https://www.hyperstack.cloud/gpu-pricing",
+   "fetched_at": "2026-09-19T09:35:32.279Z"
+  },
+  {
+   "provider": "hyperstack",
+   "gpu": "b200",
+   "vram_gb": 192,
+   "usd_hr": 6,
+   "kind": "on-demand",
+   "source_url": "https://www.hyperstack.cloud/gpu-pricing",
+   "fetched_at": "2026-09-19T09:35:32.279Z"
+  },
+  {
+   "provider": "hyperstack",
+   "gpu": "b300",
+   "vram_gb": 288,
+   "usd_hr": 7.4,
+   "kind": "on-demand",
+   "source_url": "https://www.hyperstack.cloud/gpu-pricing",
+   "fetched_at": "2026-09-19T09:35:32.279Z"
+  },
+  {
+   "provider": "coreweave",
+   "gpu": "b200",
+   "vram_gb": 180,
+   "usd_hr": 8.6,
+   "kind": "on-demand",
+   "source_url": "https://www.coreweave.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.008Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "coreweave",
+   "gpu": "rtx-pro-6000-server",
+   "vram_gb": 96,
+   "usd_hr": 2.5,
+   "kind": "on-demand",
+   "source_url": "https://www.coreweave.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.008Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "coreweave",
+   "gpu": "gh200",
+   "vram_gb": 96,
+   "usd_hr": 6.5,
+   "kind": "on-demand",
+   "source_url": "https://www.coreweave.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.008Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "coreweave",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 6.155,
+   "kind": "on-demand",
+   "source_url": "https://www.coreweave.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.008Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "coreweave",
+   "gpu": "l40",
+   "vram_gb": 48,
+   "usd_hr": 1.25,
+   "kind": "on-demand",
+   "source_url": "https://www.coreweave.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.008Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "coreweave",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 6.305,
+   "kind": "on-demand",
+   "source_url": "https://www.coreweave.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.008Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "coreweave",
+   "gpu": "l40s",
+   "vram_gb": 48,
+   "usd_hr": 2.25,
+   "kind": "on-demand",
+   "source_url": "https://www.coreweave.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.008Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "coreweave",
+   "gpu": "a100",
+   "vram_gb": 80,
+   "usd_hr": 2.7,
+   "kind": "on-demand",
+   "source_url": "https://www.coreweave.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.008Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "nebius",
+   "gpu": "b300",
+   "vram_gb": 288,
+   "usd_hr": 7.85,
+   "kind": "on-demand",
+   "source_url": "https://docs.nebius.com/compute/resources/pricing",
+   "fetched_at": "2026-09-19T09:35:32.067Z"
+  },
+  {
+   "provider": "nebius",
+   "gpu": "b200",
+   "vram_gb": 180,
+   "usd_hr": 7.15,
+   "kind": "on-demand",
+   "source_url": "https://docs.nebius.com/compute/resources/pricing",
+   "fetched_at": "2026-09-19T09:35:32.067Z"
+  },
+  {
+   "provider": "nebius",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 4.5,
+   "kind": "on-demand",
+   "source_url": "https://docs.nebius.com/compute/resources/pricing",
+   "fetched_at": "2026-09-19T09:35:32.067Z"
+  },
+  {
+   "provider": "nebius",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 3.85,
+   "kind": "on-demand",
+   "source_url": "https://docs.nebius.com/compute/resources/pricing",
+   "fetched_at": "2026-09-19T09:35:32.067Z"
+  },
+  {
+   "provider": "nebius",
+   "gpu": "rtx-pro-6000",
+   "vram_gb": 96,
+   "usd_hr": 1.8,
+   "kind": "on-demand",
+   "source_url": "https://docs.nebius.com/compute/resources/pricing",
+   "fetched_at": "2026-09-19T09:35:32.067Z"
+  },
+  {
+   "provider": "nebius",
+   "gpu": "l40s",
+   "vram_gb": 48,
+   "usd_hr": 1.35,
+   "kind": "on-demand",
+   "source_url": "https://docs.nebius.com/compute/resources/pricing",
+   "fetched_at": "2026-09-19T09:35:32.067Z"
+  },
+  {
+   "provider": "datacrunch",
+   "gpu": "gb300",
+   "vram_gb": 288,
+   "usd_hr": 9.065,
+   "kind": "on-demand",
+   "source_url": "https://datacrunch.io/pricing",
+   "fetched_at": "2026-09-19T09:35:33.580Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "datacrunch",
+   "gpu": "b300",
+   "vram_gb": 268,
+   "usd_hr": 7.883,
+   "kind": "on-demand",
+   "source_url": "https://datacrunch.io/pricing",
+   "fetched_at": "2026-09-19T09:35:33.580Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "datacrunch",
+   "gpu": "b200",
+   "vram_gb": 180,
+   "usd_hr": 6.485,
+   "kind": "on-demand",
+   "source_url": "https://datacrunch.io/pricing",
+   "fetched_at": "2026-09-19T09:35:33.580Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "datacrunch",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 4.37,
+   "kind": "on-demand",
+   "source_url": "https://datacrunch.io/pricing",
+   "fetched_at": "2026-09-19T09:35:33.580Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "datacrunch",
+   "gpu": "h100-sxm",
+   "vram_gb": 80,
+   "usd_hr": 3.348,
+   "kind": "on-demand",
+   "source_url": "https://datacrunch.io/pricing",
+   "fetched_at": "2026-09-19T09:35:33.580Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "datacrunch",
+   "gpu": "a100-sxm-80",
+   "vram_gb": 80,
+   "usd_hr": 1.735,
+   "kind": "on-demand",
+   "source_url": "https://datacrunch.io/pricing",
+   "fetched_at": "2026-09-19T09:35:33.580Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "datacrunch",
+   "gpu": "a100-sxm-40",
+   "vram_gb": 40,
+   "usd_hr": 1.264,
+   "kind": "on-demand",
+   "source_url": "https://datacrunch.io/pricing",
+   "fetched_at": "2026-09-19T09:35:33.580Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "datacrunch",
+   "gpu": "v100",
+   "vram_gb": 16,
+   "usd_hr": 0.176,
+   "kind": "on-demand",
+   "source_url": "https://datacrunch.io/pricing",
+   "fetched_at": "2026-09-19T09:35:33.580Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "datacrunch",
+   "gpu": "rtx-pro-6000",
+   "vram_gb": 96,
+   "usd_hr": 1.86,
+   "kind": "on-demand",
+   "source_url": "https://datacrunch.io/pricing",
+   "fetched_at": "2026-09-19T09:35:33.580Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "datacrunch",
+   "gpu": "l40s",
+   "vram_gb": 48,
+   "usd_hr": 1.453,
+   "kind": "on-demand",
+   "source_url": "https://datacrunch.io/pricing",
+   "fetched_at": "2026-09-19T09:35:33.580Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "datacrunch",
+   "gpu": "rtx-6000-ada",
+   "vram_gb": 48,
+   "usd_hr": 1.099,
+   "kind": "on-demand",
+   "source_url": "https://datacrunch.io/pricing",
+   "fetched_at": "2026-09-19T09:35:33.580Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "datacrunch",
+   "gpu": "rtx-a6000",
+   "vram_gb": 48,
+   "usd_hr": 0.604,
+   "kind": "on-demand",
+   "source_url": "https://datacrunch.io/pricing",
+   "fetched_at": "2026-09-19T09:35:33.580Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "voltagepark",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 1.99,
+   "kind": "on-demand",
+   "source_url": "https://support.voltagepark.com/article/example-deploying-gpt-oss-on-voltage-park",
+   "fetched_at": "2026-09-19T09:35:33.551Z"
+  },
+  {
+   "provider": "crusoe",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 4.29,
+   "kind": "on-demand",
+   "source_url": "https://www.crusoe.ai/cloud/pricing",
+   "fetched_at": "2026-09-19T09:35:32.792Z"
+  },
+  {
+   "provider": "crusoe",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 3.9,
+   "kind": "on-demand",
+   "source_url": "https://www.crusoe.ai/cloud/pricing",
+   "fetched_at": "2026-09-19T09:35:32.792Z"
+  },
+  {
+   "provider": "crusoe",
+   "gpu": "a100-sxm-80",
+   "vram_gb": 80,
+   "usd_hr": 2.3,
+   "kind": "on-demand",
+   "source_url": "https://www.crusoe.ai/cloud/pricing",
+   "fetched_at": "2026-09-19T09:35:32.792Z"
+  },
+  {
+   "provider": "crusoe",
+   "gpu": "a100-pcie-80",
+   "vram_gb": 80,
+   "usd_hr": 2,
+   "kind": "on-demand",
+   "source_url": "https://www.crusoe.ai/cloud/pricing",
+   "fetched_at": "2026-09-19T09:35:32.792Z"
+  },
+  {
+   "provider": "crusoe",
+   "gpu": "l40s",
+   "vram_gb": 48,
+   "usd_hr": 1.5,
+   "kind": "on-demand",
+   "source_url": "https://www.crusoe.ai/cloud/pricing",
+   "fetched_at": "2026-09-19T09:35:32.792Z"
+  },
+  {
+   "provider": "crusoe",
+   "gpu": "mi300x",
+   "vram_gb": 192,
+   "usd_hr": 3.45,
+   "kind": "on-demand",
+   "source_url": "https://www.crusoe.ai/cloud/pricing",
+   "fetched_at": "2026-09-19T09:35:32.792Z"
+  },
+  {
+   "provider": "jarvislabs",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 3.99,
+   "kind": "on-demand",
+   "source_url": "https://jarvislabs.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:32.826Z"
+  },
+  {
+   "provider": "jarvislabs",
+   "gpu": "h100-sxm",
+   "vram_gb": 80,
+   "usd_hr": 2.69,
+   "kind": "on-demand",
+   "source_url": "https://jarvislabs.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:32.826Z"
+  },
+  {
+   "provider": "jarvislabs",
+   "gpu": "rtx-pro-6000",
+   "vram_gb": 96,
+   "usd_hr": 1.89,
+   "kind": "on-demand",
+   "source_url": "https://jarvislabs.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:32.826Z"
+  },
+  {
+   "provider": "jarvislabs",
+   "gpu": "a100",
+   "vram_gb": 80,
+   "usd_hr": 1.49,
+   "kind": "on-demand",
+   "source_url": "https://jarvislabs.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:32.826Z"
+  },
+  {
+   "provider": "jarvislabs",
+   "gpu": "a100-sxm-40",
+   "vram_gb": 40,
+   "usd_hr": 0.89,
+   "kind": "on-demand",
+   "source_url": "https://jarvislabs.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:32.826Z"
+  },
+  {
+   "provider": "jarvislabs",
+   "gpu": "l4",
+   "vram_gb": 24,
+   "usd_hr": 0.44,
+   "kind": "on-demand",
+   "source_url": "https://jarvislabs.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:32.826Z"
+  },
+  {
+   "provider": "ovh",
+   "gpu": "a100",
+   "vram_gb": 80,
+   "usd_hr": 3.07,
+   "kind": "on-demand",
+   "source_url": "https://www.ovhcloud.com/en/public-cloud/prices/",
+   "fetched_at": "2026-09-19T09:35:32.798Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "ovh",
+   "gpu": "l40s",
+   "vram_gb": 48,
+   "usd_hr": 1.8,
+   "kind": "on-demand",
+   "source_url": "https://www.ovhcloud.com/en/public-cloud/prices/",
+   "fetched_at": "2026-09-19T09:35:32.798Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "ovh",
+   "gpu": "v100",
+   "vram_gb": 16,
+   "usd_hr": 0.77,
+   "kind": "on-demand",
+   "source_url": "https://www.ovhcloud.com/en/public-cloud/prices/",
+   "fetched_at": "2026-09-19T09:35:32.798Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "ovh",
+   "gpu": "a10",
+   "vram_gb": 24,
+   "usd_hr": 1,
+   "kind": "on-demand",
+   "source_url": "https://www.ovhcloud.com/en/public-cloud/prices/",
+   "fetched_at": "2026-09-19T09:35:32.798Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "ovh",
+   "gpu": "l4",
+   "vram_gb": 24,
+   "usd_hr": 1,
+   "kind": "on-demand",
+   "source_url": "https://www.ovhcloud.com/en/public-cloud/prices/",
+   "fetched_at": "2026-09-19T09:35:32.798Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "ovh",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 2.99,
+   "kind": "on-demand",
+   "source_url": "https://www.ovhcloud.com/en/public-cloud/prices/",
+   "fetched_at": "2026-09-19T09:35:32.798Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "ovh",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 6.195,
+   "kind": "on-demand",
+   "source_url": "https://www.ovhcloud.com/en/public-cloud/prices/",
+   "fetched_at": "2026-09-19T09:35:32.798Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "ovh",
+   "gpu": "quadro-rtx-5000",
+   "vram_gb": 16,
+   "usd_hr": 0.6,
+   "kind": "on-demand",
+   "source_url": "https://www.ovhcloud.com/en/public-cloud/prices/",
+   "fetched_at": "2026-09-19T09:35:32.798Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "spheron",
+   "gpu": "b300",
+   "vram_gb": 288,
+   "usd_hr": 10.21,
+   "kind": "on-demand",
+   "source_url": "https://www.spheron.network/pricing/",
+   "fetched_at": "2026-09-19T09:35:32.766Z"
+  },
+  {
+   "provider": "spheron",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 2.64,
+   "kind": "on-demand",
+   "source_url": "https://www.spheron.network/pricing/",
+   "fetched_at": "2026-09-19T09:35:32.766Z"
+  },
+  {
+   "provider": "spheron",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 2.13,
+   "kind": "spot",
+   "source_url": "https://www.spheron.network/pricing/",
+   "fetched_at": "2026-09-19T09:35:32.766Z"
+  },
+  {
+   "provider": "spheron",
+   "gpu": "b200",
+   "vram_gb": 192,
+   "usd_hr": 5.37,
+   "kind": "spot",
+   "source_url": "https://www.spheron.network/pricing/",
+   "fetched_at": "2026-09-19T09:35:32.766Z"
+  },
+  {
+   "provider": "spheron",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 4.8,
+   "kind": "on-demand",
+   "source_url": "https://www.spheron.network/pricing/",
+   "fetched_at": "2026-09-19T09:35:32.766Z"
+  },
+  {
+   "provider": "spheron",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 2.8,
+   "kind": "spot",
+   "source_url": "https://www.spheron.network/pricing/",
+   "fetched_at": "2026-09-19T09:35:32.766Z"
+  },
+  {
+   "provider": "spheron",
+   "gpu": "mi300x",
+   "vram_gb": 192,
+   "usd_hr": 3.59,
+   "kind": "on-demand",
+   "source_url": "https://www.spheron.network/pricing/",
+   "fetched_at": "2026-09-19T09:35:32.766Z"
+  },
+  {
+   "provider": "spheron",
+   "gpu": "gh200",
+   "vram_gb": 96,
+   "usd_hr": 2.75,
+   "kind": "on-demand",
+   "source_url": "https://www.spheron.network/pricing/",
+   "fetched_at": "2026-09-19T09:35:32.766Z"
+  },
+  {
+   "provider": "spheron",
+   "gpu": "a100",
+   "vram_gb": 80,
+   "usd_hr": 1.43,
+   "kind": "on-demand",
+   "source_url": "https://www.spheron.network/pricing/",
+   "fetched_at": "2026-09-19T09:35:32.766Z"
+  },
+  {
+   "provider": "spheron",
+   "gpu": "a100",
+   "vram_gb": 80,
+   "usd_hr": 1.12,
+   "kind": "spot",
+   "source_url": "https://www.spheron.network/pricing/",
+   "fetched_at": "2026-09-19T09:35:32.766Z"
+  },
+  {
+   "provider": "spheron",
+   "gpu": "rtx-pro-6000",
+   "vram_gb": 96,
+   "usd_hr": 2.25,
+   "kind": "on-demand",
+   "source_url": "https://www.spheron.network/pricing/",
+   "fetched_at": "2026-09-19T09:35:32.766Z"
+  },
+  {
+   "provider": "spheron",
+   "gpu": "rtx-pro-6000",
+   "vram_gb": 96,
+   "usd_hr": 1.25,
+   "kind": "spot",
+   "source_url": "https://www.spheron.network/pricing/",
+   "fetched_at": "2026-09-19T09:35:32.766Z"
+  },
+  {
+   "provider": "spheron",
+   "gpu": "rtx-5090",
+   "vram_gb": 32,
+   "usd_hr": 0.68,
+   "kind": "on-demand",
+   "source_url": "https://www.spheron.network/pricing/",
+   "fetched_at": "2026-09-19T09:35:32.766Z"
+  },
+  {
+   "provider": "spheron",
+   "gpu": "rtx-6000-ada",
+   "vram_gb": 48,
+   "usd_hr": 0.78,
+   "kind": "on-demand",
+   "source_url": "https://www.spheron.network/pricing/",
+   "fetched_at": "2026-09-19T09:35:32.766Z"
+  },
+  {
+   "provider": "spheron",
+   "gpu": "l40s",
+   "vram_gb": 48,
+   "usd_hr": 0.96,
+   "kind": "on-demand",
+   "source_url": "https://www.spheron.network/pricing/",
+   "fetched_at": "2026-09-19T09:35:32.766Z"
+  },
+  {
+   "provider": "spheron",
+   "gpu": "l40s",
+   "vram_gb": 48,
+   "usd_hr": 1.07,
+   "kind": "spot",
+   "source_url": "https://www.spheron.network/pricing/",
+   "fetched_at": "2026-09-19T09:35:32.766Z"
+  },
+  {
+   "provider": "spheron",
+   "gpu": "rtx-4090",
+   "vram_gb": 24,
+   "usd_hr": 0.72,
+   "kind": "on-demand",
+   "source_url": "https://www.spheron.network/pricing/",
+   "fetched_at": "2026-09-19T09:35:32.766Z"
+  },
+  {
+   "provider": "azure",
+   "gpu": "h100-sxm",
+   "vram_gb": 80,
+   "usd_hr": 11.061,
+   "kind": "on-demand",
+   "source_url": "https://prices.azure.com/api/retail/prices",
+   "fetched_at": "2026-09-19T09:35:33.458Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "azure",
+   "gpu": "a100-sxm-40",
+   "vram_gb": 40,
+   "usd_hr": 0.738058625,
+   "kind": "spot",
+   "source_url": "https://prices.azure.com/api/retail/prices",
+   "fetched_at": "2026-09-19T09:35:33.458Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "azure",
+   "gpu": "a100-pcie-80",
+   "vram_gb": 80,
+   "usd_hr": 0.67877,
+   "kind": "spot",
+   "source_url": "https://prices.azure.com/api/retail/prices",
+   "fetched_at": "2026-09-19T09:35:33.458Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "azure",
+   "gpu": "h100-nvl",
+   "vram_gb": 94,
+   "usd_hr": 1.289904,
+   "kind": "spot",
+   "source_url": "https://prices.azure.com/api/retail/prices",
+   "fetched_at": "2026-09-19T09:35:33.458Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "azure",
+   "gpu": "a100-sxm-40",
+   "vram_gb": 40,
+   "usd_hr": 3.399625,
+   "kind": "on-demand",
+   "source_url": "https://prices.azure.com/api/retail/prices",
+   "fetched_at": "2026-09-19T09:35:33.458Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "azure",
+   "gpu": "a100-sxm-80",
+   "vram_gb": 80,
+   "usd_hr": 4.09625,
+   "kind": "on-demand",
+   "source_url": "https://prices.azure.com/api/retail/prices",
+   "fetched_at": "2026-09-19T09:35:33.458Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "azure",
+   "gpu": "a100-pcie-80",
+   "vram_gb": 80,
+   "usd_hr": 3.673,
+   "kind": "on-demand",
+   "source_url": "https://prices.azure.com/api/retail/prices",
+   "fetched_at": "2026-09-19T09:35:33.458Z",
+   "min_gpus": 2
+  },
+  {
+   "provider": "azure",
+   "gpu": "h100-nvl",
+   "vram_gb": 94,
+   "usd_hr": 6.98,
+   "kind": "on-demand",
+   "source_url": "https://prices.azure.com/api/retail/prices",
+   "fetched_at": "2026-09-19T09:35:33.458Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "azure",
+   "gpu": "a100-sxm-80",
+   "vram_gb": 80,
+   "usd_hr": 1.055194,
+   "kind": "spot",
+   "source_url": "https://prices.azure.com/api/retail/prices",
+   "fetched_at": "2026-09-19T09:35:33.458Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "azure",
+   "gpu": "h100-sxm",
+   "vram_gb": 80,
+   "usd_hr": 2.04407275,
+   "kind": "spot",
+   "source_url": "https://prices.azure.com/api/retail/prices",
+   "fetched_at": "2026-09-19T09:35:33.458Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "aws",
+   "gpu": "l4",
+   "vram_gb": 24,
+   "usd_hr": 0.8048,
+   "kind": "on-demand",
+   "source_url": "https://ec2.shop",
+   "fetched_at": "2026-09-19T09:35:32.876Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "aws",
+   "gpu": "l4",
+   "vram_gb": 24,
+   "usd_hr": 0.105,
+   "kind": "spot",
+   "source_url": "https://ec2.shop",
+   "fetched_at": "2026-09-19T09:35:32.876Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "aws",
+   "gpu": "l40s",
+   "vram_gb": 48,
+   "usd_hr": 1.861,
+   "kind": "on-demand",
+   "source_url": "https://ec2.shop",
+   "fetched_at": "2026-09-19T09:35:32.876Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "aws",
+   "gpu": "l4",
+   "vram_gb": 24,
+   "usd_hr": 1.6688,
+   "kind": "on-demand",
+   "source_url": "https://ec2.shop",
+   "fetched_at": "2026-09-19T09:35:32.876Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "aws",
+   "gpu": "l4",
+   "vram_gb": 24,
+   "usd_hr": 0.21995,
+   "kind": "spot",
+   "source_url": "https://ec2.shop",
+   "fetched_at": "2026-09-19T09:35:32.876Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "aws",
+   "gpu": "l40s",
+   "vram_gb": 48,
+   "usd_hr": 3.7663975,
+   "kind": "on-demand",
+   "source_url": "https://ec2.shop",
+   "fetched_at": "2026-09-19T09:35:32.876Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "aws",
+   "gpu": "a100-sxm-40",
+   "vram_gb": 40,
+   "usd_hr": 4.096575,
+   "kind": "on-demand",
+   "source_url": "https://ec2.shop",
+   "fetched_at": "2026-09-19T09:35:32.876Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "aws",
+   "gpu": "a100-sxm-40",
+   "vram_gb": 40,
+   "usd_hr": 1.6333375,
+   "kind": "spot",
+   "source_url": "https://ec2.shop",
+   "fetched_at": "2026-09-19T09:35:32.876Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "aws",
+   "gpu": "a100-sxm-80",
+   "vram_gb": 80,
+   "usd_hr": 5.12071875,
+   "kind": "on-demand",
+   "source_url": "https://ec2.shop",
+   "fetched_at": "2026-09-19T09:35:32.876Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "aws",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 10.6,
+   "kind": "on-demand",
+   "source_url": "https://ec2.shop",
+   "fetched_at": "2026-09-19T09:35:32.876Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "aws",
+   "gpu": "h100-sxm",
+   "vram_gb": 80,
+   "usd_hr": 12.29,
+   "kind": "on-demand",
+   "source_url": "https://ec2.shop",
+   "fetched_at": "2026-09-19T09:35:32.876Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "aws",
+   "gpu": "h100-sxm",
+   "vram_gb": 80,
+   "usd_hr": 7.220225,
+   "kind": "spot",
+   "source_url": "https://ec2.shop",
+   "fetched_at": "2026-09-19T09:35:32.876Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "together",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 1.99,
+   "kind": "on-demand",
+   "source_url": "https://www.together.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:32.448Z"
+  },
+  {
+   "provider": "together",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 2.99,
+   "kind": "on-demand",
+   "source_url": "https://www.together.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:32.448Z"
+  },
+  {
+   "provider": "together",
+   "gpu": "b200",
+   "vram_gb": 180,
+   "usd_hr": 4.09,
+   "kind": "on-demand",
+   "source_url": "https://www.together.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:32.448Z"
+  },
+  {
+   "provider": "fal",
+   "gpu": "b300",
+   "vram_gb": 288,
+   "usd_hr": 8.5,
+   "kind": "serverless",
+   "source_url": "https://fal.ai/pricing",
+   "fetched_at": "2026-09-19T09:01:54.260Z"
+  },
+  {
+   "provider": "fal",
+   "gpu": "b200",
+   "vram_gb": 180,
+   "usd_hr": 6.25,
+   "kind": "serverless",
+   "source_url": "https://fal.ai/pricing",
+   "fetched_at": "2026-09-19T09:01:54.260Z"
+  },
+  {
+   "provider": "fal",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 4.5,
+   "kind": "serverless",
+   "source_url": "https://fal.ai/pricing",
+   "fetched_at": "2026-09-19T09:01:54.260Z"
+  },
+  {
+   "provider": "fal",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 4.5,
+   "kind": "serverless",
+   "source_url": "https://fal.ai/pricing",
+   "fetched_at": "2026-09-19T09:01:54.260Z"
+  },
+  {
+   "provider": "fal",
+   "gpu": "rtx-pro-6000",
+   "vram_gb": 96,
+   "usd_hr": 2.99,
+   "kind": "serverless",
+   "source_url": "https://fal.ai/pricing",
+   "fetched_at": "2026-09-19T09:01:54.260Z"
+  },
+  {
+   "provider": "modal",
+   "gpu": "b300",
+   "vram_gb": 288,
+   "usd_hr": 7.099199999999999,
+   "kind": "serverless",
+   "source_url": "https://modal.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.343Z"
+  },
+  {
+   "provider": "modal",
+   "gpu": "b200",
+   "vram_gb": 180,
+   "usd_hr": 6.2496,
+   "kind": "serverless",
+   "source_url": "https://modal.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.343Z"
+  },
+  {
+   "provider": "modal",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 4.5396,
+   "kind": "serverless",
+   "source_url": "https://modal.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.343Z"
+  },
+  {
+   "provider": "modal",
+   "gpu": "h100-sxm",
+   "vram_gb": 80,
+   "usd_hr": 3.9492000000000003,
+   "kind": "serverless",
+   "source_url": "https://modal.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.343Z"
+  },
+  {
+   "provider": "modal",
+   "gpu": "rtx-pro-6000",
+   "vram_gb": 96,
+   "usd_hr": 3.0312,
+   "kind": "serverless",
+   "source_url": "https://modal.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.343Z"
+  },
+  {
+   "provider": "modal",
+   "gpu": "a100",
+   "vram_gb": 80,
+   "usd_hr": 2.4983999999999997,
+   "kind": "serverless",
+   "source_url": "https://modal.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.343Z"
+  },
+  {
+   "provider": "modal",
+   "gpu": "a100-pcie-40",
+   "vram_gb": 40,
+   "usd_hr": 2.0987999999999998,
+   "kind": "serverless",
+   "source_url": "https://modal.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.343Z"
+  },
+  {
+   "provider": "modal",
+   "gpu": "l40s",
+   "vram_gb": 48,
+   "usd_hr": 1.9511999999999998,
+   "kind": "serverless",
+   "source_url": "https://modal.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.343Z"
+  },
+  {
+   "provider": "modal",
+   "gpu": "a10",
+   "vram_gb": 24,
+   "usd_hr": 1.1016000000000001,
+   "kind": "serverless",
+   "source_url": "https://modal.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.343Z"
+  },
+  {
+   "provider": "modal",
+   "gpu": "l4",
+   "vram_gb": 24,
+   "usd_hr": 0.7992,
+   "kind": "serverless",
+   "source_url": "https://modal.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.343Z"
+  },
+  {
+   "provider": "modal",
+   "gpu": "t4",
+   "vram_gb": 16,
+   "usd_hr": 0.5904,
+   "kind": "serverless",
+   "source_url": "https://modal.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.343Z"
+  },
+  {
+   "provider": "vultr",
+   "gpu": "l40s",
+   "vram_gb": 48,
+   "usd_hr": 1.671,
+   "kind": "on-demand",
+   "source_url": "https://api.vultr.com/v2/plans?type=all&per_page=500",
+   "fetched_at": "2026-09-19T09:35:32.905Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "vultr",
+   "gpu": "a100",
+   "vram_gb": 80,
+   "usd_hr": 2.397,
+   "kind": "on-demand",
+   "source_url": "https://api.vultr.com/v2/plans?type=all&per_page=500",
+   "fetched_at": "2026-09-19T09:35:32.905Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "vultr",
+   "gpu": "a40",
+   "vram_gb": 48,
+   "usd_hr": 1.712,
+   "kind": "on-demand",
+   "source_url": "https://api.vultr.com/v2/plans?type=all&per_page=500",
+   "fetched_at": "2026-09-19T09:35:32.905Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "vultr",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 2.3,
+   "kind": "spot",
+   "source_url": "https://api.vultr.com/v2/plans?type=all&per_page=500",
+   "fetched_at": "2026-09-19T09:35:32.905Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "vultr",
+   "gpu": "b200",
+   "vram_gb": 192,
+   "usd_hr": 3.2,
+   "kind": "spot",
+   "source_url": "https://api.vultr.com/v2/plans?type=all&per_page=500",
+   "fetched_at": "2026-09-19T09:35:32.905Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "vultr",
+   "gpu": "mi355x",
+   "vram_gb": 288,
+   "usd_hr": 2.59,
+   "kind": "spot",
+   "source_url": "https://api.vultr.com/v2/plans?type=all&per_page=500",
+   "fetched_at": "2026-09-19T09:35:32.905Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "vultr",
+   "gpu": "mi325x",
+   "vram_gb": 256,
+   "usd_hr": 2,
+   "kind": "spot",
+   "source_url": "https://api.vultr.com/v2/plans?type=all&per_page=500",
+   "fetched_at": "2026-09-19T09:35:32.905Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "massedcompute",
+   "gpu": "rtx-pro-6000",
+   "vram_gb": 96,
+   "usd_hr": 2.19,
+   "kind": "on-demand",
+   "source_url": "https://massedcompute.com/pricing",
+   "fetched_at": "2026-09-19T09:35:33.240Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "massedcompute",
+   "gpu": "h200-nvl",
+   "vram_gb": 141,
+   "usd_hr": 3.62,
+   "kind": "on-demand",
+   "source_url": "https://massedcompute.com/pricing",
+   "fetched_at": "2026-09-19T09:35:33.240Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "massedcompute",
+   "gpu": "rtx-pro-4500",
+   "vram_gb": 32,
+   "usd_hr": 0.92,
+   "kind": "on-demand",
+   "source_url": "https://massedcompute.com/pricing",
+   "fetched_at": "2026-09-19T09:35:33.240Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "massedcompute",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 2.73,
+   "kind": "on-demand",
+   "source_url": "https://massedcompute.com/pricing",
+   "fetched_at": "2026-09-19T09:35:33.240Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "massedcompute",
+   "gpu": "h100-nvl",
+   "vram_gb": 94,
+   "usd_hr": 2.92,
+   "kind": "on-demand",
+   "source_url": "https://massedcompute.com/pricing",
+   "fetched_at": "2026-09-19T09:35:33.240Z",
+   "min_gpus": 2
+  },
+  {
+   "provider": "massedcompute",
+   "gpu": "h100-sxm",
+   "vram_gb": 80,
+   "usd_hr": 2.89,
+   "kind": "on-demand",
+   "source_url": "https://massedcompute.com/pricing",
+   "fetched_at": "2026-09-19T09:35:33.240Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "massedcompute",
+   "gpu": "a100",
+   "vram_gb": 80,
+   "usd_hr": 1.35,
+   "kind": "on-demand",
+   "source_url": "https://massedcompute.com/pricing",
+   "fetched_at": "2026-09-19T09:35:33.240Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "massedcompute",
+   "gpu": "a100-sxm-80",
+   "vram_gb": 80,
+   "usd_hr": 1.38,
+   "kind": "on-demand",
+   "source_url": "https://massedcompute.com/pricing",
+   "fetched_at": "2026-09-19T09:35:33.240Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "massedcompute",
+   "gpu": "l40s",
+   "vram_gb": 48,
+   "usd_hr": 0.97,
+   "kind": "on-demand",
+   "source_url": "https://massedcompute.com/pricing",
+   "fetched_at": "2026-09-19T09:35:33.240Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "massedcompute",
+   "gpu": "l40",
+   "vram_gb": 48,
+   "usd_hr": 0.86,
+   "kind": "on-demand",
+   "source_url": "https://massedcompute.com/pricing",
+   "fetched_at": "2026-09-19T09:35:33.240Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "massedcompute",
+   "gpu": "rtx-6000-ada",
+   "vram_gb": 48,
+   "usd_hr": 0.79,
+   "kind": "on-demand",
+   "source_url": "https://massedcompute.com/pricing",
+   "fetched_at": "2026-09-19T09:35:33.240Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "massedcompute",
+   "gpu": "rtx-a6000",
+   "vram_gb": 48,
+   "usd_hr": 0.57,
+   "kind": "on-demand",
+   "source_url": "https://massedcompute.com/pricing",
+   "fetched_at": "2026-09-19T09:35:33.240Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "massedcompute",
+   "gpu": "rtx-a5000",
+   "vram_gb": 24,
+   "usd_hr": 0.44,
+   "kind": "on-demand",
+   "source_url": "https://massedcompute.com/pricing",
+   "fetched_at": "2026-09-19T09:35:33.240Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "massedcompute",
+   "gpu": "a30",
+   "vram_gb": 24,
+   "usd_hr": 0.35,
+   "kind": "on-demand",
+   "source_url": "https://massedcompute.com/pricing",
+   "fetched_at": "2026-09-19T09:35:33.240Z",
+   "min_gpus": 1
+  },
+  {
+   "provider": "tensordock",
+   "gpu": "h100-sxm",
+   "vram_gb": 80,
+   "usd_hr": 2.25,
+   "kind": "on-demand",
+   "source_url": "https://www.tensordock.com/cloud-gpus.html",
+   "fetched_at": "2026-09-19T09:35:32.197Z"
+  },
+  {
+   "provider": "tensordock",
+   "gpu": "a100-sxm-80",
+   "vram_gb": 80,
+   "usd_hr": 1.8,
+   "kind": "on-demand",
+   "source_url": "https://www.tensordock.com/cloud-gpus.html",
+   "fetched_at": "2026-09-19T09:35:32.197Z"
+  },
+  {
+   "provider": "tensordock",
+   "gpu": "a100-pcie-80",
+   "vram_gb": 80,
+   "usd_hr": 1.5,
+   "kind": "on-demand",
+   "source_url": "https://www.tensordock.com/cloud-gpus.html",
+   "fetched_at": "2026-09-19T09:35:32.197Z"
+  },
+  {
+   "provider": "tensordock",
+   "gpu": "v100-sxm2",
+   "vram_gb": 16,
+   "usd_hr": 0.17,
+   "kind": "on-demand",
+   "source_url": "https://www.tensordock.com/cloud-gpus.html",
+   "fetched_at": "2026-09-19T09:35:32.197Z"
+  },
+  {
+   "provider": "tensordock",
+   "gpu": "l40",
+   "vram_gb": 48,
+   "usd_hr": 0.95,
+   "kind": "on-demand",
+   "source_url": "https://www.tensordock.com/cloud-gpus.html",
+   "fetched_at": "2026-09-19T09:35:32.197Z"
+  },
+  {
+   "provider": "tensordock",
+   "gpu": "rtx-4090",
+   "vram_gb": 24,
+   "usd_hr": 0.35,
+   "kind": "on-demand",
+   "source_url": "https://www.tensordock.com/cloud-gpus.html",
+   "fetched_at": "2026-09-19T09:35:32.197Z"
+  },
+  {
+   "provider": "tensordock",
+   "gpu": "rtx-3090",
+   "vram_gb": 24,
+   "usd_hr": 0.2,
+   "kind": "on-demand",
+   "source_url": "https://www.tensordock.com/cloud-gpus.html",
+   "fetched_at": "2026-09-19T09:35:32.197Z"
+  },
+  {
+   "provider": "tensordock",
+   "gpu": "rtx-6000-ada",
+   "vram_gb": 48,
+   "usd_hr": 0.75,
+   "kind": "on-demand",
+   "source_url": "https://www.tensordock.com/cloud-gpus.html",
+   "fetched_at": "2026-09-19T09:35:32.197Z"
+  },
+  {
+   "provider": "tensordock",
+   "gpu": "rtx-a6000",
+   "vram_gb": 48,
+   "usd_hr": 0.45,
+   "kind": "on-demand",
+   "source_url": "https://www.tensordock.com/cloud-gpus.html",
+   "fetched_at": "2026-09-19T09:35:32.197Z"
+  },
+  {
+   "provider": "tensordock",
+   "gpu": "rtx-a4000",
+   "vram_gb": 16,
+   "usd_hr": 0.1,
+   "kind": "on-demand",
+   "source_url": "https://www.tensordock.com/cloud-gpus.html",
+   "fetched_at": "2026-09-19T09:35:32.197Z"
+  },
+  {
+   "provider": "tensordock",
+   "gpu": "h100-sxm",
+   "vram_gb": 80,
+   "usd_hr": 1.91,
+   "kind": "spot",
+   "source_url": "https://www.tensordock.com/gpu-h100.html",
+   "fetched_at": "2026-09-19T09:35:32.197Z"
+  },
+  {
+   "provider": "salad",
+   "gpu": "rtx-5090",
+   "vram_gb": 32,
+   "usd_hr": 0.25,
+   "kind": "community",
+   "source_url": "https://salad.com/js/pricing.js",
+   "fetched_at": "2026-09-19T09:35:32.177Z"
+  },
+  {
+   "provider": "salad",
+   "gpu": "rtx-4090",
+   "vram_gb": 24,
+   "usd_hr": 0.16,
+   "kind": "community",
+   "source_url": "https://salad.com/js/pricing.js",
+   "fetched_at": "2026-09-19T09:35:32.177Z"
+  },
+  {
+   "provider": "salad",
+   "gpu": "rtx-5080",
+   "vram_gb": 16,
+   "usd_hr": 0.15,
+   "kind": "community",
+   "source_url": "https://salad.com/js/pricing.js",
+   "fetched_at": "2026-09-19T09:35:32.177Z"
+  },
+  {
+   "provider": "salad",
+   "gpu": "rtx-5090-laptop",
+   "vram_gb": 24,
+   "usd_hr": 0.1,
+   "kind": "community",
+   "source_url": "https://salad.com/js/pricing.js",
+   "fetched_at": "2026-09-19T09:35:32.177Z"
+  },
+  {
+   "provider": "salad",
+   "gpu": "rtx-5070-ti",
+   "vram_gb": 16,
+   "usd_hr": 0.1,
+   "kind": "community",
+   "source_url": "https://salad.com/js/pricing.js",
+   "fetched_at": "2026-09-19T09:35:32.177Z"
+  },
+  {
+   "provider": "salad",
+   "gpu": "rtx-4070-ti-super",
+   "vram_gb": 16,
+   "usd_hr": 0.09,
+   "kind": "community",
+   "source_url": "https://salad.com/js/pricing.js",
+   "fetched_at": "2026-09-19T09:35:32.177Z"
+  },
+  {
+   "provider": "salad",
+   "gpu": "rtx-3090-ti",
+   "vram_gb": 24,
+   "usd_hr": 0.1,
+   "kind": "community",
+   "source_url": "https://salad.com/js/pricing.js",
+   "fetched_at": "2026-09-19T09:35:32.177Z"
+  },
+  {
+   "provider": "salad",
+   "gpu": "rtx-3090",
+   "vram_gb": 24,
+   "usd_hr": 0.09,
+   "kind": "community",
+   "source_url": "https://salad.com/js/pricing.js",
+   "fetched_at": "2026-09-19T09:35:32.177Z"
+  },
+  {
+   "provider": "salad",
+   "gpu": "rtx-5070",
+   "vram_gb": 12,
+   "usd_hr": 0.08,
+   "kind": "community",
+   "source_url": "https://salad.com/js/pricing.js",
+   "fetched_at": "2026-09-19T09:35:32.177Z"
+  },
+  {
+   "provider": "salad",
+   "gpu": "rtx-5060-ti-16gb",
+   "vram_gb": 16,
+   "usd_hr": 0.07,
+   "kind": "community",
+   "source_url": "https://salad.com/js/pricing.js",
+   "fetched_at": "2026-09-19T09:35:32.177Z"
+  },
+  {
+   "provider": "salad",
+   "gpu": "rtx-4070",
+   "vram_gb": 12,
+   "usd_hr": 0.07,
+   "kind": "community",
+   "source_url": "https://salad.com/js/pricing.js",
+   "fetched_at": "2026-09-19T09:35:32.177Z"
+  },
+  {
+   "provider": "salad",
+   "gpu": "rtx-4060-ti-16gb",
+   "vram_gb": 16,
+   "usd_hr": 0.08,
+   "kind": "community",
+   "source_url": "https://salad.com/js/pricing.js",
+   "fetched_at": "2026-09-19T09:35:32.177Z"
+  },
+  {
+   "provider": "salad",
+   "gpu": "rtx-5060",
+   "vram_gb": 8,
+   "usd_hr": 0.065,
+   "kind": "community",
+   "source_url": "https://salad.com/js/pricing.js",
+   "fetched_at": "2026-09-19T09:35:32.177Z"
+  },
+  {
+   "provider": "replicate",
+   "gpu": "a100",
+   "vram_gb": 80,
+   "usd_hr": 5.04,
+   "kind": "serverless",
+   "source_url": "https://replicate.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.270Z"
+  },
+  {
+   "provider": "replicate",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 5.49,
+   "kind": "serverless",
+   "source_url": "https://replicate.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.270Z"
+  },
+  {
+   "provider": "replicate",
+   "gpu": "l40s",
+   "vram_gb": 48,
+   "usd_hr": 3.51,
+   "kind": "serverless",
+   "source_url": "https://replicate.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.270Z"
+  },
+  {
+   "provider": "replicate",
+   "gpu": "t4",
+   "vram_gb": 16,
+   "usd_hr": 0.81,
+   "kind": "serverless",
+   "source_url": "https://replicate.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.270Z"
+  },
+  {
+   "provider": "replicate",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 5.49,
+   "kind": "serverless",
+   "source_url": "https://replicate.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.270Z"
+  },
+  {
+   "provider": "fireworks",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 8,
+   "kind": "serverless",
+   "source_url": "https://fireworks.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:34.680Z"
+  },
+  {
+   "provider": "fireworks",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 8,
+   "kind": "serverless",
+   "source_url": "https://fireworks.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:34.680Z"
+  },
+  {
+   "provider": "fireworks",
+   "gpu": "b200",
+   "vram_gb": 180,
+   "usd_hr": 13,
+   "kind": "serverless",
+   "source_url": "https://fireworks.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:34.680Z"
+  },
+  {
+   "provider": "fireworks",
+   "gpu": "b300",
+   "vram_gb": 288,
+   "usd_hr": 15,
+   "kind": "serverless",
+   "source_url": "https://fireworks.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:34.680Z"
+  },
+  {
+   "provider": "fireworks",
+   "gpu": "gb300",
+   "vram_gb": 288,
+   "usd_hr": 20,
+   "kind": "serverless",
+   "source_url": "https://fireworks.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:34.680Z"
+  },
+  {
+   "provider": "baseten",
+   "gpu": "b200",
+   "vram_gb": 180,
+   "usd_hr": 9.98,
+   "kind": "serverless",
+   "source_url": "https://www.baseten.co/pricing/",
+   "fetched_at": "2026-09-19T09:35:33.092Z"
+  },
+  {
+   "provider": "baseten",
+   "gpu": "t4",
+   "vram_gb": 16,
+   "usd_hr": 0.6312,
+   "kind": "serverless",
+   "source_url": "https://www.baseten.co/pricing/",
+   "fetched_at": "2026-09-19T09:35:33.092Z"
+  },
+  {
+   "provider": "baseten",
+   "gpu": "l4",
+   "vram_gb": 24,
+   "usd_hr": 0.8484,
+   "kind": "serverless",
+   "source_url": "https://www.baseten.co/pricing/",
+   "fetched_at": "2026-09-19T09:35:33.092Z"
+  },
+  {
+   "provider": "baseten",
+   "gpu": "a10",
+   "vram_gb": 24,
+   "usd_hr": 1.2072,
+   "kind": "serverless",
+   "source_url": "https://www.baseten.co/pricing/",
+   "fetched_at": "2026-09-19T09:35:33.092Z"
+  },
+  {
+   "provider": "baseten",
+   "gpu": "a100",
+   "vram_gb": 80,
+   "usd_hr": 4,
+   "kind": "serverless",
+   "source_url": "https://www.baseten.co/pricing/",
+   "fetched_at": "2026-09-19T09:35:33.092Z"
+  },
+  {
+   "provider": "baseten",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 6.5,
+   "kind": "serverless",
+   "source_url": "https://www.baseten.co/pricing/",
+   "fetched_at": "2026-09-19T09:35:33.092Z"
+  },
+  {
+   "provider": "digitalocean",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 4.41,
+   "kind": "on-demand",
+   "source_url": "https://www.digitalocean.com/pricing/gpu-droplets",
+   "fetched_at": "2026-09-19T09:35:33.208Z"
+  },
+  {
+   "provider": "digitalocean",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 4.47,
+   "kind": "on-demand",
+   "source_url": "https://www.digitalocean.com/pricing/gpu-droplets",
+   "fetched_at": "2026-09-19T09:35:33.208Z"
+  },
+  {
+   "provider": "digitalocean",
+   "gpu": "b300",
+   "vram_gb": 288,
+   "usd_hr": 11.19,
+   "kind": "on-demand",
+   "source_url": "https://www.digitalocean.com/pricing/gpu-droplets",
+   "fetched_at": "2026-09-19T09:35:33.208Z"
+  },
+  {
+   "provider": "digitalocean",
+   "gpu": "rtx-6000-ada",
+   "vram_gb": 48,
+   "usd_hr": 1.57,
+   "kind": "on-demand",
+   "source_url": "https://www.digitalocean.com/pricing/gpu-droplets",
+   "fetched_at": "2026-09-19T09:35:33.208Z"
+  },
+  {
+   "provider": "digitalocean",
+   "gpu": "l40s",
+   "vram_gb": 48,
+   "usd_hr": 1.57,
+   "kind": "on-demand",
+   "source_url": "https://www.digitalocean.com/pricing/gpu-droplets",
+   "fetched_at": "2026-09-19T09:35:33.208Z"
+  },
+  {
+   "provider": "digitalocean",
+   "gpu": "mi300x",
+   "vram_gb": 192,
+   "usd_hr": 2.59,
+   "kind": "on-demand",
+   "source_url": "https://www.digitalocean.com/pricing/gpu-droplets",
+   "fetched_at": "2026-09-19T09:35:33.208Z"
+  },
+  {
+   "provider": "digitalocean",
+   "gpu": "mi325x",
+   "vram_gb": 256,
+   "usd_hr": 3.8,
+   "kind": "on-demand",
+   "source_url": "https://www.digitalocean.com/pricing/gpu-droplets",
+   "fetched_at": "2026-09-19T09:35:33.208Z"
+  },
+  {
+   "provider": "digitalocean",
+   "gpu": "mi350x",
+   "vram_gb": 288,
+   "usd_hr": 6.16,
+   "kind": "on-demand",
+   "source_url": "https://www.digitalocean.com/pricing/gpu-droplets",
+   "fetched_at": "2026-09-19T09:35:33.208Z"
+  },
+  {
+   "provider": "gmicloud",
+   "gpu": "gb200",
+   "vram_gb": 186,
+   "usd_hr": 8,
+   "kind": "on-demand",
+   "source_url": "https://www.gmicloud.ai/en/pricing",
+   "fetched_at": "2026-09-19T09:35:32.925Z"
+  },
+  {
+   "provider": "gmicloud",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 2,
+   "kind": "on-demand",
+   "source_url": "https://www.gmicloud.ai/en/pricing",
+   "fetched_at": "2026-09-19T09:35:32.925Z"
+  },
+  {
+   "provider": "gmicloud",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 2.6,
+   "kind": "on-demand",
+   "source_url": "https://www.gmicloud.ai/en/pricing",
+   "fetched_at": "2026-09-19T09:35:32.925Z"
+  },
+  {
+   "provider": "gmicloud",
+   "gpu": "b200",
+   "vram_gb": 180,
+   "usd_hr": 4,
+   "kind": "on-demand",
+   "source_url": "https://www.gmicloud.ai/en/pricing",
+   "fetched_at": "2026-09-19T09:35:32.925Z"
+  },
+  {
+   "provider": "primeintellect",
+   "gpu": "b300",
+   "vram_gb": 288,
+   "usd_hr": 4.99,
+   "kind": "on-demand",
+   "source_url": "https://www.primeintellect.ai/",
+   "fetched_at": "2026-09-19T09:35:32.948Z"
+  },
+  {
+   "provider": "primeintellect",
+   "gpu": "b200",
+   "vram_gb": 192,
+   "usd_hr": 3.49,
+   "kind": "on-demand",
+   "source_url": "https://www.primeintellect.ai/",
+   "fetched_at": "2026-09-19T09:35:32.948Z"
+  },
+  {
+   "provider": "primeintellect",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 3.14,
+   "kind": "on-demand",
+   "source_url": "https://www.primeintellect.ai/",
+   "fetched_at": "2026-09-19T09:35:32.948Z"
+  },
+  {
+   "provider": "primeintellect",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 2.43,
+   "kind": "on-demand",
+   "source_url": "https://www.primeintellect.ai/",
+   "fetched_at": "2026-09-19T09:35:32.948Z"
+  },
+  {
+   "provider": "primeintellect",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 0.94,
+   "kind": "spot",
+   "source_url": "https://www.primeintellect.ai/",
+   "fetched_at": "2026-09-19T09:35:32.948Z"
+  },
+  {
+   "provider": "cerebrium",
+   "gpu": "t4",
+   "vram_gb": 16,
+   "usd_hr": 0.5904,
+   "kind": "serverless",
+   "source_url": "https://www.cerebrium.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:33.185Z"
+  },
+  {
+   "provider": "cerebrium",
+   "gpu": "l4",
+   "vram_gb": 24,
+   "usd_hr": 0.7992,
+   "kind": "serverless",
+   "source_url": "https://www.cerebrium.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:33.185Z"
+  },
+  {
+   "provider": "cerebrium",
+   "gpu": "a10",
+   "vram_gb": 24,
+   "usd_hr": 1.1016,
+   "kind": "serverless",
+   "source_url": "https://www.cerebrium.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:33.185Z"
+  },
+  {
+   "provider": "cerebrium",
+   "gpu": "a100-pcie-40",
+   "vram_gb": 40,
+   "usd_hr": 1.998,
+   "kind": "serverless",
+   "source_url": "https://www.cerebrium.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:33.185Z"
+  },
+  {
+   "provider": "cerebrium",
+   "gpu": "l40s",
+   "vram_gb": 48,
+   "usd_hr": 1.9512,
+   "kind": "serverless",
+   "source_url": "https://www.cerebrium.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:33.185Z"
+  },
+  {
+   "provider": "cerebrium",
+   "gpu": "a100",
+   "vram_gb": 80,
+   "usd_hr": 2.0988,
+   "kind": "serverless",
+   "source_url": "https://www.cerebrium.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:33.185Z"
+  },
+  {
+   "provider": "cerebrium",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 3.3984,
+   "kind": "serverless",
+   "source_url": "https://www.cerebrium.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:33.185Z"
+  },
+  {
+   "provider": "cerebrium",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 4.1976,
+   "kind": "serverless",
+   "source_url": "https://www.cerebrium.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:33.185Z"
+  },
+  {
+   "provider": "cerebrium",
+   "gpu": "b200",
+   "vram_gb": 180,
+   "usd_hr": 6.012,
+   "kind": "serverless",
+   "source_url": "https://www.cerebrium.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:33.185Z"
+  },
+  {
+   "provider": "cerebrium",
+   "gpu": "rtx-pro-6000",
+   "vram_gb": 96,
+   "usd_hr": 2.4984,
+   "kind": "serverless",
+   "source_url": "https://www.cerebrium.ai/pricing",
+   "fetched_at": "2026-09-19T09:35:33.185Z"
+  },
+  {
+   "provider": "koyeb",
+   "gpu": "l4",
+   "vram_gb": 24,
+   "usd_hr": 0.7,
+   "kind": "serverless",
+   "source_url": "https://www.koyeb.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.773Z"
+  },
+  {
+   "provider": "koyeb",
+   "gpu": "rtx-a6000",
+   "vram_gb": 48,
+   "usd_hr": 0.75,
+   "kind": "serverless",
+   "source_url": "https://www.koyeb.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.773Z"
+  },
+  {
+   "provider": "koyeb",
+   "gpu": "l40s",
+   "vram_gb": 48,
+   "usd_hr": 1.2,
+   "kind": "serverless",
+   "source_url": "https://www.koyeb.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.773Z"
+  },
+  {
+   "provider": "koyeb",
+   "gpu": "a100",
+   "vram_gb": 80,
+   "usd_hr": 1.6,
+   "kind": "serverless",
+   "source_url": "https://www.koyeb.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.773Z"
+  },
+  {
+   "provider": "koyeb",
+   "gpu": "a100-sxm-80",
+   "vram_gb": 80,
+   "usd_hr": 2.15,
+   "kind": "serverless",
+   "source_url": "https://www.koyeb.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.773Z"
+  },
+  {
+   "provider": "koyeb",
+   "gpu": "rtx-pro-6000",
+   "vram_gb": 96,
+   "usd_hr": 2.2,
+   "kind": "serverless",
+   "source_url": "https://www.koyeb.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.773Z"
+  },
+  {
+   "provider": "koyeb",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 2.5,
+   "kind": "serverless",
+   "source_url": "https://www.koyeb.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.773Z"
+  },
+  {
+   "provider": "koyeb",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 3,
+   "kind": "serverless",
+   "source_url": "https://www.koyeb.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.773Z"
+  },
+  {
+   "provider": "koyeb",
+   "gpu": "b200",
+   "vram_gb": 180,
+   "usd_hr": 5.5,
+   "kind": "serverless",
+   "source_url": "https://www.koyeb.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.773Z"
+  },
+  {
+   "provider": "thundercompute",
+   "gpu": "rtx-a6000",
+   "vram_gb": 48,
+   "usd_hr": 0.35,
+   "kind": "on-demand",
+   "source_url": "https://www.thundercompute.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.469Z"
+  },
+  {
+   "provider": "thundercompute",
+   "gpu": "l40",
+   "vram_gb": 48,
+   "usd_hr": 0.79,
+   "kind": "on-demand",
+   "source_url": "https://www.thundercompute.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.469Z"
+  },
+  {
+   "provider": "thundercompute",
+   "gpu": "a100",
+   "vram_gb": 80,
+   "usd_hr": 1.09,
+   "kind": "on-demand",
+   "source_url": "https://www.thundercompute.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.469Z"
+  },
+  {
+   "provider": "thundercompute",
+   "gpu": "h100-pcie",
+   "vram_gb": 80,
+   "usd_hr": 3.2,
+   "kind": "on-demand",
+   "source_url": "https://www.thundercompute.com/pricing",
+   "fetched_at": "2026-09-19T09:35:32.469Z"
+  },
+  {
+   "provider": "latitude",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 3.37,
+   "kind": "on-demand",
+   "source_url": "https://www.latitude.sh/pricing",
+   "fetched_at": "2026-09-19T09:35:32.449Z"
+  },
+  {
+   "provider": "latitude",
+   "gpu": "rtx-pro-6000",
+   "vram_gb": 96,
+   "usd_hr": 6,
+   "kind": "on-demand",
+   "source_url": "https://www.latitude.sh/pricing",
+   "fetched_at": "2026-09-19T09:35:32.449Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "latitude",
+   "gpu": "b300",
+   "vram_gb": 288,
+   "usd_hr": 16,
+   "kind": "on-demand",
+   "source_url": "https://www.latitude.sh/pricing",
+   "fetched_at": "2026-09-19T09:35:32.449Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "hotaisle",
+   "gpu": "mi300x",
+   "vram_gb": 192,
+   "usd_hr": 2.99,
+   "kind": "on-demand",
+   "source_url": "https://hotaisle.xyz/pricing",
+   "fetched_at": "2026-09-19T09:35:32.174Z"
+  },
+  {
+   "provider": "sfcompute",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 1.7160880061596777,
+   "kind": "spot",
+   "source_url": "https://sfcompute.com/#prices",
+   "fetched_at": "2026-09-19T09:35:32.253Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "scaleway",
+   "gpu": "l4",
+   "vram_gb": 24,
+   "usd_hr": 0.9025,
+   "kind": "on-demand",
+   "source_url": "https://www.scaleway.com/en/pricing/gpu/",
+   "fetched_at": "2026-09-19T09:35:32.062Z"
+  },
+  {
+   "provider": "scaleway",
+   "gpu": "b300",
+   "vram_gb": 288,
+   "usd_hr": 8.595,
+   "kind": "on-demand",
+   "source_url": "https://www.scaleway.com/en/pricing/gpu/",
+   "fetched_at": "2026-09-19T09:35:32.062Z",
+   "min_gpus": 8
+  },
+  {
+   "provider": "scaleway",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 3.285,
+   "kind": "on-demand",
+   "source_url": "https://www.scaleway.com/en/pricing/gpu/",
+   "fetched_at": "2026-09-19T09:35:32.062Z"
+  },
+  {
+   "provider": "scaleway",
+   "gpu": "h100-sxm",
+   "vram_gb": 80,
+   "usd_hr": 3.6589,
+   "kind": "on-demand",
+   "source_url": "https://www.scaleway.com/en/pricing/gpu/",
+   "fetched_at": "2026-09-19T09:35:32.062Z",
+   "min_gpus": 4
+  },
+  {
+   "provider": "scaleway",
+   "gpu": "l40s",
+   "vram_gb": 48,
+   "usd_hr": 1.6845,
+   "kind": "on-demand",
+   "source_url": "https://www.scaleway.com/en/pricing/gpu/",
+   "fetched_at": "2026-09-19T09:35:32.062Z"
+  },
+  {
+   "provider": "gcp",
+   "gpu": "a100-sxm-40",
+   "vram_gb": 40,
+   "usd_hr": 2.9339079999999997,
+   "kind": "on-demand",
+   "source_url": "https://cloud.google.com/compute/gpus-pricing",
+   "fetched_at": "2026-09-19T09:35:31.863Z"
+  },
+  {
+   "provider": "gcp",
+   "gpu": "rtx-pro-6000",
+   "vram_gb": 96,
+   "usd_hr": 0.5819,
+   "kind": "spot",
+   "source_url": "https://cloud.google.com/compute/gpus-pricing",
+   "fetched_at": "2026-09-19T09:35:31.863Z"
+  },
+  {
+   "provider": "gcp",
+   "gpu": "t4",
+   "vram_gb": 16,
+   "usd_hr": 0.1995,
+   "kind": "spot",
+   "source_url": "https://cloud.google.com/compute/gpus-pricing",
+   "fetched_at": "2026-09-19T09:35:31.863Z"
+  },
+  {
+   "provider": "gcp",
+   "gpu": "b200",
+   "vram_gb": 180,
+   "usd_hr": 16.11,
+   "kind": "on-demand",
+   "source_url": "https://cloud.google.com/compute/gpus-pricing",
+   "fetched_at": "2026-09-19T09:35:31.863Z"
+  },
+  {
+   "provider": "gcp",
+   "gpu": "a100-sxm-40",
+   "vram_gb": 40,
+   "usd_hr": 1.7603,
+   "kind": "spot",
+   "source_url": "https://cloud.google.com/compute/gpus-pricing",
+   "fetched_at": "2026-09-19T09:35:31.863Z"
+  },
+  {
+   "provider": "gcp",
+   "gpu": "v100",
+   "vram_gb": 16,
+   "usd_hr": 1.41,
+   "kind": "spot",
+   "source_url": "https://cloud.google.com/compute/gpus-pricing",
+   "fetched_at": "2026-09-19T09:35:31.863Z"
+  },
+  {
+   "provider": "gcp",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 9.31174,
+   "kind": "on-demand",
+   "source_url": "https://cloud.google.com/compute/gpus-pricing",
+   "fetched_at": "2026-09-19T09:35:31.863Z"
+  },
+  {
+   "provider": "gcp",
+   "gpu": "h200",
+   "vram_gb": 141,
+   "usd_hr": 5.586,
+   "kind": "spot",
+   "source_url": "https://cloud.google.com/compute/gpus-pricing",
+   "fetched_at": "2026-09-19T09:35:31.863Z"
+  },
+  {
+   "provider": "gcp",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 5.8632,
+   "kind": "spot",
+   "source_url": "https://cloud.google.com/compute/gpus-pricing",
+   "fetched_at": "2026-09-19T09:35:31.863Z"
+  },
+  {
+   "provider": "gcp",
+   "gpu": "h100",
+   "vram_gb": 80,
+   "usd_hr": 9.796550569,
+   "kind": "on-demand",
+   "source_url": "https://cloud.google.com/compute/gpus-pricing",
+   "fetched_at": "2026-09-19T09:35:31.863Z"
+  },
+  {
+   "provider": "gcp",
+   "gpu": "b200",
+   "vram_gb": 180,
+   "usd_hr": 4.9542,
+   "kind": "spot",
+   "source_url": "https://cloud.google.com/compute/gpus-pricing",
+   "fetched_at": "2026-09-19T09:35:31.863Z"
+  },
+  {
+   "provider": "gcp",
+   "gpu": "t4",
+   "vram_gb": 16,
+   "usd_hr": 0.35,
+   "kind": "on-demand",
+   "source_url": "https://cloud.google.com/compute/gpus-pricing",
+   "fetched_at": "2026-09-19T09:35:31.863Z"
+  },
+  {
+   "provider": "gcp",
+   "gpu": "l4",
+   "vram_gb": 24,
+   "usd_hr": 0.560040239,
+   "kind": "on-demand",
+   "source_url": "https://cloud.google.com/compute/gpus-pricing",
+   "fetched_at": "2026-09-19T09:35:31.863Z"
+  },
+  {
+   "provider": "gcp",
+   "gpu": "l4",
+   "vram_gb": 24,
+   "usd_hr": 0.336,
+   "kind": "spot",
+   "source_url": "https://cloud.google.com/compute/gpus-pricing",
+   "fetched_at": "2026-09-19T09:35:31.863Z"
+  },
+  {
+   "provider": "gcp",
+   "gpu": "rtx-pro-6000",
+   "vram_gb": 96,
+   "usd_hr": 1.09565,
+   "kind": "on-demand",
+   "source_url": "https://cloud.google.com/compute/gpus-pricing",
+   "fetched_at": "2026-09-19T09:35:31.863Z"
+  },
+  {
+   "provider": "gcp",
+   "gpu": "v100",
+   "vram_gb": 16,
+   "usd_hr": 2.48,
+   "kind": "on-demand",
+   "source_url": "https://cloud.google.com/compute/gpus-pricing",
+   "fetched_at": "2026-09-19T09:35:31.863Z"
+  },
+  {
+   "provider": "gcp",
+   "gpu": "a100-sxm-80",
+   "vram_gb": 80,
+   "usd_hr": 2.3568,
+   "kind": "spot",
+   "source_url": "https://cloud.google.com/compute/gpus-pricing",
+   "fetched_at": "2026-09-19T09:35:31.863Z"
+  },
+  {
+   "provider": "gcp",
+   "gpu": "a100-sxm-80",
+   "vram_gb": 80,
+   "usd_hr": 3.92808,
+   "kind": "on-demand",
+   "source_url": "https://cloud.google.com/compute/gpus-pricing",
+   "fetched_at": "2026-09-19T09:35:31.863Z"
+  }
+ ],
+ "providers": {
+  "runpod": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.004Z",
+   "stale": false,
+   "source_url": "https://www.runpod.io/pricing"
+  },
+  "lambda": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:31.927Z",
+   "stale": false,
+   "source_url": "https://lambda.ai/service/gpu-cloud"
+  },
+  "hyperstack": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.279Z",
+   "stale": false,
+   "source_url": "https://www.hyperstack.cloud/gpu-pricing"
+  },
+  "coreweave": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.008Z",
+   "stale": false,
+   "source_url": "https://www.coreweave.com/pricing"
+  },
+  "nebius": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.067Z",
+   "stale": false,
+   "source_url": "https://docs.nebius.com/compute/resources/pricing"
+  },
+  "datacrunch": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:33.580Z",
+   "stale": false,
+   "source_url": "https://datacrunch.io/pricing"
+  },
+  "voltagepark": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:33.551Z",
+   "stale": false,
+   "source_url": "https://support.voltagepark.com/article/example-deploying-gpt-oss-on-voltage-park"
+  },
+  "crusoe": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.792Z",
+   "stale": false,
+   "source_url": "https://www.crusoe.ai/cloud/pricing"
+  },
+  "jarvislabs": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.826Z",
+   "stale": false,
+   "source_url": "https://jarvislabs.ai/pricing"
+  },
+  "ovh": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.798Z",
+   "stale": false,
+   "source_url": "https://www.ovhcloud.com/en/public-cloud/prices/"
+  },
+  "spheron": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.766Z",
+   "stale": false,
+   "source_url": "https://www.spheron.network/pricing/"
+  },
+  "azure": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:33.458Z",
+   "stale": false,
+   "source_url": "https://prices.azure.com/api/retail/prices"
+  },
+  "aws": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.876Z",
+   "stale": false,
+   "source_url": "https://ec2.shop"
+  },
+  "together": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.448Z",
+   "stale": false,
+   "source_url": "https://www.together.ai/pricing"
+  },
+  "fal": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:01:54.260Z",
+   "stale": false,
+   "source_url": "https://fal.ai/pricing"
+  },
+  "modal": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.343Z",
+   "stale": false,
+   "source_url": "https://modal.com/pricing"
+  },
+  "vultr": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.905Z",
+   "stale": false,
+   "source_url": "https://www.vultr.com/pricing/"
+  },
+  "massedcompute": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:33.240Z",
+   "stale": false,
+   "source_url": "https://massedcompute.com/pricing"
+  },
+  "tensordock": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.197Z",
+   "stale": false,
+   "source_url": "https://www.tensordock.com/cloud-gpus.html"
+  },
+  "salad": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.177Z",
+   "stale": false,
+   "source_url": "https://salad.com/pricing"
+  },
+  "replicate": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.270Z",
+   "stale": false,
+   "source_url": "https://replicate.com/pricing"
+  },
+  "fireworks": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:34.680Z",
+   "stale": false,
+   "source_url": "https://fireworks.ai/pricing"
+  },
+  "baseten": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:33.092Z",
+   "stale": false,
+   "source_url": "https://www.baseten.co/pricing/"
+  },
+  "digitalocean": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:33.208Z",
+   "stale": false,
+   "source_url": "https://www.digitalocean.com/pricing/gpu-droplets"
+  },
+  "gmicloud": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.925Z",
+   "stale": false,
+   "source_url": "https://www.gmicloud.ai/en/pricing"
+  },
+  "primeintellect": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.948Z",
+   "stale": false,
+   "source_url": "https://www.primeintellect.ai/"
+  },
+  "cerebrium": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:33.185Z",
+   "stale": false,
+   "source_url": "https://www.cerebrium.ai/pricing"
+  },
+  "koyeb": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.773Z",
+   "stale": false,
+   "source_url": "https://www.koyeb.com/pricing"
+  },
+  "thundercompute": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.469Z",
+   "stale": false,
+   "source_url": "https://www.thundercompute.com/pricing"
+  },
+  "latitude": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.449Z",
+   "stale": false,
+   "source_url": "https://www.latitude.sh/pricing"
+  },
+  "hotaisle": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.174Z",
+   "stale": false,
+   "source_url": "https://hotaisle.xyz/pricing"
+  },
+  "sfcompute": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.253Z",
+   "stale": false,
+   "source_url": "https://sfcompute.com/#prices"
+  },
+  "scaleway": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:32.062Z",
+   "stale": false,
+   "source_url": "https://www.scaleway.com/en/pricing/gpu/"
+  },
+  "gcp": {
+   "ok": true,
+   "last_verified": "2026-09-19T09:35:31.863Z",
+   "stale": false,
+   "source_url": "https://cloud.google.com/compute/gpus-pricing"
+  }
+ },
+ "meta": {
+  "provider_count": 34,
+  "ok_count": 34,
+  "stale_count": 0,
+  "stale_providers": [],
+  "unknown_skus": [
+   {
+    "provider": "runpod",
+    "name": "RTX 3070"
+   },
+   {
+    "provider": "runpod",
+    "name": "RTX 3080"
+   },
+   {
+    "provider": "runpod",
+    "name": "RTX 3080 Ti"
+   },
+   {
+    "provider": "runpod",
+    "name": "RTX 4070 Ti"
+   },
+   {
+    "provider": "runpod",
+    "name": "RTX 4080"
+   },
+   {
+    "provider": "runpod",
+    "name": "RTX 4080 SUPER"
+   },
+   {
+    "provider": "runpod",
+    "name": "RTX 2000 Ada"
+   },
+   {
+    "provider": "runpod",
+    "name": "RTX 4000 Ada"
+   },
+   {
+    "provider": "runpod",
+    "name": "RTX 4000 Ada SFF"
+   },
+   {
+    "provider": "runpod",
+    "name": "RTX 5000 Ada"
+   },
+   {
+    "provider": "runpod",
+    "name": "RTX A2000"
+   },
+   {
+    "provider": "runpod",
+    "name": "RTX A4500"
+   },
+   {
+    "provider": "runpod",
+    "name": "RTX PRO 4000"
+   },
+   {
+    "provider": "runpod",
+    "name": "RTX PRO 5000"
+   },
+   {
+    "provider": "salad",
+    "name": "RTX 4080"
+   },
+   {
+    "provider": "salad",
+    "name": "RTX 4070 Ti"
+   },
+   {
+    "provider": "salad",
+    "name": "RTX 3080 Ti"
+   },
+   {
+    "provider": "salad",
+    "name": "RTX 3080"
+   },
+   {
+    "provider": "koyeb",
+    "name": "RTX 4000 SFF ADA"
+   },
+   {
+    "provider": "vultr",
+    "name": "NVIDIA A16"
+   },
+   {
+    "provider": "digitalocean",
+    "name": "NVIDIA RTX 4000 Ada Generation"
+   }
+  ]
+ }
+}

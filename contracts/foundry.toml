@@ -13,6 +13,7 @@ offline = true
 fs_permissions = [
   { access = "read", path = "./data" },
   { access = "read-write", path = "./deployments" },
+  { access = "read", path = "../oracle/fixtures" },
 ]
 remappings = [
   "forge-std/=lib/forge-std/src/",
