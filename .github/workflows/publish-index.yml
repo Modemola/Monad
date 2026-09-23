@@ -1,0 +1,73 @@
+# Keeps the Ingot index alive.
+#
+# A seeded deployment has history but no future: without ongoing prints the index goes stale,
+# the mark drifts away from the market, and the front contract can never settle, because
+# settlement needs a print covering the right edge of its delivery window. This publishes the
+# current rate on a schedule so the deployed product is still live when someone opens it.
+#
+# Requires one repository secret:
+#   DEPLOYER_PRIVATE_KEY   the testnet publisher key (the deployer is allowlisted at deploy time)
+
+name: publish index
+
+on:
+  schedule:
+    - cron: "17 */6 * * *" # every six hours, off the hour to avoid the stampede
+  workflow_dispatch:
+
+concurrency:
+  group: publish-index
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Compute the print
+        id: print
+        run: |
+          node tools/publish-index.mjs --json > print.json
+          cat print.json
+          echo "price=$(jq -r .priceWei print.json)"   >> "$GITHUB_OUTPUT"
+          echo "samples=$(jq -r .sampleCount print.json)" >> "$GITHUB_OUTPUT"
+          echo "sources=$(jq -r .sourceCount print.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve the index address
+        id: addr
+        run: echo "index=$(jq -r .index contracts/deployments/10143.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Publish onchain
+        env:
+          RPC: https://testnet-rpc.monad.xyz
+          KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+
+          INDEX="${{ steps.addr.outputs.index }}"
+          PRICE="${{ steps.print.outputs.price }}"
+
+          # `observedAt` must advance and may not be in the future. The contract also rejects a
+          # print that moves more than the deviation band, so a broken upstream feed fails here
+          # rather than repricing the market.
+          LAST=$(cast call "$INDEX" 'finalizedThrough()(uint64)' --rpc-url "$RPC" | awk '{print $1}')
+          NOW=$(date +%s)
+
+          if [ "$NOW" -le "$LAST" ]; then
+            echo "index already has a print at or after now ($LAST); nothing to do"
+            exit 0
+          fi
+
+          cast send "$INDEX" 'publish(uint64,uint256,uint32,uint16)' \
+            "$NOW" "$PRICE" "${{ steps.print.outputs.samples }}" "${{ steps.print.outputs.sources }}" \
+            --rpc-url "$RPC" --private-key "$KEY" \
+            | grep -E 'status|transactionHash'
