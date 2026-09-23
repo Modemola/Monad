@@ -10,6 +10,11 @@ web/.next/
 web/out/
 web/.env*.local
 .pnpm-store/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
 
 # Misc
 .DS_Store
