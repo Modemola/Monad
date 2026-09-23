@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%"
+     preserveAspectRatio="xMidYMid meet" role="img" aria-label="Ingot">
+  <title>Ingot</title>
+  <!--
+    A cast ingot seen from the front-left: three faces, no outlines, no gradients.
+    The same object reads as a silicon ingot — what GPU dies are cut from — and as the
+    standardized bar a commodity market trades. That double meaning is the whole name,
+    so the mark stays literal rather than abstract.
+
+    Sized to the viewBox rather than carrying fixed width/height attributes, so a
+    container decides how big it is. The depth offset is a constant (+18, -22) applied
+    to the front face's top edge, which keeps the three faces consistent.
+  -->
+  <g>
+    <!-- top face -->
+    <path d="M41 86 L139 86 L157 64 L59 64 Z" fill="#6da7ec"/>
+    <!-- right face -->
+    <path d="M139 86 L157 64 L172 113 L154 135 Z" fill="#256abf"/>
+    <!-- front face -->
+    <path d="M26 135 L154 135 L139 86 L41 86 Z" fill="#3987e5"/>
+  </g>
+</svg>
