@@ -9,7 +9,6 @@ optimizer = true
 optimizer_runs = 1_000_000
 via_ir = false
 evm_version = "cancun"
-offline = true
 fs_permissions = [
   { access = "read", path = "./data" },
   { access = "read-write", path = "./deployments" },

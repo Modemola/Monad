@@ -2,7 +2,7 @@
 
 import { useAccount, useChainId, useReadContract, useReadContracts } from "wagmi";
 
-import { DEPLOYMENTS, deploymentFor } from "./addresses";
+import { deploymentFor, usableDeployments } from "./addresses";
 import { ingotIndexAbi, ingotMarketAbi } from "./abis";
 import type { IndexPoint } from "@/components/charts";
 
@@ -21,9 +21,9 @@ export function useDeployment() {
   if (connected) return { chainId, deployment: connected, isFallback: false };
 
   if (!isConnected) {
-    const fallback = Object.entries(DEPLOYMENTS).find(([, value]) => value !== undefined);
+    const [fallback] = usableDeployments();
     if (fallback) {
-      return { chainId: Number(fallback[0]), deployment: fallback[1], isFallback: true };
+      return { chainId: fallback[0], deployment: fallback[1], isFallback: true };
     }
   }
 

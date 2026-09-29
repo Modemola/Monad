@@ -51,14 +51,14 @@ export function Nav() {
   );
 }
 
-/// The brand mark, same geometry as brand/ingot-mark.svg so the app and the submission
-/// artwork cannot drift apart.
+/// A silicon ingot in section: the bar compute is cut from, and the bar a commodity
+/// market trades. Same geometry as docs/brand/ingot-mark.svg — change one, change both.
 function IngotMark() {
   return (
-    <svg width="22" height="22" viewBox="0 0 200 200" aria-hidden="true">
-      <path d="M41 86 L139 86 L157 64 L59 64 Z" fill="#6da7ec" />
-      <path d="M139 86 L157 64 L172 113 L154 135 Z" fill="#256abf" />
-      <path d="M26 135 L154 135 L139 86 L41 86 Z" fill="#3987e5" />
+    <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
+      <path d="M4 14.5 L7 7.5 L15 7.5 L18 14.5 Z" fill="#3987e5" />
+      <path d="M7 7.5 L9 5 L17 5 L15 7.5 Z" fill="#3987e5" opacity="0.55" />
+      <path d="M15 7.5 L17 5 L20 12 L18 14.5 Z" fill="#3987e5" opacity="0.3" />
     </svg>
   );
 }

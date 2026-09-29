@@ -10,6 +10,7 @@ import {
 } from "wagmi";
 import { maxUint256 } from "viem";
 
+import { NotDeployed } from "@/components/NotDeployed";
 import { RecoveryPanel } from "@/components/RecoveryPanel";
 import { Button, Card, Disclosure, Empty, Field, Row, Segmented, Stat, TextInput } from "@/components/ui";
 import { hedgedCreditAbi, ingotMarketAbi, mockUSDCAbi } from "@/lib/abis";
@@ -98,13 +99,7 @@ export default function CreditDesk() {
   const active = open.at(-1) ?? fallback;
   const showingOwn = open.length > 0;
 
-  if (!deployment) {
-    return (
-      <Card title="Not deployed here">
-        <Empty>Ingot is not deployed on this network. Switch to Monad Testnet.</Empty>
-      </Card>
-    );
-  }
+  if (!deployment) return <NotDeployed />;
 
   return (
     <div className="space-y-4">

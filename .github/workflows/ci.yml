@@ -60,3 +60,45 @@ jobs:
       - name: Build
         working-directory: web
         run: pnpm build
+
+  oracle:
+    name: Oracle workflow
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install
+        working-directory: oracle
+        run: pnpm install
+
+      # Two programs, on purpose: the workflow is checked against the CRE SDK's sandbox types,
+      # the simulator against plain Node. One program would let the SDK's global `fs: never`
+      # leak into the simulator — which is how a typecheck failure once shipped unnoticed.
+      - name: Typecheck
+        working-directory: oracle
+        run: pnpm typecheck
+
+      - name: Simulate
+        working-directory: oracle
+        run: pnpm simulate
+
+  tools:
+    name: Scheduled publisher
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Test
+        run: node --test tools/publish-index.test.mjs

@@ -1,6 +1,6 @@
 import type { Address } from "viem";
 
-import { anvil, monadTestnet } from "./chains";
+import { LOCAL_CHAIN_ENABLED, anvil, monadTestnet } from "./chains";
 
 export type Deployment = {
   usdc: Address;
@@ -24,7 +24,20 @@ export const DEPLOYMENTS: Record<number, Deployment | undefined> = {
   [monadTestnet.id]: undefined,
 };
 
+function isUsable(chainId: number): boolean {
+  return chainId !== anvil.id || LOCAL_CHAIN_ENABLED;
+}
+
 export function deploymentFor(chainId: number | undefined): Deployment | undefined {
-  if (chainId === undefined) return undefined;
+  if (chainId === undefined || !isUsable(chainId)) return undefined;
   return DEPLOYMENTS[chainId];
+}
+
+/// Chains this build can actually serve, deployed ones first. The generated block above can hold
+/// a local rehearsal's addresses; this is where they stop mattering outside development.
+export function usableDeployments(): Array<[number, Deployment]> {
+  return Object.entries(DEPLOYMENTS)
+    .map(([id, value]) => [Number(id), value] as const)
+    .filter((entry): entry is readonly [number, Deployment] => entry[1] !== undefined && isUsable(entry[0]))
+    .map(([id, value]) => [id, value]);
 }

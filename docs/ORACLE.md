@@ -63,6 +63,7 @@ minimum interval and monotonic timestamps are enforced in `IngotIndex` exactly a
 |---|---|
 | `oracle/workflow.ts` | The CRE workflow: cron trigger, node-mode fetch, median consensus, EVM write |
 | `oracle/methodology.ts` | The index methodology, shared by the workflow and the simulator |
+| `oracle/encoding.ts` | Report-body encoding, shared — and deliberately free of any SDK import |
 | `oracle/simulate.ts` | Runs the whole thing locally over a real venue snapshot |
 | `oracle/fixtures/` | One real snapshot, and the encoded report body it produces |
 | `contracts/src/IngotIndexReceiver.sol` | On-chain landing pad |
@@ -76,7 +77,8 @@ Monad testnet is a first-class chain in the CRE SDK's selector table
 cd oracle
 pnpm install
 pnpm simulate     # the workflow's logic over a real snapshot
-pnpm typecheck    # the workflow against the real SDK types
+pnpm typecheck    # two programs: the workflow against the SDK's sandbox types,
+                  # the simulator against plain Node
 ```
 
 A representative run:
@@ -93,7 +95,26 @@ consensus across 5 nodes
   note         the $99.00 node is outvoted, not averaged in
 ```
 
-## The two things that caught real bugs
+## Two environments, typechecked separately
+
+The CRE SDK types Node's `fs` and friends as `never`, globally, because a workflow runs in a WASM
+sandbox with no filesystem. Anything that imports the SDK inherits that. The simulator runs in Node
+and needs `fs`, so it must never reach the SDK — which is why the encoding helpers live in
+`encoding.ts` with no SDK import, and why `pnpm typecheck` runs two separate programs.
+
+This was learned the hard way. The first version had `simulate.ts` import from `workflow.ts`; it
+*ran* fine under `tsx`, which does not typecheck, and shipped failing `tsc` while these docs said to
+run it. CI now typechecks the oracle, which it previously did not check at all.
+
+## Relationship to the scheduled publisher
+
+`tools/publish-index.mjs`, run every six hours by `.github/workflows/publish-index.yml`, is what
+keeps the testnet index alive today: one key, one machine, the same methodology. This workflow is
+what replaces it. Both write the same print by the same method; the difference is who is trusted
+to write it. Run the scheduled publisher until the workflow is registered with a DON, then revoke
+the deployer as a publisher.
+
+## The things that caught real bugs
 
 **`tsc` against the real SDK types.** The first version passed a `Uint8Array` as the report
 payload. Protobuf JSON carries `bytes` as base64, so it had to be encoded — a mismatch that would

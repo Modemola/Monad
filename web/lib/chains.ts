@@ -24,3 +24,18 @@ export const anvil = defineChain({
   rpcUrls: { default: { http: ["http://127.0.0.1:8545"] } },
   testnet: true,
 });
+
+/// Whether the local chain exists at all in this build.
+///
+/// Anvil lives on the developer's own machine. In a production bundle it must not be reachable:
+/// a visitor's browser would try to read from *their* 127.0.0.1, fail, and render every figure as
+/// a dash. That is exactly what happened once a local rehearsal's addresses were committed and
+/// the deployed-chains-first ordering put anvil at the front. Next inlines both of these at build
+/// time, so a production build never configures, orders or falls back to the local chain.
+///
+/// Note the claim is behavioural. The chain *definition* above is still in the bundle, because the
+/// generated address map keys on `anvil.id` — so grepping the output for 127.0.0.1 will find it.
+/// What was verified is that a production build makes no request to it: a browser session across
+/// all three pages recorded zero outbound requests.
+export const LOCAL_CHAIN_ENABLED =
+  process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_ENABLE_LOCAL_CHAIN === "1";

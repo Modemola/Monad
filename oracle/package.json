@@ -5,7 +5,7 @@
   "type": "module",
   "description": "The Ingot index publisher, as a Chainlink CRE workflow.",
   "scripts": {
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
     "simulate": "tsx simulate.ts"
   },
   "dependencies": {

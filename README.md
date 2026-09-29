@@ -1,44 +1,8 @@
-<img src="brand/ingot-logo-wide.png" alt="Ingot" width="640">
+# Ingot
 
 **A cash-settled market for compute, and the credit layer it unlocks.**
 
 Built for Metropolis — Onchain Finance & Trading track. Deployed on Monad.
-
----
-
-## For judges
-
-**Live app:** _(link added once deployed — see `docs/DEPLOY.md`)_
-**Network:** Monad testnet (chain id 10143)
-
-No login or credentials are needed. The index, the front-month contract, both pools and any
-open loans are all readable **without connecting a wallet** — the app falls back to reading the
-chain Ingot is deployed to, so the market renders on arrival.
-
-To trade or borrow:
-
-1. Connect any injected wallet (MetaMask, Phantom, Rabby) and switch to Monad testnet.
-2. Get MON for gas from [faucet.monad.xyz](https://faucet.monad.xyz).
-3. On the Terminal, use **Get 250,000 test USDC** in the Collateral card. The collateral token is
-   a mock with an open faucet — that is deliberate on testnet, and the deploy script refuses to
-   deploy it anywhere else.
-4. Deposit, then trade. Or go to **Credit** and draw against an offtake.
-
-The three things worth looking at:
-
-- **Terminal** — the index is published onchain with its methodology hash, sample count and venue
-  count per print. Every ticket shows the fill, margin, fee and the worst price the order can fill
-  at, enforced onchain.
-- **Credit** — draw against a compute offtake and the hedge opens in the same transaction. Drag
-  the settlement slider: every point on that chart is a value `HedgedCredit.project()` returned.
-- **Underwrite** — the vault that takes the other side, marked to market.
-
-Reproduce the numbers without a wallet:
-
-```bash
-cd contracts && forge test -vv --match-test test_demo_projectionTable   # the recovery table
-cd contracts && forge test -vv --match-path test/Backtest.t.sol         # 78 days of real prices
-```
 
 ---
 
@@ -73,15 +37,23 @@ actually carry the exposure, across 40+ countries.
    cash flow instead of a GPU price forecast. The hedge is not a separate product the borrower has
    to go buy — it is part of the loan.
 
+## Trying it
+
+[**docs/JUDGES.md**](docs/JUDGES.md) is the five-minute walkthrough: test funds, the three
+flows, and how to check each claim against the chain or the test suite. No login, no setup beyond
+a wallet and testnet gas.
+
 ## Documentation
 
 | | |
 |---|---|
+| [`docs/JUDGES.md`](docs/JUDGES.md) | Five-minute walkthrough for judges |
 | [`docs/BACKTEST.md`](docs/BACKTEST.md) | 78 days of real H100 prices: method, findings, and the negative result |
 | [`docs/SECURITY.md`](docs/SECURITY.md) | What the protocol trusts, what was fixed, what was accepted |
-| [`docs/DEPLOY.md`](docs/DEPLOY.md) | Deploying and seeding |
+| [`docs/ORACLE.md`](docs/ORACLE.md) | The index publisher as a Chainlink CRE workflow |
+| [`docs/DEPLOY.md`](docs/DEPLOY.md) | Deploying contracts and hosting the front end |
 | [`docs/VIDEO-SCRIPTS.md`](docs/VIDEO-SCRIPTS.md) | Demo and pitch scripts |
-| [`brand/`](brand) | Logo and mark, with the script that renders them |
+| [`docs/brand/`](docs/brand) | Logo, cover and mark |
 
 ## Repository layout
 
@@ -91,10 +63,12 @@ contracts/      Foundry workspace — index, market, vault, credit
   test/         Test suite
   script/       Deployment and seeding
 web/            Next.js front end — terminal, credit desk, underwriter vault
-tools/          Index construction and basis analysis from public price data
-brand/          Logo, mark, and the renderer for both
+oracle/         Chainlink CRE workflow that publishes the index by DON consensus
+tools/          Index construction, basis analysis, scheduled publisher, brand renderer
 scripts/        One-command deploy
-docs/           Backtest, security model, deploy runbook, video scripts
+docs/           Judge walkthrough, deploy, backtest, security model, oracle
+  brand/        Logo, cover and mark
+  hackathon/    Track briefs and resource index
 ```
 
 ## Running the front end
@@ -117,9 +91,12 @@ before anyone connects.
 | `IngotIndex` — index oracle | Built, 19 tests passing |
 | `IngotMarket` — swaps, margin, settlement, liquidation | Built, 23 tests passing |
 | `UnderwriterVault` — LP accounting over the vault account | Built, 11 tests passing |
-| `HedgedCredit` — loans with auto-hedge | Built, 16 tests passing |
+| `HedgedCredit` — loans with auto-hedge | Built, 21 tests passing |
+| `IngotIndexReceiver` — CRE workflow landing pad | Built, 8 tests passing |
 | Front end — terminal, credit desk, underwriter vault | Built, builds clean |
-| Backtest over historical rental data | Next |
+| Backtest over historical rental data | Replayed over 78 days, 3 tests passing |
+
+85 contract tests and 6 scheduled-publisher tests, all passing. Deployment to Monad testnet is the remaining step.
 
 ## The number that makes the case
 
@@ -148,3 +125,21 @@ cd contracts
 forge build
 forge test
 ```
+
+### If `pnpm install` refuses to run
+
+pnpm 12 enforces a minimum release age on every entry in the lockfile, and will fail the whole
+install if any transitive dependency was published too recently:
+
+```
+ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION
+```
+
+That is the supply-chain policy doing its job, not a defect here — the offending package is
+usually `electron-to-chromium`, a Chromium version-mapping data package reached through
+`next → browserslist`, which publishes most days. Deleting and regenerating the lockfile does not
+help: pnpm re-resolves to the same release and rejects it again.
+
+It clears once the package ages past the window. To install before then, add `minimumReleaseAge: 0`
+to `web/pnpm-workspace.yaml` for that one run and take it out afterwards — rather than leaving the
+check disabled for everything.

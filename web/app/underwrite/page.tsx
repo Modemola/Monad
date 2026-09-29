@@ -10,6 +10,7 @@ import {
 } from "wagmi";
 import { maxUint256 } from "viem";
 
+import { NotDeployed } from "@/components/NotDeployed";
 import { Button, Card, Disclosure, Field, Row, Stat, TextInput } from "@/components/ui";
 import { ingotMarketAbi, mockUSDCAbi, underwriterVaultAbi } from "@/lib/abis";
 import { useDeployment, useFrontSeries } from "@/lib/useIngot";
@@ -79,13 +80,7 @@ export default function Underwrite() {
   const needsApproval = parsed !== null && (allowance ?? 0n) < parsed;
   const busy = isPending || confirming;
 
-  if (!deployment) {
-    return (
-      <Card title="Not deployed here">
-        <Row label="Network" value="unsupported" tone="critical" />
-      </Card>
-    );
-  }
+  if (!deployment) return <NotDeployed />;
 
   return (
     <div className="space-y-4">

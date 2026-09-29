@@ -5,25 +5,24 @@ import { useState } from "react";
 import { WagmiProvider, createConfig, http } from "wagmi";
 import { injected } from "wagmi/connectors";
 
-import { DEPLOYMENTS } from "@/lib/addresses";
-import { anvil, monadTestnet } from "@/lib/chains";
+import { deploymentFor } from "@/lib/addresses";
+import { LOCAL_CHAIN_ENABLED, anvil, monadTestnet } from "@/lib/chains";
 
-/// Deployed chains first. With no wallet connected wagmi reports `chains[0]`, so ordering
-/// this way means a visitor's reads hit a chain Ingot actually lives on — the live market
-/// renders before anyone touches a wallet, and local development points at anvil without
-/// a config switch.
-const CHAINS = [monadTestnet, anvil].sort((a, b) => {
-  const deployed = (id: number) => (DEPLOYMENTS[id] ? 0 : 1);
-  return deployed(a.id) - deployed(b.id);
-}) as unknown as readonly [typeof monadTestnet, typeof anvil];
+/// Deployed chains first. With no wallet connected wagmi reports `chains[0]`, so ordering this way
+/// means a visitor's reads hit a chain Ingot actually lives on. The local chain is only configured
+/// at all when LOCAL_CHAIN_ENABLED — see lib/chains.ts for why that matters.
+const available = LOCAL_CHAIN_ENABLED ? [monadTestnet, anvil] : [monadTestnet];
+const CHAINS = [...available].sort(
+  (a, b) => Number(!deploymentFor(a.id)) - Number(!deploymentFor(b.id)),
+) as unknown as readonly [typeof monadTestnet, ...(typeof anvil)[]];
 
 const config = createConfig({
   chains: CHAINS,
   connectors: [injected()],
-  transports: {
-    [monadTestnet.id]: http(),
-    [anvil.id]: http(),
-  },
+  transports: Object.fromEntries(CHAINS.map((chain) => [chain.id, http()])) as Record<
+    (typeof CHAINS)[number]["id"],
+    ReturnType<typeof http>
+  >,
   ssr: true,
 });
 

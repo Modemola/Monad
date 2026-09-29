@@ -14,7 +14,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
 import { buildPrint, type Offer } from "./methodology";
-import { WORKFLOW_TAG, bytes32FromAscii, encodeReport, toBase64 } from "./workflow";
+import { WORKFLOW_TAG, bytes32FromAscii, encodeReport, toBase64 } from "./encoding";
 
 const snapshot = JSON.parse(
   readFileSync(new URL("./fixtures/venue-snapshot.json", import.meta.url), "utf8"),

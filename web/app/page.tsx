@@ -5,6 +5,7 @@ import { useReadContract } from "wagmi";
 import { IndexChart } from "@/components/charts";
 import { Collateral } from "@/components/Collateral";
 import { Ticket } from "@/components/Ticket";
+import { NotDeployed } from "@/components/NotDeployed";
 import { Card, Empty, Row, Stat } from "@/components/ui";
 import { ingotMarketAbi } from "@/lib/abis";
 import { useAccountState, useDeployment, useFrontSeries, useIndexHistory } from "@/lib/useIngot";
@@ -30,15 +31,7 @@ export default function Terminal() {
     query: { enabled: Boolean(deployment) },
   });
 
-  if (!deployment) {
-    return (
-      <Card title="Not deployed here">
-        <Empty>
-          Ingot is not deployed on this network. Switch to Monad Testnet.
-        </Empty>
-      </Card>
-    );
-  }
+  if (!deployment) return <NotDeployed />;
 
   const latest = history.at(-1);
   const previous = history.at(-25);
