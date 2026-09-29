@@ -67,12 +67,10 @@ recovery at $0.80/hr was $140,000.
 The app is a static-friendly Next.js client with no backend and no secrets — it reads Monad
 directly. Any Next host works; Vercel is the shortest path.
 
-```bash
-cd web
-pnpm dlx vercel --prod
-```
-
-Root directory `web`, build command `pnpm build`, framework auto-detected as Next.js.
+The app builds to a static export (`output: "export"`), and `vercel.json` at the repository root
+tells Vercel how to build and serve it. **No project settings need changing:** Root Directory can be
+left at the repository root, and it also still works if set to `web`, where Vercel's own Next.js
+preset takes over.
 
 The one optional setting is `NEXT_PUBLIC_MONAD_RPC_URL`. Leave it unset and the app uses the
 public `https://testnet-rpc.monad.xyz`, which is rate-limited and shared — fine for a judge
@@ -80,18 +78,16 @@ clicking through, worth replacing with a dedicated endpoint before a demo record
 
 ### If the hosted URL shows `404 NOT_FOUND`
 
-Vercel's own 404 page — not the app's — means the deployment built nothing it could serve. Two
-settings cause it, and each produces the identical page, so check both:
+Vercel's own 404 page — not the app's — means the deployment built nothing it could serve.
 
-1. **Production branch.** The `*.vercel.app` production URL serves the project's production
-   branch, which defaults to `main`. If `main` does not contain `web/`, there is no app to build.
-   Settings → Environments → Production → Branch Tracking: point it at the branch that has the
-   app, or merge that branch into `main`.
-2. **Root Directory.** Settings → Build and Deployment → Root Directory must be `web`. Left at
-   the repository root, Vercel finds no framework, deploys the repo as static files, and there is
-   no `index.html` to serve.
+**Check which branch production serves.** The `*.vercel.app` production URL serves the project's
+production branch, `main` by default. If `main` does not contain `web/` and `vercel.json`, Vercel
+deploys the repository as plain files, finds no `index.html`, and reports the deployment as a
+*success* — so the dashboard shows green while the site 404s. Either merge the app into `main`, or
+Settings → Environments → Production → Branch Tracking → point it at the branch that has it.
 
-Change either, then redeploy — settings do not apply to deployments that already exist.
+You can confirm what Vercel built for any commit without opening Vercel: the GitHub commit status
+it posts names the deployment. Settings changes do not apply to existing deployments — redeploy.
 
 Addresses are compiled into the bundle by `scripts/addresses.mjs`, so **redeploying the contracts
 means rebuilding the front end.** Run the sync, commit, and let the host rebuild:
