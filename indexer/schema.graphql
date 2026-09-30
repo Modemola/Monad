@@ -1,0 +1,216 @@
+# Units follow the contracts (contracts/src/libraries/Units.sol):
+#   size / hours   GPU-hours, 18 decimals, signed where it is a position
+#   price          USD per GPU-hour, 18 decimals
+#   value          USDC, 6 decimals, signed where it is a PnL or cost basis
+# Timestamps are unix seconds.
+
+# ---------------------------------------------------------------- index
+
+# The print currently at `printId`. Revocation pops the tip onchain, so the next publish reuses
+# the id: a revoked row is flagged until that happens and then overwritten. The full trail of
+# what was revoked, and why, is kept separately in Revocation.
+type IndexPrint {
+  id: ID!
+  printId: BigInt! @index
+  observedAt: BigInt! @index
+  # Block time of publication. The print is provisional until the index's finality delay has
+  # passed from here, and only a provisional print can be revoked.
+  publishedAt: BigInt!
+  price: BigInt!
+  sampleCount: Int!
+  sourceCount: Int!
+  revoked: Boolean! @index
+  blockNumber: Int!
+  txHash: String!
+}
+
+type Revocation {
+  id: ID!
+  printId: BigInt!
+  observedAt: BigInt!
+  price: BigInt!
+  reason: String!
+  timestamp: BigInt! @index
+  txHash: String!
+}
+
+# ---------------------------------------------------------------- market
+
+type Series {
+  id: ID!
+  seriesId: BigInt!
+  windowStart: BigInt!
+  expiry: BigInt!
+  basisBps: Int!
+  settled: Boolean!
+  settlementPrice: BigInt
+  # Sum of every positive position, the vault's included — the same quantity the contract keeps.
+  longOpenInterest: BigInt!
+  # The vault's own position. Traders are net long when this is negative.
+  vaultInventory: BigInt!
+  tradeCount: Int!
+  volumeHours: BigInt!
+  notionalVolume: BigInt!
+  fees: BigInt!
+  listedAt: BigInt!
+  trades: [Trade!]! @derivedFrom(field: "series")
+  positions: [Position!]! @derivedFrom(field: "series")
+}
+
+type Account {
+  id: ID!
+  isVault: Boolean!
+  collateralDeposited: BigInt!
+  collateralWithdrawn: BigInt!
+  # Realized on trades, liquidations and settlement, before fees.
+  realizedPnl: BigInt!
+  fees: BigInt!
+  liquidationPenalties: BigInt!
+  badDebt: BigInt!
+  tradeCount: Int!
+  positions: [Position!]! @derivedFrom(field: "account")
+  trades: [Trade!]! @derivedFrom(field: "account")
+  loans: [Loan!]! @derivedFrom(field: "borrower")
+}
+
+# Mirrors IngotMarket._applyDelta: size and cost basis move exactly as they do onchain.
+type Position @index(fields: ["series", "size"]) {
+  id: ID!
+  account: Account!
+  series: Series!
+  size: BigInt!
+  cost: BigInt!
+  realizedPnl: BigInt!
+  settled: Boolean!
+  updatedAt: BigInt!
+}
+
+type Trade {
+  id: ID!
+  account: Account! @index
+  series: Series! @index
+  size: BigInt!
+  price: BigInt!
+  notional: BigInt!
+  realizedPnl: BigInt!
+  fee: BigInt!
+  positionAfter: BigInt!
+  timestamp: BigInt! @index
+  blockNumber: Int!
+  txHash: String!
+}
+
+type Liquidation {
+  id: ID!
+  account: Account! @index
+  series: Series! @index
+  liquidator: String!
+  size: BigInt!
+  price: BigInt!
+  penalty: BigInt!
+  realizedPnl: BigInt!
+  timestamp: BigInt! @index
+  txHash: String!
+}
+
+# ---------------------------------------------------------------- credit
+
+enum LoanStatus {
+  Open
+  Closed
+  Seized
+}
+
+type Loan {
+  id: ID!
+  loanId: BigInt!
+  borrower: Account! @index
+  series: Series!
+  status: LoanStatus! @index
+  offtakeHours: BigInt!
+  basisRatioBps: Int!
+  hedgeSize: BigInt!
+  hedgeEntryPrice: BigInt!
+  principal: BigInt!
+  interest: BigInt!
+  margin: BigInt!
+  maturity: BigInt!
+  openedAt: BigInt!
+  openTxHash: String!
+  # Set when the loan resolves.
+  hedgePnl: BigInt
+  netOwed: BigInt
+  marginReturned: BigInt
+  shortfall: BigInt
+  keeper: String
+  resolvedAt: BigInt
+}
+
+# ---------------------------------------------------------------- pools
+
+enum Pool {
+  Underwriter
+  Credit
+}
+
+enum FlowKind {
+  Deposit
+  Redeem
+}
+
+type PoolFlow {
+  id: ID!
+  pool: Pool! @index
+  kind: FlowKind!
+  account: String! @index
+  assets: BigInt!
+  shares: BigInt!
+  timestamp: BigInt! @index
+  txHash: String!
+}
+
+# ---------------------------------------------------------------- aggregates
+
+# Singleton, id "ingot".
+type Protocol {
+  id: ID!
+  vault: String
+  prints: Int!
+  revocations: Int!
+  latestPrice: BigInt
+  latestObservedAt: BigInt
+  seriesListed: Int!
+  seriesSettled: Int!
+  longOpenInterest: BigInt!
+  tradeCount: Int!
+  volumeHours: BigInt!
+  notionalVolume: BigInt!
+  fees: BigInt!
+  liquidations: Int!
+  badDebt: BigInt!
+  traders: Int!
+  loansOpened: Int!
+  loansOpen: Int!
+  principalOutstanding: BigInt!
+  principalLent: BigInt!
+  hedgePnlRealized: BigInt!
+  underwriterNetFlow: BigInt!
+  creditNetFlow: BigInt!
+}
+
+# One row per UTC day with activity. Open interest and the index are end-of-day levels; the
+# rest are totals for the day.
+type DailySnapshot {
+  id: ID!
+  day: Int! @index
+  date: BigInt!
+  indexClose: BigInt
+  longOpenInterest: BigInt!
+  tradeCount: Int!
+  volumeHours: BigInt!
+  notionalVolume: BigInt!
+  fees: BigInt!
+  liquidations: Int!
+  loansOpened: Int!
+  principalLent: BigInt!
+}

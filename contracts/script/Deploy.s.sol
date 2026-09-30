@@ -106,6 +106,9 @@ contract Deploy is Script {
     function _record(Addresses memory a) internal {
         string memory key = "ingot";
         vm.serializeUint(key, "chainId", block.chainid);
+        // Where an indexer should start. Read during simulation, so it is at or just before the
+        // block the deployment actually lands in, which is the safe side to be wrong on.
+        vm.serializeUint(key, "deployBlock", block.number);
         vm.serializeAddress(key, "deployer", a.deployer);
         vm.serializeAddress(key, "usdc", a.usdc);
         vm.serializeAddress(key, "index", a.index);

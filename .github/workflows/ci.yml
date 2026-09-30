@@ -24,6 +24,15 @@ jobs:
         working-directory: contracts
         run: forge test -vv
 
+      # The web app and the indexer both carry copies of the ABIs, and the indexer's replay
+      # test carries a trace recorded by IndexerTrace.t.sol (written by the test step above).
+      # Regenerate all of them and fail if anything committed is stale.
+      - name: Generated artifacts are current
+        run: |
+          (cd web && node scripts/abis.mjs)
+          node indexer/scripts/sync.mjs --check
+          git diff --exit-code -- web/lib/abis.ts indexer/abis indexer/config.yaml indexer/test/fixtures
+
       - name: Fail on any lint finding in src
         working-directory: contracts
         run: |
@@ -89,6 +98,40 @@ jobs:
       - name: Simulate
         working-directory: oracle
         run: pnpm simulate
+
+  indexer:
+    name: Envio indexer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: indexer/pnpm-lock.yaml
+
+      - name: Install
+        working-directory: indexer
+        run: pnpm install --frozen-lockfile
+
+      - name: Codegen
+        working-directory: indexer
+        run: pnpm codegen
+
+      - name: Typecheck
+        working-directory: indexer
+        run: pnpm typecheck
+
+      # Replays logs recorded from the real contracts and checks every position, cost basis and
+      # open-interest figure against what the contracts reported. No network, no database.
+      - name: Test
+        working-directory: indexer
+        run: pnpm test
 
   tools:
     name: Scheduled publisher

@@ -51,6 +51,7 @@ a wallet and testnet gas.
 | [`docs/BACKTEST.md`](docs/BACKTEST.md) | 78 days of real H100 prices: method, findings, and the negative result |
 | [`docs/SECURITY.md`](docs/SECURITY.md) | What the protocol trusts, what was fixed, what was accepted |
 | [`docs/ORACLE.md`](docs/ORACLE.md) | The index publisher as a Chainlink CRE workflow |
+| [`docs/INDEXER.md`](docs/INDEXER.md) | The Envio HyperIndex data layer, and how it is proven against the contracts |
 | [`docs/DEPLOY.md`](docs/DEPLOY.md) | Deploying contracts and hosting the front end |
 | [`docs/VIDEO-SCRIPTS.md`](docs/VIDEO-SCRIPTS.md) | Demo and pitch scripts |
 | [`docs/brand/`](docs/brand) | Logo, cover and mark |
@@ -64,9 +65,10 @@ contracts/      Foundry workspace — index, market, vault, credit
   script/       Deployment and seeding
 web/            Next.js front end — terminal, credit desk, underwriter vault
 oracle/         Chainlink CRE workflow that publishes the index by DON consensus
+indexer/        Envio HyperIndex indexer: trades, both sides of every position, loans, history
 tools/          Index construction, basis analysis, scheduled publisher, brand renderer
 scripts/        One-command deploy
-docs/           Judge walkthrough, deploy, backtest, security model, oracle
+docs/           Judge walkthrough, deploy, backtest, security model, oracle, indexer
   brand/        Logo, cover and mark
   hackathon/    Track briefs and resource index
 ```
@@ -91,12 +93,13 @@ before anyone connects.
 | `IngotIndex` — index oracle | Built, 19 tests passing |
 | `IngotMarket` — swaps, margin, settlement, liquidation | Built, 23 tests passing |
 | `UnderwriterVault` — LP accounting over the vault account | Built, 11 tests passing |
-| `HedgedCredit` — loans with auto-hedge | Built, 21 tests passing |
+| `HedgedCredit` — loans with auto-hedge | Built, 22 tests passing |
 | `IngotIndexReceiver` — CRE workflow landing pad | Built, 8 tests passing |
+| Envio indexer — replayed against a recorded contract session | Built, 9 tests passing |
 | Front end — terminal, credit desk, underwriter vault | Built, builds clean |
 | Backtest over historical rental data | Replayed over 78 days, 3 tests passing |
 
-85 contract tests and 6 scheduled-publisher tests, all passing. Deployment to Monad testnet is the remaining step.
+87 contract tests, 9 indexer tests and 6 scheduled-publisher tests, all passing. Deployment to Monad testnet is the remaining step.
 
 ## The number that makes the case
 

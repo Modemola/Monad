@@ -2,6 +2,7 @@
 pragma solidity ^0.8.30;
 
 import {console} from "forge-std/console.sol";
+import {Vm} from "forge-std/Vm.sol";
 
 import {Fixtures} from "./Fixtures.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -233,6 +234,50 @@ contract HedgedCreditTest is Fixtures {
             -int256((OFFTAKE * discount) / 10_000),
             "short is the scaled size, not the raw hour count"
         );
+    }
+
+    /// @dev Everything an indexer needs to show the hedge ratio is in the event, so the loan
+    ///      book can be rebuilt from logs without a storage read per loan.
+    function test_open_eventCarriesTheFullLoan() public {
+        vm.recordLogs();
+        vm.prank(neocloud);
+        uint256 loanId = credit.open(seriesId, OFFTAKE, 5_500, 40_000 * USDC_ONE, 0);
+
+        Vm.Log[] memory logs = vm.getRecordedLogs();
+        bytes32 topic = keccak256(
+            "LoanOpened(uint256,address,uint256,uint256,uint16,uint256,uint256,uint256,uint256,uint256,uint64)"
+        );
+        HedgedCredit.Loan memory loan = credit.loanAt(loanId);
+
+        uint256 found;
+        for (uint256 i; i < logs.length; ++i) {
+            if (logs[i].emitter != address(credit) || logs[i].topics[0] != topic) continue;
+            ++found;
+            assertEq(uint256(logs[i].topics[1]), loanId, "loanId");
+            assertEq(address(uint160(uint256(logs[i].topics[2]))), neocloud, "borrower");
+            assertEq(uint256(logs[i].topics[3]), seriesId, "seriesId");
+            (
+                uint256 offtake,
+                uint16 basis,
+                uint256 hedgeSize,
+                uint256 entry,
+                uint256 principal,
+                uint256 interest,
+                uint256 margin,
+                uint64 maturity
+            ) = abi.decode(
+                logs[i].data, (uint256, uint16, uint256, uint256, uint256, uint256, uint256, uint64)
+            );
+            assertEq(offtake, loan.offtakeHours, "offtake");
+            assertEq(basis, loan.basisRatioBps, "basis");
+            assertEq(hedgeSize, loan.hedgeSize, "hedge size");
+            assertEq(entry, loan.hedgeEntryPrice, "entry");
+            assertEq(principal, loan.principal, "principal");
+            assertEq(interest, loan.interest, "interest");
+            assertEq(margin, loan.margin, "margin");
+            assertEq(maturity, loan.maturity, "maturity");
+        }
+        assertEq(found, 1, "exactly one LoanOpened");
     }
 
     function test_basis_advanceScalesWithIt() public {

@@ -1,0 +1,27 @@
+{
+  "name": "ingot-indexer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Envio HyperIndex indexer for Ingot on Monad: index history, open interest, trades, liquidations and the hedged loan book.",
+  "scripts": {
+    "sync": "node scripts/sync.mjs",
+    "codegen": "envio codegen",
+    "typecheck": "tsc --noEmit",
+    "dev": "envio dev",
+    "start": "envio start",
+    "test": "vitest run --test-timeout=20000"
+  },
+  "dependencies": {
+    "envio": "3.12.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.12.2",
+    "typescript": "6.0.3",
+    "viem": "2.54.0",
+    "vitest": "4.1.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
