@@ -107,6 +107,18 @@ Envio's hosted service builds straight from the repository:
    `indexer/`, config `config.yaml`, branch `main`.
 3. Copy the GraphQL endpoint it gives you into the web app's `NEXT_PUBLIC_INDEXER_URL`.
 
+## In the app
+
+With `NEXT_PUBLIC_INDEXER_URL` set, the web app adds two indexer-backed cards:
+- **Market activity** on the terminal: the trade tape for the front series and the vault's
+  derived inventory (which way traders are net), volume, trader count, and liquidations with
+  bad debt.
+- **Loan book** on the credit desk: every loan's basis ratio, hedge size and strike, debt, and
+  what its hedge returned at settlement.
+
+Unset, both cards are omitted and nothing else changes. Trading, borrowing and underwriting
+never depend on the indexer; they read and write the contracts directly.
+
 ## Example queries
 
 Open interest and volume, day by day:

@@ -2,6 +2,7 @@
 
 import { useReadContract } from "wagmi";
 
+import { MarketActivity } from "@/components/Activity";
 import { IndexChart } from "@/components/charts";
 import { Collateral } from "@/components/Collateral";
 import { Ticket } from "@/components/Ticket";
@@ -125,6 +126,8 @@ export default function Terminal() {
               </div>
             )}
           </Card>
+
+          <MarketActivity seriesId={seriesId} />
         </div>
 
         <div className="space-y-4">
