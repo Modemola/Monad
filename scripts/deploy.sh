@@ -29,19 +29,22 @@ command -v forge >/dev/null || fail "forge not found. Install Foundry: https://g
 command -v cast  >/dev/null || fail "cast not found. Install Foundry: https://getfoundry.sh"
 command -v node  >/dev/null || fail "node not found (needed to sync front-end addresses)."
 
-[ -f contracts/.env ] || fail "contracts/.env not found. Copy contracts/.env.example and fill it in."
-
 # Load contracts/.env *without* clobbering anything already set in the environment, so a
 # rehearsal can point at a local node without editing the file. Sourcing it outright meant the
-# file silently won over an explicit RPC_URL, which is the wrong way round.
-while IFS='=' read -r key value; do
-  case "$key" in ''|'#'*) continue ;; esac
-  key="${key%%[[:space:]]*}"
-  value="${value%\"}"; value="${value#\"}"
-  if [ -z "${!key:-}" ]; then
-    export "$key=$value"
-  fi
-done < contracts/.env
+# file silently won over an explicit RPC_URL, which is the wrong way round. The file is optional
+# when everything comes from the environment, which is how the GitHub deploy workflow runs it.
+if [ -f contracts/.env ]; then
+  while IFS='=' read -r key value; do
+    case "$key" in ''|'#'*) continue ;; esac
+    key="${key%%[[:space:]]*}"
+    value="${value%\"}"; value="${value#\"}"
+    if [ -z "${!key:-}" ]; then
+      export "$key=$value"
+    fi
+  done < contracts/.env
+elif [ -z "${DEPLOYER_PRIVATE_KEY:-}" ]; then
+  fail "contracts/.env not found. Copy contracts/.env.example and fill it in."
+fi
 
 RPC_URL="${RPC_URL:-${MONAD_TESTNET_RPC_URL:-}}"
 EXPECTED_CHAIN_ID="${EXPECTED_CHAIN_ID:-10143}"
