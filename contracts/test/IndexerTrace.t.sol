@@ -67,7 +67,9 @@ contract IndexerTraceTest is Fixtures {
     // ------------------------------------------------------------------ scenario
 
     function _stand_up_pools() internal {
-        underwriter = new UnderwriterVault(market, IERC20(address(usdc)), owner);
+        // CREATE2, so the recorded addresses do not depend on how a given Foundry version counts
+        // the test contract's nonce across cheatcodes — the fixture must be byte-identical in CI.
+        underwriter = new UnderwriterVault{salt: "underwriter"}(market, IERC20(address(usdc)), owner);
         vm.prank(owner);
         market.setVault(address(underwriter));
         _capture();
@@ -79,7 +81,7 @@ contract IndexerTraceTest is Fixtures {
         vm.stopPrank();
         _capture();
 
-        credit = new HedgedCredit(market, IERC20(address(usdc)), owner);
+        credit = new HedgedCredit{salt: "credit"}(market, IERC20(address(usdc)), owner);
         usdc.mint(lender, 1_000_000 * USDC_ONE);
         vm.startPrank(lender);
         usdc.approve(address(credit), type(uint256).max);
