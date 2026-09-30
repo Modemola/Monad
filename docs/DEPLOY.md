@@ -72,9 +72,16 @@ tells Vercel how to build and serve it. **No project settings need changing:** R
 left at the repository root, and it also still works if set to `web`, where Vercel's own Next.js
 preset takes over.
 
-The one optional setting is `NEXT_PUBLIC_MONAD_RPC_URL`. Leave it unset and the app uses the
-public `https://testnet-rpc.monad.xyz`, which is rate-limited and shared — fine for a judge
-clicking through, worth replacing with a dedicated endpoint before a demo recording.
+Two optional settings:
+
+- `NEXT_PUBLIC_MONAD_RPC_URL`. Leave it unset and the app uses the public
+  `https://testnet-rpc.monad.xyz`, which is rate-limited and shared — fine for a judge clicking
+  through, worth replacing with a dedicated endpoint before a demo recording.
+- `NEXT_PUBLIC_INDEXER_URL`, the GraphQL endpoint of the hosted Envio indexer
+  ([`INDEXER.md`](INDEXER.md#hosting)). It adds the trade tape and vault inventory to the
+  terminal and the loan book to the credit desk. Leave it unset and those cards are omitted;
+  everything else reads the contracts directly. It is baked in at build time, so redeploy
+  after setting it.
 
 ### If the hosted URL shows `404 NOT_FOUND`
 

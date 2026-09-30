@@ -87,6 +87,9 @@ say "Seeding index history, front contract and both pools"
 say "Pointing the front end at the deployment"
 ( cd web && node scripts/abis.mjs && node scripts/addresses.mjs )
 
+say "Pointing the indexer at the deployment"
+node indexer/scripts/sync.mjs
+
 DEPLOYMENT="contracts/deployments/${CHAIN_ID}.json"
 [ -f "$DEPLOYMENT" ] || fail "expected $DEPLOYMENT to exist after deploy"
 
@@ -99,6 +102,6 @@ echo "  check with:"
 echo "    cast call $MARKET 'markPrice(uint256)(uint256)' 0 --rpc-url $RPC_URL"
 
 say "Commit these so the deployed app knows where to look:"
-echo "  git add $DEPLOYMENT web/lib/addresses.ts web/lib/abis.ts"
+echo "  git add $DEPLOYMENT web/lib/addresses.ts web/lib/abis.ts indexer/config.yaml indexer/abis"
 echo "  git commit -m 'chore: record Monad testnet deployment'"
 echo "  git push"

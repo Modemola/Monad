@@ -10,6 +10,7 @@ import {
 } from "wagmi";
 import { maxUint256 } from "viem";
 
+import { LoanBook } from "@/components/Activity";
 import { NotDeployed } from "@/components/NotDeployed";
 import { RecoveryPanel } from "@/components/RecoveryPanel";
 import { Button, Card, Disclosure, Empty, Field, Row, Segmented, Stat, TextInput } from "@/components/ui";
@@ -167,6 +168,8 @@ export default function CreditDesk() {
           </div>
         </Card>
       )}
+
+      <LoanBook />
     </div>
   );
 }

@@ -1,0 +1,4 @@
+# Written by `envio codegen` (which also manages .envio/.gitignore).
+build/
+generated/
+.env

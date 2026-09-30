@@ -112,10 +112,14 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
         uint256 indexed loanId,
         address indexed borrower,
         uint256 indexed seriesId,
+        uint256 offtakeHours,
+        uint16 basisRatioBps,
         uint256 hedgeSize,
         uint256 hedgeEntryPrice,
         uint256 principal,
-        uint256 margin
+        uint256 interest,
+        uint256 margin,
+        uint64 maturity
     );
     event LoanClosed(uint256 indexed loanId, int256 hedgePnl, int256 netOwed, uint256 marginReturned);
     event LoanSeized(uint256 indexed loanId, address indexed keeper, int256 shortfall);
@@ -396,14 +400,19 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
         );
         _loansOf[msg.sender].push(loanId);
 
+        Loan storage loan = _loans[loanId];
         emit LoanOpened(
             loanId,
             msg.sender,
-            terms.seriesId,
-            terms.hedgeSize,
-            terms.entryPrice,
-            terms.principal,
-            terms.margin
+            loan.seriesId,
+            loan.offtakeHours,
+            loan.basisRatioBps,
+            loan.hedgeSize,
+            loan.hedgeEntryPrice,
+            loan.principal,
+            loan.interest,
+            loan.margin,
+            loan.maturity
         );
     }
 

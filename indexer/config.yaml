@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=./node_modules/envio/evm.schema.json
+name: ingot
+description: >-
+  Ingot on Monad: the GPU rental-rate index, the cash-settled market against it, the
+  underwriter vault, and hedged loans. Addresses below are written by scripts/sync.mjs.
+
+# Rows are keyed by (id, chain). Ingot is single-chain today; this keeps it correct if the
+# same contracts are ever deployed to a second network.
+disable_default_cross_chain: true
+
+# Events are named, not spelled out: the signatures come from the Foundry ABIs in abis/,
+# which CI regenerates and diffs, so Solidity is the only place an event can change.
+contracts:
+  - name: IngotIndex
+    abi_file_path: ./abis/IngotIndex.json
+    events:
+      - event: Published
+      - event: Revoked
+  - name: IngotMarket
+    abi_file_path: ./abis/IngotMarket.json
+    events:
+      - event: VaultSet
+      - event: SeriesListed
+      - event: SeriesSettled
+      - event: Deposited
+      - event: Withdrawn
+      - event: Traded
+      - event: Liquidated
+      - event: PositionSettled
+      - event: BadDebtAbsorbed
+  - name: UnderwriterVault
+    abi_file_path: ./abis/UnderwriterVault.json
+    events:
+      - event: Deposited
+      - event: Redeemed
+  - name: HedgedCredit
+    abi_file_path: ./abis/HedgedCredit.json
+    events:
+      - event: LenderDeposited
+      - event: LenderRedeemed
+      - event: LoanOpened
+      - event: LoanClosed
+      - event: LoanSeized
+
+# Block number and timestamp come with every event; the hash links rows back to an explorer.
+field_selection:
+  transaction_fields: [hash]
+
+chains:
+  - id: 10143 # Monad testnet
+    start_block: 0 # not deployed yet: run scripts/deploy.sh
+    contracts:
+      - name: IngotIndex
+        address: "0x0000000000000000000000000000000000000000"
+      - name: IngotMarket
+        address: "0x0000000000000000000000000000000000000000"
+      - name: UnderwriterVault
+        address: "0x0000000000000000000000000000000000000000"
+      - name: HedgedCredit
+        address: "0x0000000000000000000000000000000000000000"
