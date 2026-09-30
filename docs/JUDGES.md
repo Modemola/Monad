@@ -54,13 +54,20 @@ git submodule update --init --recursive
 cd contracts && forge test
 ```
 
-77 tests. The ones worth reading:
+87 tests. The ones worth reading:
 
 - `test_invariant_marketIsZeroSum` — total equity equals total deposits through opening, index
   moves, partial closes, flips, liquidation and settlement.
 - `test_thesis_poolNavIsIndexInvariant` — credit pool NAV does not move when the index does.
 - `test_backtest_walkForwardHedgedVersusUnhedged` — replays 78 days of real posted H100 rates
   through the real contracts. Run it with `-vv` to see the cohort table.
+- `IndexerTrace.t.sol` + `indexer/test/replay.test.ts`: a session recorded from the real
+  contracts is replayed through the Envio indexer (`cd indexer && pnpm install && pnpm codegen &&
+  pnpm test`). Every position, cost basis and open-interest figure, the vault's included, must
+  match the chain to the unit. See `docs/INDEXER.md`.
+- `IngotIndexReceiver.t.sol`: decodes a report produced by the Chainlink CRE workflow's own
+  TypeScript encoder, so the oracle and the contract are proven to agree on the wire format. See
+  `docs/ORACLE.md`.
 
 `docs/BACKTEST.md` reports what that data showed, including the result that went against us.
 `docs/SECURITY.md` records the security review, including the three findings accepted rather than
