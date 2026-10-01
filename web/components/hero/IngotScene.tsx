@@ -1,7 +1,8 @@
 "use client";
 
-import { Environment, Float, Lightformer, MeshTransmissionMaterial, Sparkles } from "@react-three/drei";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Environment, Float, Lightformer, MeshTransmissionMaterial, PerformanceMonitor, Sparkles } from "@react-three/drei";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
@@ -71,10 +72,10 @@ function Aura() {
 }
 
 /// A ring of light orbiting behind the ingot, tilted like a planetary ring.
-function Halo() {
+function Halo({ still }: { still: boolean }) {
   const ref = useRef<THREE.Mesh>(null);
   useFrame((_, delta) => {
-    if (ref.current) ref.current.rotation.z += delta * 0.12;
+    if (ref.current && !still) ref.current.rotation.z += delta * 0.12;
   });
   return (
     <mesh ref={ref} position={[0, 0, -1.2]} rotation={[1.2, 0.2, 0]}>
@@ -84,17 +85,44 @@ function Halo() {
   );
 }
 
-function Ingot({ pointer, scroll, lite }: { pointer: React.RefObject<{ x: number; y: number }>; scroll: React.RefObject<number>; lite: boolean }) {
+function Ingot({
+  pointer,
+  scroll,
+  lite,
+  still,
+}: {
+  pointer: React.RefObject<{ x: number; y: number }>;
+  scroll: React.RefObject<number>;
+  lite: boolean;
+  still: boolean;
+}) {
   const geometry = useMemo(ingotGeometry, []);
   const group = useRef<THREE.Group>(null);
   const core = useRef<THREE.Mesh>(null);
+
+  const born = useRef<number | null>(null);
 
   useFrame((state, delta) => {
     const g = group.current;
     if (!g) return;
     const p = pointer.current ?? { x: 0, y: 0 };
     const s = scroll.current ?? 0;
-    const targetY = -0.55 + p.x * 0.45 + state.clock.elapsedTime * 0.12 + s * 1.4;
+
+    // Entrance: the ingot materialises from a point with a slight overshoot and a half turn.
+    if (born.current === null) born.current = state.clock.elapsedTime;
+    if (still) {
+      // Reduced motion: a single lit pose, no entrance, drift or spin.
+      g.scale.setScalar(1);
+      g.rotation.set(0.32, -0.55, 0);
+      return;
+    }
+    const age = Math.min((state.clock.elapsedTime - born.current) / 1.8, 1);
+    const ease = 1 - Math.pow(1 - age, 3);
+    const overshoot = 1 + Math.sin(age * Math.PI) * 0.06;
+    g.scale.setScalar(Math.max(0.001, ease * overshoot));
+    const spin = (1 - ease) * Math.PI * 0.9;
+
+    const targetY = -0.55 + p.x * 0.45 + state.clock.elapsedTime * 0.12 + s * 1.4 - spin;
     const targetX = 0.32 - p.y * 0.25 + s * 0.6;
     g.rotation.y = THREE.MathUtils.damp(g.rotation.y, targetY, 3, delta);
     g.rotation.x = THREE.MathUtils.damp(g.rotation.x, targetX, 3, delta);
@@ -140,6 +168,20 @@ function Ingot({ pointer, scroll, lite }: { pointer: React.RefObject<{ x: number
   );
 }
 
+/// Places the object in the right-hand part of a wide frame and centres it in a tall one, so the
+/// canvas can span the whole hero — no canvas edge for the bloom to be cut off at.
+function Stage({ children }: { children: React.ReactNode }) {
+  const viewport = useThree((state) => state.viewport);
+  const wide = viewport.aspect > 1.2;
+  const x = wide ? viewport.width * 0.27 : 0;
+  const scale = wide ? 0.84 : Math.min(1, viewport.width / 6.2);
+  return (
+    <group position={[x, wide ? 0 : 0.2, 0]} scale={scale}>
+      {children}
+    </group>
+  );
+}
+
 function Studio() {
   return (
     <Environment resolution={256} frames={1}>
@@ -158,9 +200,14 @@ export default function IngotScene() {
   const scroll = useRef(0);
   const [visible, setVisible] = useState(true);
   const [lite, setLite] = useState(false);
+  // Starts sharp and steps down if the device cannot hold the frame rate; never the reverse
+  // mid-session, so the image does not visibly pump.
+  const [dpr, setDpr] = useState(1.5);
+  const [still, setStill] = useState(false);
 
   useEffect(() => {
     setLite(window.innerWidth < 768 || (navigator.hardwareConcurrency ?? 8) <= 4);
+    setStill(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     const onMove = (event: PointerEvent) => {
       pointer.current = {
         x: (event.clientX / window.innerWidth) * 2 - 1,
@@ -188,23 +235,36 @@ export default function IngotScene() {
   return (
     <div ref={container} className="absolute inset-0">
       <Canvas
-        dpr={lite ? [1, 1.5] : [1, 2]}
+        dpr={lite ? Math.min(dpr, 1.25) : dpr}
         camera={{ position: [0, 0.1, 10.5], fov: 30 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
         frameloop={visible ? "always" : "never"}
       >
+        <PerformanceMonitor onDecline={() => setDpr(1)} flipflops={1} />
         <Suspense fallback={null}>
-          <Aura />
-          <Halo />
-          <Float speed={1.3} rotationIntensity={0.25} floatIntensity={0.7} floatingRange={[-0.12, 0.12]}>
-            <Ingot pointer={pointer} scroll={scroll} lite={lite} />
-          </Float>
-          <Sparkles count={lite ? 40 : 90} scale={[9, 5, 4]} size={2.4} speed={0.3} opacity={0.8} color="#ffe3a6" />
-          <Sparkles count={lite ? 25 : 60} scale={[10, 6, 5]} size={1.6} speed={0.22} opacity={0.6} color="#8db4ff" />
+          <Stage>
+            <Aura />
+            <Halo still={still} />
+            <Float
+              speed={still ? 0 : 1.3}
+              rotationIntensity={still ? 0 : 0.25}
+              floatIntensity={still ? 0 : 0.7}
+              floatingRange={[-0.12, 0.12]}
+            >
+              <Ingot pointer={pointer} scroll={scroll} lite={lite} still={still} />
+            </Float>
+          </Stage>
+          <Sparkles count={lite ? 40 : 90} scale={[9, 5, 4]} size={2.4} speed={still ? 0 : 0.3} opacity={0.8} color="#ffe3a6" />
+          <Sparkles count={lite ? 25 : 60} scale={[10, 6, 5]} size={1.6} speed={still ? 0 : 0.22} opacity={0.6} color="#8db4ff" />
           <ambientLight intensity={0.25} />
           <directionalLight position={[3, 5, 4]} intensity={1.4} color="#ffffff" />
           <pointLight position={[0, -2.5, 2]} intensity={6} color="#f3c66f" distance={8} />
           <Studio />
+          {/* Bloom lifts only the brightest light — gold highlights, the halo, the sparks — so
+              the glass glows without the whole frame going soft. */}
+          <EffectComposer multisampling={lite ? 0 : 4} enableNormalPass={false}>
+            <Bloom mipmapBlur intensity={lite ? 0.6 : 0.85} luminanceThreshold={0.62} luminanceSmoothing={0.25} radius={0.72} />
+          </EffectComposer>
         </Suspense>
       </Canvas>
     </div>

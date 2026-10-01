@@ -10,10 +10,31 @@ import { Footer } from "@/components/Footer";
 import { LiquidBackground } from "@/components/fx/LiquidBackground";
 import { Nav } from "@/components/Nav";
 
+const DESCRIPTION =
+  "A cash-settled market for GPU rental rates on Monad, and the credit layer it unlocks.";
+
+// Absolute URLs for link previews. Vercel provides the production host at build time.
+const SITE =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "https://monad-six-sooty.vercel.app");
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE),
   title: "Ingot — compute, priced and hedged",
-  description:
-    "A cash-settled market for GPU rental rates on Monad, and the credit layer it unlocks.",
+  description: DESCRIPTION,
+  openGraph: {
+    title: "Ingot — compute, priced and hedged",
+    description: DESCRIPTION,
+    siteName: "Ingot",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ingot — compute, priced and hedged",
+    description: DESCRIPTION,
+  },
 };
 
 export const viewport: Viewport = {

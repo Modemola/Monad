@@ -33,7 +33,7 @@ export function Hero() {
       {/* The scene sits in the right half on a desktop and above the copy on a phone. */}
       <motion.div
         style={{ scale: sceneScale }}
-        className="absolute inset-x-0 top-[72px] h-[46svh] sm:top-0 sm:h-full lg:left-[48%]"
+        className="absolute inset-x-0 top-[72px] h-[46svh] [mask-image:linear-gradient(to_bottom,#000_70%,transparent)] sm:top-0 sm:h-full"
       >
         <IngotScene />
       </motion.div>

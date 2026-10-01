@@ -10,8 +10,10 @@ product agree.
 | `ingot-cover.png` | 1600×900 graphic with wordmark and one-line description |
 | `ingot-mark.svg` | Vector source, for any size not covered above |
 
-Colours are the app's own tokens: `#3987e5` on `#0d0d0d`, with the ingot's top and side faces at
-55% and 30% opacity. See `web/tailwind.config.ts`.
+The flat colours (`#3987e5` on `#0d0d0d`, top and side faces at 55% and 30% opacity) are the
+submission graphics. In the app the same geometry is lit: a cobalt-to-violet front, a gold top and a
+deep indigo side (`web/components/Nav.tsx`, `web/app/icon.svg`), and the landing hero renders it as
+a 3D glass ingot with a gold core. The social preview card is `web/app/opengraph-image.png`.
 
 Both PNGs are rendered from the same geometry by `tools/render_brand.py` (needs Pillow):
 
