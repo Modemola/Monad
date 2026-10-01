@@ -71,6 +71,9 @@ cd contracts && forge test
 - `SeedHistory.t.sol` — the deploy seeds the real 78-day index history, not a made-up series;
   this proves every print clears the index's production guards and the live publisher continues
   from the last real level.
+- `scripts/e2e.sh` — deploys the whole stack to a fresh local chain, builds the production front
+  end against it, and drives a browser through all three flows: mint, deposit and go long on the
+  terminal; draw a hedged loan; deposit into and redeem from the vault. It runs on every push.
 - `IndexerTrace.t.sol` + `indexer/test/replay.test.ts`: a session recorded from the real
   contracts is replayed through the Envio indexer (`cd indexer && pnpm install && pnpm codegen &&
   pnpm test`). Every position, cost basis and open-interest figure, the vault's included, must

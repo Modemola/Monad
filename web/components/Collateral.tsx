@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { maxUint256 } from "viem";
 
@@ -24,7 +24,13 @@ export function Collateral({
 
   const parsed = parseDecimal(amount, 6);
   const { writeContract, data: hash, isPending } = useWriteContract();
-  const { isLoading: confirming } = useWaitForTransactionReceipt({ hash });
+  const { isLoading: confirming, isSuccess: confirmed } = useWaitForTransactionReceipt({ hash });
+  // Clear the amount once a deposit or withdrawal lands, not after an approval: the deposit that
+  // follows an approval still needs it.
+  const [clearAfter, setClearAfter] = useState<`0x${string}`>();
+  useEffect(() => {
+    if (confirmed && hash !== undefined && hash === clearAfter) setAmount("");
+  }, [confirmed, hash, clearAfter]);
 
   const { data: walletBalance } = useReadContract({
     address: deployment?.usdc,
@@ -89,12 +95,15 @@ export function Collateral({
               onClick={() =>
                 deployment &&
                 parsed !== null &&
-                writeContract({
-                  address: deployment.market,
-                  abi: ingotMarketAbi,
-                  functionName: "deposit",
-                  args: [parsed],
-                })
+                writeContract(
+                  {
+                    address: deployment.market,
+                    abi: ingotMarketAbi,
+                    functionName: "deposit",
+                    args: [parsed],
+                  },
+                  { onSuccess: setClearAfter },
+                )
               }
             >
               {busy ? "…" : "Deposit"}
@@ -107,12 +116,15 @@ export function Collateral({
             onClick={() =>
               deployment &&
               parsed !== null &&
-              writeContract({
-                address: deployment.market,
-                abi: ingotMarketAbi,
-                functionName: "withdraw",
-                args: [parsed],
-              })
+              writeContract(
+                {
+                  address: deployment.market,
+                  abi: ingotMarketAbi,
+                  functionName: "withdraw",
+                  args: [parsed],
+                },
+                { onSuccess: setClearAfter },
+              )
             }
           >
             Withdraw

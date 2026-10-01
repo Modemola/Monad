@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   useAccount,
   useReadContract,
@@ -16,7 +16,7 @@ import { AppFrame, PageHeader } from "@/components/PageHeader";
 import { Button, Card, Disclosure, Field, Row, Stat, StatStrip, TextInput } from "@/components/ui";
 import { ingotMarketAbi, mockUSDCAbi, underwriterVaultAbi } from "@/lib/abis";
 import { useDeployment, useFrontSeries } from "@/lib/useIngot";
-import { formatLots, formatPrice, formatSignedUsdc, formatUsdc, parseDecimal } from "@/lib/format";
+import { formatLots, formatPrice, formatShares, formatSignedUsdc, formatUsdc, parseDecimal } from "@/lib/format";
 
 export default function Underwrite() {
   const { address } = useAccount();
@@ -71,7 +71,13 @@ export default function Underwrite() {
   });
 
   const { writeContract, data: hash, isPending, error } = useWriteContract();
-  const { isLoading: confirming } = useWaitForTransactionReceipt({ hash });
+  const { isLoading: confirming, isSuccess: confirmed } = useWaitForTransactionReceipt({ hash });
+  // Clear the amount once a deposit or withdrawal lands, not after an approval: the deposit that
+  // follows an approval still needs it.
+  const [clearAfter, setClearAfter] = useState<`0x${string}`>();
+  useEffect(() => {
+    if (confirmed && hash !== undefined && hash === clearAfter) setAmount("");
+  }, [confirmed, hash, clearAfter]);
 
   const assets = pool?.[0]?.result as bigint | undefined;
   const available = pool?.[1]?.result as bigint | undefined;
@@ -165,12 +171,15 @@ export default function Underwrite() {
                 disabled={parsed === null || parsed === 0n || busy}
                 onClick={() =>
                   parsed !== null &&
-                  writeContract({
-                    address: deployment.underwriterVault,
-                    abi: underwriterVaultAbi,
-                    functionName: "deposit",
-                    args: [parsed],
-                  })
+                  writeContract(
+                    {
+                      address: deployment.underwriterVault,
+                      abi: underwriterVaultAbi,
+                      functionName: "deposit",
+                      args: [parsed],
+                    },
+                    { onSuccess: setClearAfter },
+                  )
                 }
               >
                 {busy ? "…" : "Deposit"}
@@ -195,7 +204,7 @@ export default function Underwrite() {
           </div>
 
           <div className="mt-4 border-t border-hairline pt-1">
-            <Row label="Your shares" value={shares === undefined ? "—" : formatUsdc(shares, 2)} />
+            <Row label="Your shares" value={shares === undefined ? "—" : formatShares(shares)} />
             <Row label="Your claim" value={claim === undefined ? "—" : formatUsdc(claim)} />
             <Row
               label="Pool share"

@@ -22,3 +22,6 @@ __pycache__/
 
 # Local chain deployments
 contracts/deployments/31337.json
+
+# End-to-end test screenshots
+web/e2e/artifacts/

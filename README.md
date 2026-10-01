@@ -99,10 +99,11 @@ before anyone connects.
 | `IngotIndexReceiver` — CRE workflow landing pad | Built, 8 tests passing |
 | Envio indexer — replayed against a recorded contract session | Built, 9 tests passing |
 | Front end — terminal, credit desk, underwriter vault | Built, builds clean |
+| End-to-end — trade, credit and underwrite driven through the UI against a fresh chain | 3 flows passing in CI (`scripts/e2e.sh`) |
 | Backtest over historical rental data | Replayed over 78 days, 3 tests passing |
 | Deploy seed — the real 78-day index history, on chain | Built, 4 tests passing |
 
-91 contract tests, 9 indexer tests and 6 scheduled-publisher tests, all passing. Deployment to Monad testnet is the remaining step.
+91 contract tests, 9 indexer tests, 6 scheduled-publisher tests and 3 end-to-end browser flows, all passing. Deployment to Monad testnet is the remaining step.
 
 ## The number that makes the case
 

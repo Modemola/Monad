@@ -117,6 +117,9 @@ contract Deploy is Script {
         vm.serializeAddress(key, "underwriterVault", a.underwriter);
         string memory json = vm.serializeAddress(key, "hedgedCredit", a.credit);
 
+        // A fresh checkout has no deployments/ yet when nothing has been deployed: git does not
+        // track an empty directory, and local-chain files are ignored.
+        vm.createDir("./deployments", true);
         string memory path =
             string.concat("./deployments/", vm.toString(block.chainid), ".json");
         vm.writeJson(json, path);

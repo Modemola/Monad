@@ -42,6 +42,11 @@ export function formatUsdc(value: bigint, places = 2): string {
   return `${sign}$${body}`;
 }
 
+/// Vault shares, which carry USDC's six decimals but are not dollars, e.g. "9,961.50".
+export function formatShares(value: bigint, places = 2): string {
+  return withThousands(fixed(value, 6n, places));
+}
+
 /// USDC with an explicit sign, for PnL columns.
 export function formatSignedUsdc(value: bigint, places = 2): string {
   const formatted = formatUsdc(value, places);
