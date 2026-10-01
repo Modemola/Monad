@@ -85,6 +85,20 @@ say "Seeding index history, front contract and both pools"
     --rpc-url "$RPC_URL" --broadcast --slow ) \
   || fail "seed failed"
 
+# The demonstration loan hedges at the mark, which needs a finalized print, so wait out the
+# index's finality delay first. Not fatal: the market works without it; the credit desk just
+# opens on an empty recovery panel until someone draws a loan.
+INDEX=$(node -e "console.log(require('$ROOT/contracts/deployments/${CHAIN_ID}.json').index)")
+DELAY=$(cast call "$INDEX" 'finalityDelay()(uint32)' --rpc-url "$RPC_URL" | awk '{print $1}')
+say "Waiting ${DELAY}s for the seeded prints to finalize, then opening a demonstration loan"
+sleep $((DELAY + 15))
+# A local anvil only mines on transactions, so its clock stands still while we wait; mine one
+# block to bring it forward. A live chain is producing blocks anyway.
+if [ "$CHAIN_ID" = "31337" ]; then cast rpc evm_mine --rpc-url "$RPC_URL" >/dev/null; fi
+( cd contracts && forge script script/Seed.s.sol --sig "openDemoLoan()" \
+    --rpc-url "$RPC_URL" --broadcast --slow ) \
+  || printf '\n\033[33mwarning:\033[0m the demonstration loan did not open; the deployment is still good.\n' >&2
+
 # ---------------------------------------------------------------- wire the app
 
 say "Pointing the front end at the deployment"
@@ -100,8 +114,7 @@ say "Deployed"
 cat "$DEPLOYMENT"
 
 MARKET=$(node -e "console.log(require('$ROOT/$DEPLOYMENT').market)")
-say "The market goes live once the index finality delay elapses (60s on testnet)."
-echo "  check with:"
+say "The market is live. Check the mark with:"
 echo "    cast call $MARKET 'markPrice(uint256)(uint256)' 0 --rpc-url $RPC_URL"
 
 say "Commit these so the deployed app knows where to look:"

@@ -42,10 +42,14 @@ export default function Terminal() {
     );
   }
 
+  // Change against the last print at least a day older than the latest. The history mixes the
+  // daily backfill with the publisher's six-hourly prints, so counting prints back is not a day.
   const latest = history.at(-1);
-  const previous = history.at(-25);
+  const previous = latest ? history.findLast((p) => p.timestamp <= latest.timestamp - 86_400) : undefined;
   const change =
     latest && previous ? ((latest.price - previous.price) / previous.price) * 100 : undefined;
+  const changeSpanHours = latest && previous ? (latest.timestamp - previous.timestamp) / 3600 : 0;
+  const changeIsDaily = changeSpanHours <= 30;
 
   const expiry = series ? new Date(Number(series.expiry) * 1000) : undefined;
   const daysToExpiry = expiry
@@ -93,10 +97,16 @@ export default function Terminal() {
           accent="cobalt"
         />
         <Stat
-          label="24h change"
+          label={changeIsDaily ? "24h change" : "Change"}
           value={change === undefined ? "—" : `${change > 0 ? "+" : ""}${change.toFixed(2)}%`}
           tone={change === undefined ? "default" : change >= 0 ? "good" : "critical"}
-          detail="trailing 24 prints"
+          detail={
+            !previous
+              ? "needs a day of prints"
+              : changeIsDaily
+                ? "vs the print a day earlier"
+                : `since the ${new Date(previous.timestamp * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })} print`
+          }
           accent={change === undefined ? "violet" : change >= 0 ? "good" : "critical"}
         />
         <Stat

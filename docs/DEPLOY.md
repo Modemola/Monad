@@ -47,9 +47,17 @@ after seeding. Mainnet would run the one-hour default.
 forge script script/Seed.s.sol --rpc-url $MONAD_TESTNET_RPC_URL --broadcast
 ```
 
-Backfills 96 hourly index prints, lists the front-month contract, and capitalizes the underwriter
+Backfills the real index history — one print a day for the 78 days in
+`contracts/data/h100_index.csv`, the same series the landing page charts and
+[BACKTEST.md](BACKTEST.md) analyses — lists the front-month contract, and capitalizes the underwriter
 vault with 2,000,000 USDC and the credit pool with 1,000,000 USDC. The market is live once the
-finality delay elapses.
+finality delay elapses. `deploy.sh` then waits out that delay and runs
+`forge script script/Seed.s.sol --sig "openDemoLoan()"`, which opens one 100,000 GPU-hour hedged
+loan from the deployer, so the credit desk's recovery profile is read from a real loan on chain
+from the first visit. The scheduled publisher then continues the series every six hours from the
+last real level; every backfilled move, and the step to the first live print, sits inside the
+index's 25% deviation guard (`contracts/test/SeedHistory.t.sol` proves the backfill against the
+production guards).
 
 ## Verify it works
 
@@ -63,19 +71,26 @@ forge script script/Seed.s.sol   --rpc-url http://127.0.0.1:8545 --broadcast
 cast rpc evm_increaseTime 120 && cast rpc evm_mine   # clear the finality delay
 ```
 
-Then open a hedged loan and read the projection:
+Then open a hedged loan and read the projection. The seed leaves the deployer no spare USDC, so
+mint the borrower's margin first (the mock has an open mint):
 
 ```bash
-cast send $CREDIT 'open(uint256,uint256,uint256,uint256)' 0 100000000000000000000000 60000000000 0 \
-  --private-key $DEPLOYER_PRIVATE_KEY --rpc-url http://127.0.0.1:8545
+CREDIT=$(jq -r .hedgedCredit deployments/31337.json); USDC=$(jq -r .usdc deployments/31337.json)
+ME=$(cast wallet address --private-key $DEPLOYER_PRIVATE_KEY); RPC=http://127.0.0.1:8545
+cast send $USDC 'mint(address,uint256)' $ME 60000000000 --private-key $DEPLOYER_PRIVATE_KEY --rpc-url $RPC
+cast send $USDC 'approve(address,uint256)' $CREDIT 60000000000 --private-key $DEPLOYER_PRIVATE_KEY --rpc-url $RPC
+# series 0, 100,000 GPU-hours, sells at 100% of the index, 60,000 USDC margin, no fill bound
+cast send $CREDIT 'open(uint256,uint256,uint16,uint256,uint256)' 0 100000000000000000000000 10000 60000000000 0 \
+  --private-key $DEPLOYER_PRIVATE_KEY --rpc-url $RPC
 cast call $CREDIT 'project(uint256,uint256)(int256,uint256,uint256,uint256,uint256)' 0 800000000000000000 \
-  --rpc-url http://127.0.0.1:8545
+  --rpc-url $RPC
 ```
 
-A run of this on a fresh chain produced a 100,000 GPU-hour loan hedged at $2.2474/hr, $158,382 of
-principal against $166,301 of debt. Borrower resources came back as $224,743.74 at $0.80/hr,
-$2.26/hr and $6.00/hr alike, and hedged recovery as $166,300.87 at all three, while unhedged
-recovery at $0.80/hr was $140,000.
+A run of this on a fresh chain, seeded with the real history (last print $3.5950), produced a
+100,000 GPU-hour loan hedged at $3.5853/hr: $252,867 of principal against $265,511 of debt.
+Hedged borrower resources came back as $358,529.92 at $0.80/hr, $1.20/hr, $3.60/hr and $6.00/hr
+alike, and hedged recovery as $265,510.82 at all four, while unhedged recovery was $140,000 at
+$0.80/hr and $180,000 at $1.20/hr.
 
 ## Publishing the front end
 
