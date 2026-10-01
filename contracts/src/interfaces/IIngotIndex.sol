@@ -13,7 +13,8 @@ interface IIngotIndex {
     /// @dev Reverts unless the whole window is covered by finalized observations.
     function averageBetween(uint64 from, uint64 to) external view returns (uint256 price);
 
-    /// @notice Time-weighted average price over the trailing `window` seconds.
+    /// @notice Time-weighted average price over the `window` seconds ending now, the newest
+    ///         finalized price held forward to the present.
     function twap(uint32 window) external view returns (uint256 price);
 
     /// @notice Timestamp of the newest finalized observation.

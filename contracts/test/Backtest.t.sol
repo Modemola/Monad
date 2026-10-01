@@ -41,6 +41,10 @@ contract BacktestTest is Fixtures {
 
         credit = new HedgedCredit(market, IERC20(address(usdc)), owner);
 
+        vm.prank(owner);
+
+        credit.setOpenBorrowing(true);
+
         // Real day-to-day moves in this window reach 24.6%, just inside the default 25% band.
         // Widened here so a genuine print is never rejected by the circuit breaker mid-replay.
         uint32 delay = index.finalityDelay();
@@ -170,8 +174,15 @@ contract BacktestTest is Fixtures {
             Cohort memory cohort = _runCohort(day, tenorDays);
 
             console.log(string.concat("cohort opening ", dates[day], " settling ", dates[day + tenorDays]));
-            console.log("  struck / settled (milli-$)", cohort.struckPrice / 1e15, cohort.settlementPrice / 1e15);
-            console.log("  recovered hedged / unhedged / debt ($)", cohort.hedged / 1e6, cohort.unhedged / 1e6, cohort.debt / 1e6);
+            console.log(
+                "  struck / settled (milli-$)", cohort.struckPrice / 1e15, cohort.settlementPrice / 1e15
+            );
+            console.log(
+                "  recovered hedged / unhedged / debt ($)",
+                cohort.hedged / 1e6,
+                cohort.unhedged / 1e6,
+                cohort.debt / 1e6
+            );
 
             hedgedTotal += cohort.hedged;
             unhedgedTotal += cohort.unhedged;

@@ -26,6 +26,25 @@
   },
   {
     "type": "event",
+    "name": "BorrowerApproved",
+    "inputs": [
+      {
+        "name": "borrower",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "approved",
+        "type": "bool",
+        "indexed": false,
+        "internalType": "bool"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "LenderDeposited",
     "inputs": [
       {
@@ -199,6 +218,19 @@
         "type": "int256",
         "indexed": false,
         "internalType": "int256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "OpenBorrowingSet",
+    "inputs": [
+      {
+        "name": "open",
+        "type": "bool",
+        "indexed": false,
+        "internalType": "bool"
       }
     ],
     "anonymous": false

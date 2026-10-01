@@ -52,10 +52,9 @@ abstract contract Fixtures is Test {
 
     /// @dev Move the index to `price` and make the market see it.
     ///
-    ///      Two prints, not one. The mark reads a trailing TWAP, so a single fresh print sits at
-    ///      the right edge of the window and the average still reflects the old price. A second
-    ///      print a mark-window later is what actually moves the mark. This mirrors how the real
-    ///      index behaves and is worth keeping in the tests rather than papering over.
+    ///      Two prints, two hours apart, then past the finality delay: the mark reads a TWAP over
+    ///      the trailing hour, finalized prices only, so by then the whole window sits at the new
+    ///      price. A print still inside its finality delay does not move the mark at all.
     function _setSpot(uint256 price) internal {
         if (block.timestamp > clock) clock = uint64(block.timestamp);
 

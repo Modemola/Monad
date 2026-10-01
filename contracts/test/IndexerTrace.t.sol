@@ -82,6 +82,10 @@ contract IndexerTraceTest is Fixtures {
         _capture();
 
         credit = new HedgedCredit{salt: "credit"}(market, IERC20(address(usdc)), owner);
+
+        vm.prank(owner);
+
+        credit.setOpenBorrowing(true);
         usdc.mint(lender, 1_000_000 * USDC_ONE);
         vm.startPrank(lender);
         usdc.approve(address(credit), type(uint256).max);
@@ -140,7 +144,7 @@ contract IndexerTraceTest is Fixtures {
     }
 
     function _liquidate_levered_long() internal {
-        _fund(carol, 60_000 * USDC_ONE);
+        _fund(carol, 62_000 * USDC_ONE);
         _buy(carol, seriesId, 150 * LOT);
         uint256 free = market.freeCollateral(carol);
         vm.prank(carol);
@@ -266,8 +270,7 @@ contract IndexerTraceTest is Fixtures {
 
     /// @dev Contract state at the last captured block, for the replay to compare against.
     function _checkpoint(string memory label) internal {
-        address[6] memory accounts =
-            [alice, bob, carol, address(underwriter), address(credit), keeper];
+        address[6] memory accounts = [alice, bob, carol, address(underwriter), address(credit), keeper];
 
         string memory positions = "[";
         for (uint256 i; i < accounts.length; ++i) {

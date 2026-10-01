@@ -283,6 +283,126 @@ contract IngotMarketTest is Fixtures {
     }
 
     // ------------------------------------------------------------------
+    // Audit regressions
+    // ------------------------------------------------------------------
+
+    /// @dev Liquidating the vault closes its slice against itself: no position change, but the
+    ///      penalty moves from the vault to the caller, and the vault stays liquidatable. It must
+    ///      be refused outright.
+    function test_liquidate_refusesTheVault() public {
+        _buy(alice, seriesId, 100 * ONE_LOT);
+
+        vm.prank(keeper);
+        vm.expectRevert(IngotMarket.VaultNotLiquidatable.selector);
+        market.liquidate(vault, seriesId, 10 * ONE_LOT);
+    }
+
+    /// @dev Leaves the vault short and under maintenance after a rally.
+    function _stretchTheVault() internal {
+        _buy(alice, seriesId, 200 * ONE_LOT);
+        uint256 free = market.freeCollateral(vault);
+        vm.prank(vault);
+        market.withdraw(free);
+        _setSpot(3.3 * 1e18); // +32% against the vault's short
+        assertLt(
+            market.equity(vault),
+            int256(market.marginRequirement(vault, market.maintenanceMarginBps())),
+            "vault under maintenance"
+        );
+    }
+
+    function test_trade_stretchedVaultRefusesRiskButLetsTradersClose() public {
+        _stretchTheVault();
+
+        // Buying adds to the vault's short: no quote.
+        vm.prank(bob);
+        vm.expectRevert(IngotMarket.VaultAtCapacity.selector);
+        market.trade(seriesId, ONE_LOT, type(uint256).max);
+
+        // Alice selling back reduces it: always allowed, so a winning position is never trapped.
+        _sell(alice, seriesId, -50 * ONE_LOT);
+        assertEq(market.positionOf(alice, seriesId).size, 150 * ONE_LOT);
+    }
+
+    /// @dev A trader who has drifted under initial margin (but not maintenance) can still cut risk.
+    function test_trade_reducingNeedsOnlyMaintenance() public {
+        _buy(alice, seriesId, 100 * ONE_LOT);
+        uint256 free = market.freeCollateral(alice);
+        vm.prank(alice);
+        market.withdraw(free);
+
+        _setSpot(2.4 * 1e18); // a small loss: under initial, above maintenance
+        int256 equity_ = market.equity(alice);
+        assertLt(equity_, int256(market.marginRequirement(alice, market.initialMarginBps())));
+        assertGt(equity_, int256(market.marginRequirement(alice, market.maintenanceMarginBps())));
+
+        vm.prank(alice);
+        vm.expectRevert();
+        market.trade(seriesId, ONE_LOT, type(uint256).max); // adding still needs initial margin
+
+        _sell(alice, seriesId, -40 * ONE_LOT);
+        assertEq(market.positionOf(alice, seriesId).size, 60 * ONE_LOT, "cut back");
+    }
+
+    function test_withdraw_paysOutCashNotUnrealizedPnl() public {
+        _buy(alice, seriesId, 10 * ONE_LOT);
+        _setSpot(4.0 * 1e18);
+
+        int256 cash = market.balanceOf(alice);
+        assertGt(market.equity(alice), cash, "in profit");
+
+        vm.prank(alice);
+        // forge-lint: disable-next-line(unsafe-typecast)
+        vm.expectRevert(abi.encodeWithSelector(IngotMarket.WithdrawExceedsBalance.selector, int256(-1)));
+        // forge-lint: disable-next-line(unsafe-typecast)
+        market.withdraw(uint256(cash) + 1);
+    }
+
+    /// @dev A loss realized at settlement beyond the account's collateral is recorded, given a
+    ///      grace period to be covered, then written off to the vault as bad debt.
+    function test_settlement_shortfallIsWrittenOffAfterTheGracePeriod() public {
+        _buy(alice, seriesId, 200 * ONE_LOT);
+        uint256 free = market.freeCollateral(alice);
+        vm.prank(alice);
+        market.withdraw(free);
+
+        _setSpot(1.0 * 1e18); // collapse early in the window and hold
+        vm.warp(market.seriesAt(seriesId).expiry + 1);
+        _setSpot(1.0 * 1e18);
+        market.settleSeries(seriesId);
+
+        vm.prank(keeper);
+        market.settlePosition(alice, seriesId);
+        assertLt(market.balanceOf(alice), 0, "under water after settlement");
+        assertGt(market.shortfallSince(alice), 0, "recorded");
+        assertEq(market.badDebt(), 0, "not written off on the spot");
+
+        vm.expectRevert();
+        market.absorbShortfall(alice);
+
+        int256 vaultBefore = market.balanceOf(vault);
+        int256 owed = market.balanceOf(alice);
+        vm.warp(block.timestamp + market.shortfallGrace());
+        market.absorbShortfall(alice);
+
+        assertEq(market.balanceOf(alice), 0, "account zeroed");
+        // forge-lint: disable-next-line(unsafe-typecast)
+        assertEq(market.badDebt(), uint256(-owed), "booked as bad debt");
+        assertEq(market.balanceOf(vault), vaultBefore + owed, "and the vault wore it");
+    }
+
+    /// @dev Inside the delivery window part of the settlement average is already fixed. Halfway
+    ///      through at 2.50, a jump to 3.50 should mark near the 3.00 blend, not at 3.50.
+    function test_markPrice_blendsTheRealizedPartOfTheWindow() public {
+        vm.warp(block.timestamp + 15 days);
+        _setSpot(3.5 * 1e18);
+
+        uint256 mark = market.markPrice(seriesId);
+        assertApproxEqRel(mark, 3.0 * 1e18, 0.01e18, "half realized at 2.50, half forward at 3.50");
+        assertLt(mark, (3.5 * 1e18 * 95) / 100, "well under spot");
+    }
+
+    // ------------------------------------------------------------------
     // Invariants
     // ------------------------------------------------------------------
 

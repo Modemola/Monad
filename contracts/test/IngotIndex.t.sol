@@ -198,9 +198,7 @@ contract IngotIndexTest is Test {
         _publishFinal(GENESIS, 2 * ONE);
         uint64 horizon = index.finalizedThrough();
 
-        vm.expectRevert(
-            abi.encodeWithSelector(IngotIndex.WindowNotFinalized.selector, horizon + 1, horizon)
-        );
+        vm.expectRevert(abi.encodeWithSelector(IngotIndex.WindowNotFinalized.selector, horizon + 1, horizon));
         index.averageBetween(GENESIS, horizon + 1);
     }
 
@@ -216,13 +214,44 @@ contract IngotIndexTest is Test {
         index.averageBetween(GENESIS + 1 hours, GENESIS + 1 hours);
     }
 
-    function test_twap_readsTrailingWindow() public {
+    function test_twap_endsNowWithTheNewestFinalizedPriceHeldForward() public {
         _relaxGuards();
         _publishFinal(GENESIS, 2 * ONE);
         _publishFinal(GENESIS + 1 hours, 4 * ONE);
 
-        // finalizedThrough is GENESIS+1h; the trailing hour before it sat at 2.
+        // Now is GENESIS+2h (the second print plus its finality delay). The trailing hour is all
+        // at 4: the newest price counts from the moment it is final, not from the next print.
+        assertEq(index.twap(1 hours), 4 * ONE);
+        // Two hours back straddles both prints evenly.
+        assertEq(index.twap(2 hours), 3 * ONE);
+    }
+
+    function test_twap_ignoresProvisionalPrints() public {
+        _relaxGuards();
+        _publishFinal(GENESIS, 2 * ONE);
+        vm.warp(GENESIS + 2 hours);
+        vm.prank(publisher);
+        index.publish(GENESIS + 2 hours, 4 * ONE, 150, 12);
+
+        // The new print is public but still revocable, so the mark must not move on it yet.
         assertEq(index.twap(1 hours), 2 * ONE);
+    }
+
+    /// @dev Prints may be backdated, so several can land in one transaction. Each must stay within
+    ///      the band of the newest *finalized* print too, or a run of them could walk the price
+    ///      one band per print before the guardian could revoke them.
+    function test_publish_provisionalRunCannotWalkPastTheFinalizedBand() public {
+        _publishFinal(GENESIS, 2 * ONE);
+        vm.warp(GENESIS + 3 hours);
+
+        vm.startPrank(publisher);
+        index.publish(GENESIS + 1 hours, 2.4e18, 150, 12); // +20% on the last final print
+        // +20% on the previous print, but +44% on the last finalized one.
+        vm.expectRevert(
+            abi.encodeWithSelector(IngotIndex.DeviationTooLarge.selector, 2 * ONE, 2.88e18, 2_500)
+        );
+        index.publish(GENESIS + 2 hours, 2.88e18, 150, 12);
+        vm.stopPrank();
     }
 
     /// @dev A month of hourly prints, then averages read across the whole series. Exercises the

@@ -63,7 +63,8 @@ contract IngotIndexReceiverTest is Test {
 
     function test_onReport_rejectsAReportFromAnotherWorkflow() public {
         bytes32 other = keccak256("someone-elses-workflow");
-        bytes memory report = abi.encode(other, uint64(GENESIS + 1 hours), uint256(3.6e18), uint32(1), uint16(1));
+        bytes memory report =
+            abi.encode(other, uint64(GENESIS + 1 hours), uint256(3.6e18), uint32(1), uint16(1));
 
         vm.warp(GENESIS + 1 hours);
         vm.expectRevert(abi.encodeWithSelector(IngotIndexReceiver.UnexpectedWorkflow.selector, other));
@@ -87,9 +88,7 @@ contract IngotIndexReceiverTest is Test {
         receiver.onReport("", _report(GENESIS + 1 hours, 3.6e18));
 
         vm.warp(GENESIS + 2 hours);
-        vm.expectRevert(
-            abi.encodeWithSelector(IngotIndex.DeviationTooLarge.selector, 3.6e18, 36e18, 2_500)
-        );
+        vm.expectRevert(abi.encodeWithSelector(IngotIndex.DeviationTooLarge.selector, 3.6e18, 36e18, 2_500));
         vm.prank(forwarder);
         receiver.onReport("", _report(GENESIS + 2 hours, 36e18));
     }
@@ -145,5 +144,52 @@ contract IngotIndexReceiverTest is Test {
         vm.expectRevert(IngotIndex.NotPublisher.selector);
         vm.prank(owner);
         index.publish(GENESIS + 1 hours, 3.6e18, 1, 1);
+    }
+
+    function _metadata(bytes32 workflowId, address workflowOwner) internal pure returns (bytes memory) {
+        return abi.encodePacked(workflowId, bytes10("ingot-h100"), workflowOwner);
+    }
+
+    /// @dev The forwarder is shared by every CRE workflow on the chain, and the report body (tag
+    ///      included) is written by whichever workflow sends it. Only the metadata the forwarder
+    ///      vouches for identifies the sender, so with an expected owner set, a report from anyone
+    ///      else's workflow is refused even with the right tag.
+    function test_onReport_rejectsAnotherOwnersWorkflowEvenWithTheRightTag() public {
+        address ours = address(0xC0FFEE);
+        vm.prank(owner);
+        receiver.setExpectedWorkflow(ours, bytes32(0));
+
+        vm.warp(GENESIS + 1 hours);
+        vm.prank(forwarder);
+        vm.expectRevert(
+            abi.encodeWithSelector(IngotIndexReceiver.UnexpectedWorkflowOwner.selector, address(0xBAD))
+        );
+        receiver.onReport(_metadata(bytes32("any"), address(0xBAD)), _report(GENESIS + 1 hours, 3.6e18));
+
+        vm.prank(forwarder);
+        receiver.onReport(_metadata(bytes32("any"), ours), _report(GENESIS + 1 hours, 3.6e18));
+        assertEq(index.observationCount(), 1, "our workflow publishes");
+    }
+
+    function test_onReport_pinsTheWorkflowIdWhenSet() public {
+        address ours = address(0xC0FFEE);
+        vm.prank(owner);
+        receiver.setExpectedWorkflow(ours, bytes32("workflow-1"));
+
+        vm.warp(GENESIS + 1 hours);
+        vm.prank(forwarder);
+        vm.expectRevert(
+            abi.encodeWithSelector(IngotIndexReceiver.UnexpectedWorkflowId.selector, bytes32("workflow-2"))
+        );
+        receiver.onReport(_metadata(bytes32("workflow-2"), ours), _report(GENESIS + 1 hours, 3.6e18));
+    }
+
+    function test_onReport_rejectsTruncatedMetadataOnceConfigured() public {
+        vm.prank(owner);
+        receiver.setExpectedWorkflow(address(0xC0FFEE), bytes32(0));
+
+        vm.prank(forwarder);
+        vm.expectRevert(IngotIndexReceiver.MalformedMetadata.selector);
+        receiver.onReport("", _report(GENESIS + 1 hours, 3.6e18));
     }
 }
