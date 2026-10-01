@@ -66,16 +66,20 @@ jobs:
           INDEX="${{ steps.addr.outputs.index }}"
           PRICE="${{ steps.print.outputs.price }}"
 
-          # `observedAt` must advance and may not be in the future. The contract also rejects a
-          # print that moves more than the deviation band, so a broken upstream feed fails here
-          # rather than repricing the market.
-          LAST=$(cast call "$INDEX" 'finalizedThrough()(uint64)' --rpc-url "$RPC" | awk '{print $1}')
+          # `observedAt` must advance past the newest print — provisional ones included, since a
+          # CRE print may have landed since the last finalized one — by at most the clock and at
+          # least the index's minimum interval. The contract also rejects a print outside the
+          # deviation band, so a broken upstream feed fails here rather than repricing the market.
+          COUNT=$(cast call "$INDEX" 'observationCount()(uint256)' --rpc-url "$RPC" | awk '{print $1}')
+          LAST=$(cast call "$INDEX" 'observation(uint256)((uint64,uint64,uint32,uint16,uint256,uint256))' \
+            "$((COUNT - 1))" --rpc-url "$RPC" | tr -d '(' | awk -F'[ ,]' '{print $1}')
+          MIN=$(cast call "$INDEX" 'minInterval()(uint32)' --rpc-url "$RPC" | awk '{print $1}')
           # The chain's clock, not the runner's: a runner even a second ahead of the latest block
           # would be rejected as a print from the future.
           NOW=$(cast block latest --field timestamp --rpc-url "$RPC")
 
-          if [ "$NOW" -le "$LAST" ]; then
-            echo "index already has a print at or after now ($LAST); nothing to do"
+          if [ "$NOW" -lt "$((LAST + MIN))" ]; then
+            echo "newest print at $LAST is under ${MIN}s old; nothing to do"
             exit 0
           fi
 

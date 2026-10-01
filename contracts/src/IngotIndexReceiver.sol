@@ -19,11 +19,13 @@ import {IngotIndex} from "./IngotIndex.sol";
 ///      delivered here by the CRE forwarder. No single node — and no single operator — can move
 ///      the index.
 ///
-///      Authentication is the forwarder, deliberately and only. The forwarder is the contract that
-///      verifies DON signatures before it calls anything, so `msg.sender == forwarder` *is* the
-///      proof that a quorum produced this report. Rather than re-parse CRE's 109-byte metadata
-///      header at byte offsets, the workflow tag is carried in the report body, which this contract
-///      and the workflow both define — verifiable on both sides rather than assumed.
+///      Authentication has two parts. The forwarder verifies DON signatures before it calls
+///      anything, so `msg.sender == forwarder` proves *a* quorum produced the report. But the
+///      forwarder is shared by every workflow on the chain, and the report body is whatever the
+///      sending workflow chose to write — a tag in it proves nothing on its own. What the forwarder
+///      does vouch for is the metadata it passes alongside: the workflow's ID, name and owner, taken
+///      from the signed report header. So this contract also pins the expected workflow owner and,
+///      optionally, the workflow ID, and only then trusts the body.
 contract IngotIndexReceiver is Ownable {
     /// @notice The index this receiver publishes into.
     IngotIndex public immutable index;
@@ -38,13 +40,25 @@ contract IngotIndexReceiver is Ownable {
     ///      than 32 bytes rather than truncating.
     bytes32 public workflowTag;
 
+    /// @notice Account that deployed the workflow, as the forwarder reports it. Zero disables the
+    ///         check, for local testing only.
+    address public expectedWorkflowOwner;
+
+    /// @notice Exact workflow ID to accept. Zero accepts any workflow from the expected owner, so
+    ///         a redeploy of the same workflow does not need an on-chain update.
+    bytes32 public expectedWorkflowId;
+
     event ForwarderSet(address indexed forwarder);
     event WorkflowTagSet(bytes32 indexed workflowTag);
+    event ExpectedWorkflowSet(address indexed owner, bytes32 indexed workflowId);
     event ReportAccepted(uint64 observedAt, uint256 price, uint32 sampleCount, uint16 sourceCount);
 
     error NotForwarder(address caller);
     error UnexpectedWorkflow(bytes32 tag);
     error ForwarderNotSet();
+    error UnexpectedWorkflowOwner(address owner);
+    error UnexpectedWorkflowId(bytes32 workflowId);
+    error MalformedMetadata();
 
     constructor(IngotIndex index_, bytes32 workflowTag_, address owner_) Ownable(owner_) {
         index = index_;
@@ -55,13 +69,13 @@ contract IngotIndexReceiver is Ownable {
     /// @notice Entry point the CRE forwarder calls with a DON-signed report.
     /// @param report ABI-encoded `(bytes32 tag, uint64 observedAt, uint256 price, uint32 samples,
     ///        uint16 sources)` produced by the workflow.
-    /// @dev `metadata` is CRE's report header. It is accepted and ignored: the forwarder has
-    ///      already verified the DON signatures it describes, and everything this contract needs
-    ///      to check is in the body.
-    function onReport(bytes calldata, /* metadata */ bytes calldata report) external {
+    /// @param metadata What the CRE forwarder passes from the signed header, packed as
+    ///        `(bytes32 workflowId, bytes10 workflowName, address workflowOwner)`.
+    function onReport(bytes calldata metadata, bytes calldata report) external {
         address forwarder_ = forwarder;
         if (forwarder_ == address(0)) revert ForwarderNotSet();
         if (msg.sender != forwarder_) revert NotForwarder(msg.sender);
+        _checkWorkflow(metadata);
 
         (bytes32 tag, uint64 observedAt, uint256 price, uint32 sampleCount, uint16 sourceCount) =
             abi.decode(report, (bytes32, uint64, uint256, uint32, uint16));
@@ -73,6 +87,24 @@ contract IngotIndexReceiver is Ownable {
         index.publish(observedAt, price, sampleCount, sourceCount);
 
         emit ReportAccepted(observedAt, price, sampleCount, sourceCount);
+    }
+
+    function _checkWorkflow(bytes calldata metadata) internal view {
+        address owner_ = expectedWorkflowOwner;
+        bytes32 id_ = expectedWorkflowId;
+        if (owner_ == address(0) && id_ == bytes32(0)) return;
+        if (metadata.length < 62) revert MalformedMetadata();
+
+        bytes32 workflowId = bytes32(metadata[0:32]);
+        address workflowOwner = address(bytes20(metadata[42:62]));
+        if (owner_ != address(0) && workflowOwner != owner_) revert UnexpectedWorkflowOwner(workflowOwner);
+        if (id_ != bytes32(0) && workflowId != id_) revert UnexpectedWorkflowId(workflowId);
+    }
+
+    function setExpectedWorkflow(address workflowOwner, bytes32 workflowId) external onlyOwner {
+        expectedWorkflowOwner = workflowOwner;
+        expectedWorkflowId = workflowId;
+        emit ExpectedWorkflowSet(workflowOwner, workflowId);
     }
 
     function setForwarder(address forwarder_) external onlyOwner {

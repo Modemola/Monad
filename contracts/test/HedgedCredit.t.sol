@@ -39,6 +39,10 @@ contract HedgedCreditTest is Fixtures {
 
         credit = new HedgedCredit(market, IERC20(address(usdc)), owner);
 
+        vm.prank(owner);
+
+        credit.setOpenBorrowing(true);
+
         seriesId = _listSeries(30, 0);
 
         // Underwriters stand ready to take the other side of the hedge.
@@ -142,8 +146,8 @@ contract HedgedCreditTest is Fixtures {
         assertEq(baseRecovery, debt, "hedged lender is made whole");
 
         for (uint256 i = 0; i < prices.length; ++i) {
-            (, uint256 resources, uint256 unhedged, uint256 hedgedRecovery, uint256 unhedgedRecovery)
-            = credit.project(loanId, prices[i]);
+            (, uint256 resources, uint256 unhedged, uint256 hedgedRecovery, uint256 unhedgedRecovery) =
+                credit.project(loanId, prices[i]);
 
             assertApproxEqAbs(resources, baseResources, 2, "borrower resources fixed at the forward");
             assertEq(hedgedRecovery, debt, "lender whole at every settlement price");
@@ -160,18 +164,32 @@ contract HedgedCreditTest is Fixtures {
     }
 
     /// @dev The same property, live: move the real index and watch pool NAV refuse to move.
+    /// @dev Moving the index takes time in these tests, and interest accrues with time, so NAV is
+    ///      compared net of the interest earned in between: what must not move is everything else.
     function test_thesis_poolNavIsIndexInvariant() public {
-        _openLoan();
-        uint256 navAtEntry = credit.totalAssets();
+        uint256 loanId = _openLoan();
+        uint256 navAtEntry = credit.totalAssets() - credit.accruedInterestOf(loanId);
 
         _setSpot(1.0 * 1e18); // -60%
-        assertApproxEqAbs(credit.totalAssets(), navAtEntry, 2, "NAV holds when rates collapse");
+        assertApproxEqAbs(
+            credit.totalAssets() - credit.accruedInterestOf(loanId),
+            navAtEntry,
+            2,
+            "NAV holds when rates collapse"
+        );
 
         _setSpot(1.9 * 1e18);
-        assertApproxEqAbs(credit.totalAssets(), navAtEntry, 2, "and on the way back");
+        assertApproxEqAbs(
+            credit.totalAssets() - credit.accruedInterestOf(loanId), navAtEntry, 2, "and on the way back"
+        );
 
         _setSpot(3.6 * 1e18); // well above entry
-        assertApproxEqAbs(credit.totalAssets(), navAtEntry, 2, "NAV holds when rates spike");
+        assertApproxEqAbs(
+            credit.totalAssets() - credit.accruedInterestOf(loanId),
+            navAtEntry,
+            2,
+            "NAV holds when rates spike"
+        );
     }
 
     /// @dev Fuzz the claim rather than trusting five hand-picked prices.
@@ -450,14 +468,63 @@ contract HedgedCreditTest is Fixtures {
     function test_lender_earnsInterestOverTheLoan() public {
         uint256 navBefore = credit.totalAssets();
         uint256 loanId = _openLoan();
+        uint256 navAtOpen = credit.totalAssets();
 
-        // Interest is recognized at origination, so NAV steps up by the coupon.
-        assertGt(credit.totalAssets(), navBefore, "coupon accrues to lenders");
+        // Interest is recognized as it accrues, not at origination, so opening a loan does not
+        // step NAV up: nothing to sandwich.
+        assertLe(navAtOpen, navBefore, "no coupon booked at origination");
+
+        // Halfway through the term, half the coupon is in NAV.
+        HedgedCredit.Loan memory loan = credit.loanAt(loanId);
+        vm.warp(loan.openedAt + (loan.maturity - loan.openedAt) / 2);
+        assertApproxEqAbs(
+            credit.accruedInterestOf(loanId), loan.interest / 2, 1, "half the coupon at half term"
+        );
 
         _settleAt(2.5 * 1e18);
         vm.prank(neocloud);
         credit.close(loanId);
 
-        assertGt(credit.totalAssets(), navBefore, "and survives settlement");
+        assertGt(credit.totalAssets(), navBefore, "the full coupon reaches lenders at close");
+    }
+
+    function test_open_requiresApprovalWhenBorrowingIsClosed() public {
+        vm.prank(owner);
+        credit.setOpenBorrowing(false);
+
+        vm.prank(neocloud);
+        vm.expectRevert(HedgedCredit.BorrowerNotApproved.selector);
+        credit.open(seriesId, OFFTAKE, AT_INDEX, 60_000 * USDC_ONE, 0);
+
+        vm.prank(owner);
+        credit.setBorrower(neocloud, true);
+        vm.prank(neocloud);
+        credit.open(seriesId, OFFTAKE, AT_INDEX, 60_000 * USDC_ONE, 0);
+        assertEq(credit.openLoanCount(), 1);
+    }
+
+    function test_open_rejectsDustPrincipal() public {
+        vm.prank(neocloud);
+        vm.expectRevert();
+        credit.open(seriesId, 10e18, AT_INDEX, 1 * USDC_ONE, 0);
+    }
+
+    /// @dev Closing one loan must leave every other hedge its full margin buffer. Withdrawing all
+    ///      free collateral would cut the pool's market account to the market's 20% initial margin,
+    ///      not the 40% the remaining hedges were funded with.
+    function test_close_keepsTheBufferOnRemainingHedges() public {
+        uint256 longSeries = _listSeries(60, 0);
+
+        uint256 first = _openLoan(); // on the 30-day series
+        vm.prank(neocloud);
+        credit.open(longSeries, OFFTAKE, AT_INDEX, 60_000 * USDC_ONE, 0); // on the 60-day series
+
+        _settleAt(2.5 * 1e18);
+        vm.prank(neocloud);
+        credit.close(first);
+
+        uint256 buffer = market.marginRequirement(address(credit), credit.hedgeMarginBps());
+        assertGt(buffer, 0, "the 60-day hedge is still live");
+        assertGe(market.equity(address(credit)), int256(buffer), "and keeps its full buffer");
     }
 }

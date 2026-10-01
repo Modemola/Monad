@@ -47,6 +47,13 @@ export function formatShares(value: bigint, places = 2): string {
   return withThousands(fixed(value, 6n, places));
 }
 
+/// An amount as an input string: no separators, truncated (never rounded up), so a "Max" fill
+/// can never ask for more than is there.
+export function toInputAmount(value: bigint, decimals = 6, places = 2): string {
+  if (value <= 0n) return "0";
+  return fixed(value, BigInt(decimals), places);
+}
+
 /// USDC with an explicit sign, for PnL columns.
 export function formatSignedUsdc(value: bigint, places = 2): string {
   const formatted = formatUsdc(value, places);

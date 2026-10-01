@@ -10,7 +10,7 @@ import {
   useTransform,
   type HTMLMotionProps,
 } from "motion/react";
-import { useEffect, useRef, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, type ReactNode } from "react";
 
 export const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 
@@ -44,29 +44,60 @@ export function SplitWords({
   wordClassName,
   delay = 0,
   stagger = 0.06,
+  onLoad = false,
 }: {
   text: string;
   className?: string;
   wordClassName?: (word: string, index: number) => string | undefined;
   delay?: number;
   stagger?: number;
+  /// Animate on first paint with CSS instead of on scroll-into-view: for above-the-fold headlines,
+  /// which must not wait for hydration to become visible.
+  onLoad?: boolean;
 }) {
   const words = text.split(" ");
+  if (onLoad) {
+    return (
+      <span className={className}>
+        <span className="sr-only">{text}</span>
+        {words.map((word, i) => (
+          // The space sits between the word boxes, not inside them: a trailing space inside an
+          // inline-block collapses away and runs the words together.
+          <Fragment key={`${word}-${i}`}>
+            <span aria-hidden className="inline-block overflow-hidden pb-[0.12em] align-bottom">
+              <span
+                className={`word-rise inline-block ${wordClassName?.(word, i) ?? ""}`}
+                style={{ animationDelay: `${delay + i * stagger}s` }}
+              >
+                {word}
+              </span>
+            </span>
+            {i < words.length - 1 ? " " : null}
+          </Fragment>
+        ))}
+      </span>
+    );
+  }
   return (
-    <span className={className} aria-label={text}>
+    // Screen readers get the sentence once, as text; the animated words are hidden from them.
+    // (An aria-label on a plain span is not allowed, and is ignored by some readers.)
+    <span className={className}>
+      <span className="sr-only">{text}</span>
       {words.map((word, i) => (
-        <span key={`${word}-${i}`} aria-hidden className="inline-block overflow-hidden pb-[0.12em] align-bottom">
-          <motion.span
-            className={`inline-block ${wordClassName?.(word, i) ?? ""}`}
-            initial={{ y: "110%", rotate: 4, opacity: 0 }}
-            whileInView={{ y: "0%", rotate: 0, opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1, delay: delay + i * stagger, ease: EASE_OUT }}
-          >
-            {word}
-            {i < words.length - 1 ? " " : ""}
-          </motion.span>
-        </span>
+        <Fragment key={`${word}-${i}`}>
+          <span aria-hidden className="inline-block overflow-hidden pb-[0.12em] align-bottom">
+            <motion.span
+              className={`inline-block ${wordClassName?.(word, i) ?? ""}`}
+              initial={{ y: "110%", rotate: 4, opacity: 0 }}
+              whileInView={{ y: "0%", rotate: 0, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, delay: delay + i * stagger, ease: EASE_OUT }}
+            >
+              {word}
+            </motion.span>
+          </span>
+          {i < words.length - 1 ? " " : null}
+        </Fragment>
       ))}
     </span>
   );

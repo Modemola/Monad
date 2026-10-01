@@ -111,12 +111,9 @@ contract IngotIndex is IIngotIndex, Ownable {
     /// @param methodologyHash_ Hash of the methodology document in force at deployment.
     /// @param methodologyUri Where that document can be read.
     /// @param owner_ Owner, able to manage publishers and the guardian.
-    constructor(
-        string memory unit_,
-        bytes32 methodologyHash_,
-        string memory methodologyUri,
-        address owner_
-    ) Ownable(owner_) {
+    constructor(string memory unit_, bytes32 methodologyHash_, string memory methodologyUri, address owner_)
+        Ownable(owner_)
+    {
         unit = unit_;
         methodologyHash = methodologyHash_;
         guardian = owner_;
@@ -157,12 +154,15 @@ contract IngotIndex is IIngotIndex, Ownable {
             uint64 elapsed = observedAt - previous.timestamp;
             if (elapsed < minInterval) revert TooSoon();
 
-            uint256 limit = maxDeviationBps;
             uint256 previousPrice = previous.price;
-            uint256 delta = price > previousPrice ? price - previousPrice : previousPrice - price;
-            if (delta * 10_000 > previousPrice * limit) {
-                revert DeviationTooLarge(previousPrice, price, maxDeviationBps);
-            }
+            _checkDeviation(previousPrice, price);
+
+            // Also bound the print against the newest *finalized* one. Prints can be backdated, so
+            // without this a run of provisional prints in one transaction could walk the price
+            // a full band per print; with it, a whole provisional run stays within one band of
+            // the last price anything was marked against.
+            (bool found, uint256 finalizedId) = _tryFinalizedTip();
+            if (found && finalizedId != length - 1) _checkDeviation(_observations[finalizedId].price, price);
 
             // The previous price held from its timestamp until this one.
             cumulative = previous.cumulative + previousPrice * elapsed;
@@ -226,11 +226,19 @@ contract IngotIndex is IIngotIndex, Ownable {
     }
 
     /// @inheritdoc IIngotIndex
+    /// @dev The window ends now, not at the newest finalized print, with that print's price held
+    ///      forward to the present. Ending at the print would leave the newest price outside the
+    ///      average until the *next* print arrived — hours on a six-hourly schedule — and a mark
+    ///      that lags a public price is free money against the vault. Provisional prints are never
+    ///      read, so a print still inside its finality delay cannot move the mark.
     function twap(uint32 window) external view returns (uint256) {
         if (window == 0) revert BadWindow();
-        uint64 to = finalizedThrough();
+        if (_observations.length == 0) revert NoObservations();
+        uint64 to = uint64(block.timestamp);
         if (to <= window) revert WindowBeforeGenesis();
-        return averageBetween(to - window, to);
+        uint64 from = to - window;
+        if (from < _observations[0].timestamp) revert WindowBeforeGenesis();
+        return (_cumulativeAt(to) - _cumulativeAt(from)) / window;
     }
 
     /// @notice Total number of prints held, including provisional ones.
@@ -283,17 +291,27 @@ contract IngotIndex is IIngotIndex, Ownable {
 
     /// @dev Index of the newest print old enough to be considered final.
     function _finalizedTip() internal view returns (uint256) {
-        uint256 length = _observations.length;
-        if (length == 0) revert NoObservations();
+        (bool found, uint256 id) = _tryFinalizedTip();
+        if (!found) revert NoObservations();
+        return id;
+    }
 
+    function _tryFinalizedTip() internal view returns (bool found, uint256 id) {
         uint256 cutoff = block.timestamp;
         unchecked {
-            for (uint256 i = length; i > 0; --i) {
+            for (uint256 i = _observations.length; i > 0; --i) {
                 Observation storage candidate = _observations[i - 1];
-                if (candidate.publishedAt + finalityDelay <= cutoff) return i - 1;
+                if (candidate.publishedAt + finalityDelay <= cutoff) return (true, i - 1);
             }
         }
-        revert NoObservations();
+        return (false, 0);
+    }
+
+    function _checkDeviation(uint256 anchor, uint256 price) internal view {
+        uint256 delta = price > anchor ? price - anchor : anchor - price;
+        if (delta * 10_000 > anchor * maxDeviationBps) {
+            revert DeviationTooLarge(anchor, price, maxDeviationBps);
+        }
     }
 
     /// @dev Cumulative price-seconds at an arbitrary time within the recorded history.

@@ -66,14 +66,16 @@ contract Deploy is Script {
         // The CRE workflow's landing pad. Installed as a publisher so a DON quorum can print;
         // the deployer stays a publisher on testnet so the seed script can still backfill
         // history. A production deployment would revoke the deployer and leave only this.
-        IngotIndexReceiver receiver =
-            new IngotIndexReceiver(index, bytes32("ingot-h100-index-v1"), deployer);
+        IngotIndexReceiver receiver = new IngotIndexReceiver(index, bytes32("ingot-h100-index-v1"), deployer);
 
         IngotMarket market = new IngotMarket(IIngotIndex(address(index)), IERC20(usdc), deployer);
         UnderwriterVault underwriter = new UnderwriterVault(market, IERC20(usdc), deployer);
         HedgedCredit credit = new HedgedCredit(market, IERC20(usdc), deployer);
 
         market.setVault(address(underwriter));
+        // Testnet only: anyone may draw, so the product can be tried with mock USDC. Production
+        // gates borrowers behind an underwriter (see HedgedCredit.openBorrowing, docs/SECURITY.md).
+        credit.setOpenBorrowing(true);
         index.setPublisher(deployer, true);
         index.setPublisher(address(receiver), true);
         index.setGuards(TESTNET_FINALITY_DELAY, 2_500, TESTNET_MIN_INTERVAL);
@@ -120,8 +122,7 @@ contract Deploy is Script {
         // A fresh checkout has no deployments/ yet when nothing has been deployed: git does not
         // track an empty directory, and local-chain files are ignored.
         vm.createDir("./deployments", true);
-        string memory path =
-            string.concat("./deployments/", vm.toString(block.chainid), ".json");
+        string memory path = string.concat("./deployments/", vm.toString(block.chainid), ".json");
         vm.writeJson(json, path);
 
         console.log("index           ", a.index);

@@ -1,13 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  useAccount,
-  useReadContract,
-  useReadContracts,
-  useWaitForTransactionReceipt,
-  useWriteContract,
-} from "wagmi";
+import { useAccount, useReadContract, useReadContracts } from "wagmi";
 import { maxUint256 } from "viem";
 
 import { LoanBook } from "@/components/Activity";
@@ -24,7 +18,8 @@ import {
   minFill,
 } from "@/lib/slippage";
 import { useDeployment, useFrontSeries } from "@/lib/useIngot";
-import { formatHours, formatPrice, formatUsdc, parseDecimal } from "@/lib/format";
+import { formatHours, formatPrice, formatUsdc, parseDecimal, toInputAmount } from "@/lib/format";
+import { useTx } from "@/lib/tx";
 
 type Loan = {
   borrower: `0x${string}`;
@@ -164,6 +159,7 @@ export default function CreditDesk() {
                   <th className="pb-2 font-normal">Debt</th>
                   <th className="pb-2 font-normal">Margin</th>
                   <th className="pb-2 font-normal">Matures</th>
+                  <th className="pb-2 text-right font-normal">Status</th>
                 </tr>
               </thead>
               <tbody className="tnum font-mono text-[12px]">
@@ -179,6 +175,9 @@ export default function CreditDesk() {
                     <td className="py-2 text-ink-muted">
                       {new Date(Number(loan.maturity) * 1000).toLocaleDateString()}
                     </td>
+                    <td className="py-2 text-right">
+                      <CloseLoan id={id} maturity={loan.maturity} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -190,6 +189,32 @@ export default function CreditDesk() {
       <LoanBook />
     </div>
     </AppFrame>
+  );
+}
+
+/// A matured loan closes against the settled contract: the hedge's PnL is netted against the debt
+/// and the margin is applied first. Before maturity there is nothing to press.
+function CloseLoan({ id, maturity }: { id: bigint; maturity: bigint }) {
+  const { deployment } = useDeployment();
+  const tx = useTx();
+  const matured = Date.now() / 1000 >= Number(maturity);
+
+  if (!matured) return <span className="text-ink-muted">Open</span>;
+  return (
+    <button
+      type="button"
+      disabled={!deployment || tx.busy}
+      onClick={() =>
+        deployment &&
+        tx.send(
+          { address: deployment.hedgedCredit, abi: hedgedCreditAbi, functionName: "close", args: [id] },
+          { label: `Close loan #${id.toString()}`, success: "Loan closed; margin returned" },
+        )
+      }
+      className="border border-gold/40 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-gold transition-colors hover:border-gold disabled:opacity-40"
+    >
+      {tx.busy ? "Closing…" : "Close"}
+    </button>
   );
 }
 
@@ -237,7 +262,6 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
   // Basis is entered as a percentage of the index and stored in bps.
   const parsedBasisPct = parseDecimal(basis, 2);
   const basisBps = parsedBasisPct === null ? null : Number(parsedBasisPct);
-  const basisValid = basisBps !== null && basisBps > 0 && basisBps <= 40_000;
 
   // The hedge — and the advance — track exposure, not the headline hour count.
   const hedgeSize =
@@ -250,6 +274,8 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
       ? [
           { address: deployment.hedgedCredit, abi: hedgedCreditAbi, functionName: "ltvBps" },
           { address: deployment.hedgedCredit, abi: hedgedCreditAbi, functionName: "minMarginBps" },
+          { address: deployment.hedgedCredit, abi: hedgedCreditAbi, functionName: "maxBasisRatioBps" },
+          { address: deployment.hedgedCredit, abi: hedgedCreditAbi, functionName: "minPrincipal" },
         ]
       : [],
     query: { enabled: Boolean(deployment) },
@@ -257,6 +283,10 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
 
   const ltvBps = terms?.[0]?.result as number | undefined;
   const minMarginBps = terms?.[1]?.result as number | undefined;
+  // The contract's own limits, so the form refuses what the chain would refuse before anyone signs.
+  const maxBasisBps = (terms?.[2]?.result as number | undefined) ?? 25_000;
+  const minPrincipal = terms?.[3]?.result as bigint | undefined;
+  const basisValid = basisBps !== null && basisBps > 0 && basisBps <= maxBasisBps;
 
   const revenue = hedgeSize !== null && mark ? (hedgeSize * mark) / 10n ** 30n : undefined;
   const principal =
@@ -265,6 +295,7 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
     principal !== undefined && minMarginBps !== undefined
       ? (principal * BigInt(minMarginBps)) / 10_000n
       : undefined;
+  const principalTooSmall = principal !== undefined && minPrincipal !== undefined && principal < minPrincipal;
 
   // The hedge is a short of `hedgeSize`; quote it so the on-chain bound is derived from the
   // price the borrower is actually shown rather than left wide open.
@@ -291,15 +322,31 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
     query: { enabled: Boolean(deployment && address) },
   });
 
-  const { writeContract, data: hash, isPending, error } = useWriteContract();
-  const { isLoading: confirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const tx = useTx();
 
   const needsApproval = parsedMargin !== null && (allowance ?? 0n) < parsedMargin;
   const marginShort = marginRequired !== undefined && parsedMargin !== null && parsedMargin < marginRequired;
-  const busy = isPending || confirming;
+  const busy = tx.busy;
 
   return (
-    <Card eyebrow="Origination" title="Draw against an offtake" subtitle="The hedge opens in the same transaction">
+    <Card
+      eyebrow="Origination"
+      title="Draw against an offtake"
+      subtitle="The hedge opens in the same transaction"
+      action={
+        <button
+          type="button"
+          onClick={() => {
+            setHours("100000");
+            setBasis("100");
+            setMargin("");
+          }}
+          className="border border-gold/30 px-2 py-1 font-mono text-[9.5px] uppercase tracking-[0.16em] text-gold/80 transition-colors hover:border-gold/70 hover:text-gold"
+        >
+          Example
+        </button>
+      }
+    >
       <Field label="Offtake" hint="GPU-hours for the delivery window">
         <TextInput
           value={hours}
@@ -335,6 +382,13 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
             placeholder="0.00"
             suffix="USDC"
             invalid={(margin !== "" && parsedMargin === null) || marginShort}
+            shortcuts={[
+              {
+                label: "Minimum",
+                // Rounded up a cent, so a truncated display never lands just under the requirement.
+                value: marginRequired === undefined ? undefined : toInputAmount(marginRequired + 10_000n),
+              },
+            ]}
           />
         </Field>
       </div>
@@ -348,7 +402,11 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
           tone="muted"
         />
         <Row label="Hedged revenue" value={revenue === undefined ? "—" : formatUsdc(revenue)} />
-        <Row label="You receive" value={principal === undefined ? "—" : formatUsdc(principal)} />
+        <Row
+          label="You receive"
+          value={principal === undefined ? "—" : formatUsdc(principal)}
+          tone={principalTooSmall ? "critical" : "default"}
+        />
         <Row
           label="Margin required"
           value={marginRequired === undefined ? "—" : formatUsdc(marginRequired)}
@@ -378,12 +436,10 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
             disabled={!deployment || busy}
             onClick={() =>
               deployment &&
-              writeContract({
-                address: deployment.usdc,
-                abi: mockUSDCAbi,
-                functionName: "approve",
-                args: [deployment.hedgedCredit, maxUint256],
-              })
+              tx.send(
+                { address: deployment.usdc, abi: mockUSDCAbi, functionName: "approve", args: [deployment.hedgedCredit, maxUint256] },
+                { label: "Approve USDC for the credit pool", success: "Approved — now draw" },
+              )
             }
           >
             {busy ? "…" : "Approve USDC"}
@@ -399,6 +455,7 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
               !basisValid ||
               parsedMargin === null ||
               marginShort ||
+              principalTooSmall ||
               minHedgePrice === undefined ||
               busy
             }
@@ -409,21 +466,37 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
               basisBps !== null &&
               parsedMargin !== null &&
               minHedgePrice !== undefined &&
-              writeContract({
-                address: deployment.hedgedCredit,
-                abi: hedgedCreditAbi,
-                functionName: "open",
-                args: [seriesId, parsedHours, basisBps, parsedMargin, minHedgePrice],
-              })
+              tx.send(
+                {
+                  address: deployment.hedgedCredit,
+                  abi: hedgedCreditAbi,
+                  functionName: "open",
+                  args: [seriesId, parsedHours, basisBps, parsedMargin, minHedgePrice],
+                },
+                {
+                  label: `Draw ${principal === undefined ? "" : formatUsdc(principal)} against ${formatHours(parsedHours)} GPU-hrs`,
+                  success: "Drawn, and hedged in the same block",
+                },
+              )
             }
           >
-            {busy ? "Opening…" : "Draw, hedged →"}
+            {tx.status === "signing" ? "Confirm in wallet…" : tx.status === "pending" ? "Opening…" : "Draw, hedged →"}
           </Button>
         )}
       </div>
 
-      {isSuccess && <p className="mt-2 text-[12px] text-good">Drawn, and hedged in the same block.</p>}
-      {error && <p className="mt-2 break-words text-[12px] text-critical">{error.message.split("\n")[0]}</p>}
+      {principalTooSmall && minPrincipal !== undefined && (
+        <p className="mt-2 text-[12px] text-critical">
+          The smallest loan is {formatUsdc(minPrincipal)}. Increase the offtake or your realized rate.
+        </p>
+      )}
+      {basis !== "" && !basisValid && (
+        <p className="mt-2 text-[12px] text-critical">
+          Realized rate must be above 0% and at most {(maxBasisBps / 100).toFixed(0)}% of the index.
+        </p>
+      )}
+      {tx.status === "success" && <p className="mt-2 text-[12px] text-good">Drawn, and hedged in the same block.</p>}
+      {tx.status === "error" && <p className="mt-2 break-words text-[12px] text-critical">{tx.error}</p>}
 
       <Disclosure>
         The hedge will not fill below the bound above. It fixes the rate you sell compute at; it

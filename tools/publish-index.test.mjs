@@ -5,7 +5,7 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
 
-import { computePrint } from "./publish-index.mjs";
+import { assertFresh, computePrint, MAX_SOURCE_AGE_HOURS } from "./publish-index.mjs";
 
 const offer = (provider, gpu, usd_hr, kind = "on-demand") => ({ provider, gpu, usd_hr, kind });
 
@@ -64,4 +64,15 @@ test("trims the extremes once there are enough venues to trim", () => {
   const print = computePrint({ ...SNAPSHOT, offers });
   assert.equal(print.price, 3, "the 1 and the 99 are trimmed away");
   assert.equal(print.sourceCount, 10);
+});
+
+test("refuses a snapshot older than the freshness limit", () => {
+  const generated = Date.parse(SNAPSHOT.generated_at);
+  assert.doesNotThrow(() => assertFresh(SNAPSHOT, generated + 2 * 3_600_000));
+  assert.throws(() => assertFresh(SNAPSHOT, generated + (MAX_SOURCE_AGE_HOURS + 1) * 3_600_000), /stale/);
+});
+
+test("refuses a snapshot with no timestamp or one from the future", () => {
+  assert.throws(() => assertFresh({ offers: [] }), /generated_at/);
+  assert.throws(() => assertFresh(SNAPSHOT, Date.parse(SNAPSHOT.generated_at) - 3 * 3_600_000), /future/);
 });

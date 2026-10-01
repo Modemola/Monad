@@ -9,6 +9,7 @@ import { Providers } from "./providers";
 import { Footer } from "@/components/Footer";
 import { Atmosphere } from "@/components/fx/Atmosphere";
 import { SmoothScroll } from "@/components/fx/SmoothScroll";
+import { Toasts } from "@/components/Toasts";
 import { Nav } from "@/components/Nav";
 
 const DESCRIPTION =
@@ -23,8 +24,10 @@ const SITE =
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
-  title: "Ingot — compute, priced and hedged",
+  title: { default: "Ingot — compute, priced and hedged", template: "%s · Ingot" },
   description: DESCRIPTION,
+  applicationName: "Ingot",
+  keywords: ["GPU", "H100", "compute", "rental rate", "index", "swaps", "hedging", "credit", "Monad", "DeFi"],
   openGraph: {
     title: "Ingot — compute, priced and hedged",
     description: DESCRIPTION,
@@ -49,10 +52,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Atmosphere />
         <SmoothScroll />
         <div className="grain" aria-hidden />
+        <a
+          href="#content"
+          className="sr-only z-[100] border border-gold bg-void px-4 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-gold focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+        >
+          Skip to content
+        </a>
         <Providers>
           <Nav />
-          <main className="relative">{children}</main>
+          <main id="content" tabIndex={-1} className="relative outline-none">
+            {children}
+          </main>
           <Footer />
+          <Toasts />
         </Providers>
       </body>
     </html>

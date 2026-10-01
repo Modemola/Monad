@@ -87,9 +87,9 @@ cast call $CREDIT 'project(uint256,uint256)(int256,uint256,uint256,uint256,uint2
 ```
 
 A run of this on a fresh chain, seeded with the real history (last print $3.5950), produced a
-100,000 GPU-hour loan hedged at $3.5853/hr: $252,867 of principal against $265,511 of debt.
-Hedged borrower resources came back as $358,529.92 at $0.80/hr, $1.20/hr, $3.60/hr and $6.00/hr
-alike, and hedged recovery as $265,510.82 at all four, while unhedged recovery was $140,000 at
+100,000 GPU-hour loan hedged at $3.5681/hr: $251,652 of principal against $264,234 of debt.
+Hedged borrower resources came back as $356,806.10 at $0.80/hr, $1.20/hr, $3.60/hr and $6.00/hr
+alike, and hedged recovery as $264,234.24 at all four, while unhedged recovery was $140,000 at
 $0.80/hr and $180,000 at $1.20/hr.
 
 ## Publishing the front end

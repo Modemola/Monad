@@ -73,11 +73,29 @@ export function computePrint(snapshot) {
   };
 }
 
+/// The print is stamped with the time it is published, so the data behind it must be current.
+/// A source that stopped updating would otherwise keep re-publishing yesterday's rate as today's.
+export const MAX_SOURCE_AGE_HOURS = 36;
+
+export function assertFresh(snapshot, now = Date.now()) {
+  const generated = Date.parse(snapshot.generated_at ?? "");
+  if (Number.isNaN(generated)) throw new Error("snapshot has no generated_at — refusing to publish");
+  const ageHours = (now - generated) / 3_600_000;
+  if (ageHours > MAX_SOURCE_AGE_HOURS) {
+    throw new Error(
+      `snapshot is ${ageHours.toFixed(1)}h old (limit ${MAX_SOURCE_AGE_HOURS}h) — refusing to publish stale data`,
+    );
+  }
+  if (ageHours < -1) throw new Error("snapshot is dated in the future — refusing to publish");
+}
+
 async function main() {
   const response = await fetch(SOURCE, { headers: { "user-agent": "ingot-index-keeper" } });
   if (!response.ok) throw new Error(`source returned ${response.status}`);
 
-  const print = computePrint(await response.json());
+  const snapshot = await response.json();
+  assertFresh(snapshot);
+  const print = computePrint(snapshot);
 
   if (process.argv.includes("--json")) {
     process.stdout.write(JSON.stringify(print));

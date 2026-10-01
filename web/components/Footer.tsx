@@ -24,7 +24,7 @@ export function Footer() {
           <a className="transition-colors hover:text-ink" href={REPO}>GitHub</a>
         </nav>
       </div>
-      <p className="mx-auto mt-6 max-w-6xl text-[11px] leading-relaxed text-ink-muted/70">
+      <p className="mx-auto mt-6 max-w-6xl text-[11px] leading-relaxed text-ink-muted">
         Testnet software. The USDC is a mock with an open mint so anyone can try it. Index data:
         gpu-rental-prices (CC BY 4.0), on-demand H100 across up to 23 providers a day.
       </p>

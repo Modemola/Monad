@@ -103,6 +103,13 @@ contract IngotMarket is Ownable, ReentrancyGuard {
     /// @notice Losses that exceeded an account's collateral and were absorbed by the vault.
     uint256 public badDebt;
 
+    /// @notice How long a flat account left with a negative balance by settlement has to cover it
+    ///         before anyone may write it off against the vault.
+    uint32 public shortfallGrace = 3 days;
+
+    /// @notice When settlement left an account flat and under water; zero when it is not.
+    mapping(address account => uint64 since) public shortfallSince;
+
     // ---------------------------------------------------------------------
     // Events
     // ---------------------------------------------------------------------
@@ -119,9 +126,7 @@ contract IngotMarket is Ownable, ReentrancyGuard {
         int256 realizedPnl,
         uint256 fee
     );
-    event PositionSettled(
-        address indexed account, uint256 indexed seriesId, int256 size, int256 realizedPnl
-    );
+    event PositionSettled(address indexed account, uint256 indexed seriesId, int256 size, int256 realizedPnl);
     event Liquidated(
         address indexed account,
         uint256 indexed seriesId,
@@ -131,6 +136,7 @@ contract IngotMarket is Ownable, ReentrancyGuard {
         uint256 penalty
     );
     event BadDebtAbsorbed(address indexed account, uint256 amount);
+    event ShortfallRecorded(address indexed account, int256 balance);
     event VaultSet(address indexed vault);
     event VaultParamsSet(uint16 spreadBps, uint16 skewCoefBps, uint16 maxAdjBps, uint256 skewScale);
     event RiskParamsSet(uint16 initialMarginBps, uint16 maintenanceMarginBps, uint16 takerFeeBps);
@@ -155,6 +161,10 @@ contract IngotMarket is Ownable, ReentrancyGuard {
     error NoPosition();
     error InvalidParameter();
     error WindowInvalid();
+    error VaultNotLiquidatable();
+    error WithdrawExceedsBalance(int256 balance);
+    error NoShortfall();
+    error ShortfallInGrace(uint64 absorbableAt);
 
     constructor(IIngotIndex index_, IERC20 usdc_, address owner_) Ownable(owner_) {
         index = index_;
@@ -228,6 +238,32 @@ contract IngotMarket is Ownable, ReentrancyGuard {
         _untrack(account, seriesId);
 
         emit PositionSettled(account, seriesId, size, realized);
+
+        // A loss realized at settlement can exceed the account's collateral, as one realized in
+        // a liquidation can. Left on the account forever it would sit in the vault's balance as a
+        // receivable nobody pays, overstating NAV. It is not written off on the spot, though:
+        // settlement is permissionless, and a solvent integrator (the credit pool covers its
+        // hedge from lender cash) must get the chance to pay before its loss lands on the vault.
+        if (
+            account != vault && _openSeries[account].length == 0 && balanceOf[account] < 0
+                && shortfallSince[account] == 0
+        ) {
+            shortfallSince[account] = uint64(block.timestamp);
+            emit ShortfallRecorded(account, balanceOf[account]);
+        }
+    }
+
+    /// @notice Write off a flat account's settlement shortfall against the vault, once the grace
+    ///         period has passed without it being covered.
+    /// @dev Permissionless, so the loss reaches underwriter NAV without anyone's say-so.
+    function absorbShortfall(address account) external {
+        uint64 since = shortfallSince[account];
+        if (since == 0) revert NoShortfall();
+        uint64 absorbableAt = since + shortfallGrace;
+        if (block.timestamp < absorbableAt) revert ShortfallInGrace(absorbableAt);
+
+        shortfallSince[account] = 0;
+        _absorbShortfall(account);
     }
 
     // ---------------------------------------------------------------------
@@ -244,6 +280,9 @@ contract IngotMarket is Ownable, ReentrancyGuard {
     function withdraw(uint256 amount) external nonReentrant {
         if (amount == 0) revert ZeroAmount();
         balanceOf[msg.sender] -= amount.toInt256();
+        // Only realized cash leaves. Unrealized PnL backs margin but is not paid out, so a mark
+        // that is briefly wrong cannot be turned into USDC.
+        if (balanceOf[msg.sender] < 0) revert WithdrawExceedsBalance(balanceOf[msg.sender]);
 
         int256 equity_ = equity(msg.sender);
         uint256 required = marginRequirement(msg.sender, initialMarginBps);
@@ -284,23 +323,16 @@ contract IngotMarket is Ownable, ReentrancyGuard {
 
         uint256 fee = (Units.absNotional(size, price) * takerFeeBps) / Units.BPS;
 
+        int256 traderBefore = _positions[msg.sender][seriesId].size;
+        int256 vaultBefore = _positions[vault_][seriesId].size;
+
         int256 realized = _applyDelta(msg.sender, seriesId, size, price);
         _applyDelta(vault_, seriesId, -size, price);
 
         balanceOf[msg.sender] -= fee.toInt256();
         balanceOf[vault_] += fee.toInt256();
 
-        int256 traderEquity = equity(msg.sender);
-        uint256 traderRequired = marginRequirement(msg.sender, initialMarginBps);
-        if (traderEquity < traderRequired.toInt256()) {
-            revert InsufficientMargin(traderEquity, traderRequired);
-        }
-
-        // The vault's own margin is the market's capacity limit. A trade that reduces vault risk
-        // always passes; one that pushes it past maintenance cannot be quoted at all.
-        if (equity(vault_) < marginRequirement(vault_, maintenanceMarginBps).toInt256()) {
-            revert VaultAtCapacity();
-        }
+        _checkPostTrade(msg.sender, vault_, seriesId, traderBefore, vaultBefore);
 
         emit Traded(msg.sender, seriesId, size, price, realized, fee);
     }
@@ -314,6 +346,11 @@ contract IngotMarket is Ownable, ReentrancyGuard {
     {
         Series storage series = _requireSeries(seriesId);
         if (series.settled) revert SeriesAlreadySettled();
+        // Liquidating the vault would close its slice against itself: the position would not
+        // change, but the penalty would still move from the vault to the liquidator, and the
+        // vault would stay liquidatable — a loop that drains underwriter capital. The vault's
+        // limit is enforced by refusing to quote risk-adding trades instead.
+        if (account == vault) revert VaultNotLiquidatable();
 
         int256 equity_ = equity(account);
         uint256 maintenance = marginRequirement(account, maintenanceMarginBps);
@@ -338,25 +375,49 @@ contract IngotMarket is Ownable, ReentrancyGuard {
 
         emit Liquidated(account, seriesId, msg.sender, size, price, penalty);
 
-        // Once an account is flat, any remaining shortfall is real loss and the vault wears it.
-        if (_openSeries[account].length == 0 && balanceOf[account] < 0) {
-            uint256 shortfall = uint256(-balanceOf[account]);
-            balanceOf[account] = 0;
-            balanceOf[vault] -= shortfall.toInt256();
-            badDebt += shortfall;
-            emit BadDebtAbsorbed(account, shortfall);
-        }
+        _absorbShortfall(account);
     }
 
     // ---------------------------------------------------------------------
     // Pricing
     // ---------------------------------------------------------------------
 
-    /// @notice Mark price of a series: spot carried forward by a basis that decays to zero at expiry.
+    /// @notice Mark price of a series: what it is expected to settle at.
+    /// @dev A series settles to the average index over its delivery window. Before the window
+    ///      opens that is the forward: spot carried by a basis that decays to zero at expiry. Once
+    ///      it is open, part of the average is already fixed by finalized prints, and the mark is
+    ///      the time-weighted blend of that realized average and the forward for the remainder.
+    ///      Marking the whole window at spot would let anyone trade a known, partly-fixed
+    ///      settlement against the vault at the wrong price.
     function markPrice(uint256 seriesId) public view returns (uint256) {
         Series storage series = _requireSeries(seriesId);
         if (series.settled) return series.settlementPrice;
 
+        uint256 forward = _forward(series);
+        if (block.timestamp <= series.windowStart) return forward;
+
+        uint64 fixedThrough;
+        try index.finalizedThrough() returns (uint64 horizon) {
+            fixedThrough = horizon;
+        } catch {
+            return forward;
+        }
+        if (fixedThrough > block.timestamp) fixedThrough = uint64(block.timestamp);
+        if (fixedThrough > series.expiry) fixedThrough = series.expiry;
+        if (fixedThrough <= series.windowStart) return forward;
+
+        try index.averageBetween(series.windowStart, fixedThrough) returns (uint256 realized) {
+            uint256 window = series.expiry - series.windowStart;
+            uint256 elapsed = fixedThrough - series.windowStart;
+            return (realized * elapsed + forward * (window - elapsed)) / window;
+        } catch {
+            // A window opening before the index's first print has no realized average to read.
+            return forward;
+        }
+    }
+
+    /// @dev Spot carried forward by a basis that decays linearly to zero at expiry.
+    function _forward(Series storage series) internal view returns (uint256) {
         uint256 spot = _spot();
         if (block.timestamp >= series.expiry) return spot;
 
@@ -483,6 +544,11 @@ contract IngotMarket is Ownable, ReentrancyGuard {
         emit RiskParamsSet(initial, maintenance, takerFee);
     }
 
+    function setShortfallGrace(uint32 grace) external onlyOwner {
+        if (grace > 30 days) revert InvalidParameter();
+        shortfallGrace = grace;
+    }
+
     function setMarkWindow(uint32 window) external onlyOwner {
         if (window == 0) revert InvalidParameter();
         markWindow = window;
@@ -533,6 +599,58 @@ contract IngotMarket is Ownable, ReentrancyGuard {
         } else if (!position.tracked) {
             _track(account, seriesId);
         }
+    }
+
+    /// @dev Margin checks after a fill.
+    ///
+    ///      Opening or adding risk needs initial margin. Reducing it only needs the account to stay
+    ///      above maintenance, so a trader who has drifted under initial margin can still cut back.
+    ///
+    ///      The vault's own margin is the market's capacity limit: a trade that adds to vault risk
+    ///      cannot be quoted once the vault is under maintenance. A trade that reduces vault risk
+    ///      always passes, so traders can always close against a stretched vault.
+    function _checkPostTrade(
+        address trader,
+        address vault_,
+        uint256 seriesId,
+        int256 traderBefore,
+        int256 vaultBefore
+    ) internal view {
+        bool traderReducing = _reduces(traderBefore, _positions[trader][seriesId].size);
+        int256 traderEquity = equity(trader);
+        uint256 traderRequired =
+            marginRequirement(trader, traderReducing ? maintenanceMarginBps : initialMarginBps);
+        if (traderEquity < traderRequired.toInt256()) {
+            revert InsufficientMargin(traderEquity, traderRequired);
+        }
+
+        if (
+            !_reduces(vaultBefore, _positions[vault_][seriesId].size)
+                && equity(vault_) < marginRequirement(vault_, maintenanceMarginBps).toInt256()
+        ) {
+            revert VaultAtCapacity();
+        }
+    }
+
+    /// @dev Once an account is flat, any negative balance left is real loss: the vault wears it
+    ///      and it is recorded as bad debt. The vault itself is excluded — it is the backstop.
+    function _absorbShortfall(address account) internal {
+        address vault_ = vault;
+        if (account == vault_) return;
+        if (_openSeries[account].length != 0 || balanceOf[account] >= 0) return;
+        // forge-lint: disable-next-line(unsafe-typecast) — guarded negative.
+        uint256 shortfall = uint256(-balanceOf[account]);
+        balanceOf[account] = 0;
+        balanceOf[vault_] -= shortfall.toInt256();
+        badDebt += shortfall;
+        emit BadDebtAbsorbed(account, shortfall);
+    }
+
+    /// @dev True when a position moved strictly toward zero without flipping sides.
+    function _reduces(int256 before, int256 current) internal pure returns (bool) {
+        if (before == 0) return false;
+        if (current == 0) return true;
+        return Units.sameSign(before, current) && Units.abs(current) < Units.abs(before);
     }
 
     function _syncOpenInterest(uint256 seriesId, int256 before, int256 current) internal {

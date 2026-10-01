@@ -99,7 +99,25 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
     ///      Anything higher is not a hedger and should be underwritten by hand.
     uint16 public maxBasisRatioBps = 25_000;
 
+    /// @notice Smallest principal a loan may draw. Every open loan is read when the pool is
+    ///         valued, so dust loans would be a cheap way to make lending too expensive to use.
+    uint256 public minPrincipal = 1_000e6;
+
+    /// @notice When false, only approved borrowers may draw.
+    ///
+    /// @dev The offtake and basis ratio are asserted by the borrower, and the advance scales with
+    ///      them, so open borrowing lets anyone draw against revenue that does not exist and walk
+    ///      away with principal above their margin. Production gates borrowers behind an
+    ///      underwriter. The public testnet deployment turns this on deliberately so anyone can
+    ///      try the product with mock USDC; see docs/SECURITY.md.
+    bool public openBorrowing;
+    mapping(address borrower => bool) public isApprovedBorrower;
+
     Loan[] internal _loans;
+
+    /// @dev Loans not yet closed, so valuation never walks closed history.
+    uint256[] internal _openLoans;
+    mapping(uint256 loanId => uint256 position) internal _openLoanSlot;
 
     /// @notice Borrower margin held by this contract. Collateral, not lender assets.
     uint256 public totalMarginHeld;
@@ -124,6 +142,8 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
     event LoanClosed(uint256 indexed loanId, int256 hedgePnl, int256 netOwed, uint256 marginReturned);
     event LoanSeized(uint256 indexed loanId, address indexed keeper, int256 shortfall);
     event TermsSet(uint16 ltvBps, uint16 minMarginBps, uint16 rateBps, uint16 hedgeMarginBps);
+    event BorrowerApproved(address indexed borrower, bool approved);
+    event OpenBorrowingSet(bool open);
 
     error ZeroAmount();
     error VaultInsolvent();
@@ -135,6 +155,8 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
     error SeriesNotSettled();
     error NotYetDelinquent(uint64 seizableAt);
     error InvalidParameter();
+    error BorrowerNotApproved();
+    error PrincipalTooSmall(uint256 principal, uint256 minimum);
 
     constructor(IngotMarket market_, IERC20 usdc_, address owner_)
         ERC20("Ingot Hedged Credit", "ingotCREDIT")
@@ -168,20 +190,30 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
         return total > 0 ? uint256(total) : 0;
     }
 
-    /// @notice Sum of what borrowers owe once their hedge PnL is applied.
+    /// @notice Sum of what borrowers owe once their hedge PnL is applied, interest accrued to now.
     function totalReceivable() public view returns (int256 total) {
-        uint256 length = _loans.length;
+        uint256 length = _openLoans.length;
         for (uint256 i = 0; i < length; ++i) {
-            if (_loans[i].closed) continue;
-            total += receivableOf(i);
+            total += receivableOf(_openLoans[i]);
         }
     }
 
     /// @notice What a borrower owes right now, net of the hedge held against their loan.
+    /// @dev Interest is recognized as it accrues rather than all at origination. Booking the whole
+    ///      term up front made share price jump the moment a loan opened, so a lender could
+    ///      deposit just before a large draw and redeem just after for a free cut of its interest.
     function receivableOf(uint256 loanId) public view returns (int256) {
         Loan storage loan = _loans[loanId];
         if (loan.closed) return 0;
-        return debtOf(loanId).toInt256() - hedgePnlOf(loanId);
+        return (loan.principal + accruedInterestOf(loanId)).toInt256() - hedgePnlOf(loanId);
+    }
+
+    /// @notice Interest earned so far, linear from origination to maturity.
+    function accruedInterestOf(uint256 loanId) public view returns (uint256) {
+        Loan storage loan = _loans[loanId];
+        if (loan.closed) return 0;
+        if (block.timestamp >= loan.maturity || loan.maturity <= loan.openedAt) return loan.interest;
+        return (loan.interest * (block.timestamp - loan.openedAt)) / (loan.maturity - loan.openedAt);
     }
 
     function debtOf(uint256 loanId) public view returns (uint256) {
@@ -320,6 +352,7 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
         uint256 margin,
         uint256 minHedgePrice
     ) external nonReentrant returns (uint256 loanId) {
+        if (!openBorrowing && !isApprovedBorrower[msg.sender]) revert BorrowerNotApproved();
         if (gpuHours == 0 || margin == 0) revert ZeroAmount();
         if (basisRatioBps == 0 || basisRatioBps > maxBasisRatioBps) revert InvalidParameter();
 
@@ -329,6 +362,7 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
 
         uint256 hedgedRevenue = Units.absNotional(hedgeSize.toInt256(), market.markPrice(seriesId));
         uint256 principal = (hedgedRevenue * ltvBps) / Units.BPS;
+        if (principal < minPrincipal) revert PrincipalTooSmall(principal, minPrincipal);
 
         _collectMargin(margin, principal);
         _fundHedge(hedgedRevenue, principal);
@@ -399,6 +433,8 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
             })
         );
         _loansOf[msg.sender].push(loanId);
+        _openLoanSlot[loanId] = _openLoans.length;
+        _openLoans.push(loanId);
 
         Loan storage loan = _loans[loanId];
         emit LoanOpened(
@@ -431,7 +467,7 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
         int256 netOwed = debtOf(loanId).toInt256() - hedgePnl;
 
         market.settlePosition(address(this), loan.seriesId);
-        loan.closed = true;
+        _markClosed(loanId);
 
         uint256 margin = loan.margin;
         totalMarginHeld -= margin;
@@ -451,6 +487,7 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
             marginReturned = margin + uint256(-netOwed);
         }
 
+        _coverMarketDeficit();
         _recoverHedgeMargin();
         if (marginReturned > 0) usdc.safeTransfer(msg.sender, marginReturned);
 
@@ -473,20 +510,56 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
         int256 netOwed = debtOf(loanId).toInt256() - hedgePnlOf(loanId);
 
         market.settlePosition(address(this), loan.seriesId);
-        loan.closed = true;
+        _markClosed(loanId);
 
         uint256 margin = loan.margin;
         totalMarginHeld -= margin; // forfeited into pool assets
 
+        _coverMarketDeficit();
         _recoverHedgeMargin();
 
         emit LoanSeized(loanId, msg.sender, netOwed - margin.toInt256());
     }
 
-    /// @dev Pull free margin back out of the market once a hedge is closed.
+    /// @dev Pull margin back out of the market once a hedge is closed — but only what the
+    ///      remaining hedges do not need. Withdrawing everything above the market's initial margin
+    ///      would strip the `hedgeMarginBps` buffer from every other open loan at once, leaving
+    ///      their hedges one ordinary move from liquidation.
     function _recoverHedgeMargin() internal {
-        uint256 free = market.freeCollateral(address(this));
-        if (free > 0) market.withdraw(free);
+        int256 equity_ = market.equity(address(this));
+        int256 keep = market.marginRequirement(address(this), hedgeMarginBps).toInt256();
+        int256 cash = market.balanceOf(address(this));
+        int256 spare = equity_ - keep;
+        // Only realized cash can leave the market.
+        if (spare > cash) spare = cash;
+        // forge-lint: disable-next-line(unsafe-typecast) — guarded positive.
+        if (spare > 0) market.withdraw(uint256(spare));
+    }
+
+    /// @dev A hedge can lose more than the margin posted for it; the borrower's payment covers
+    ///      that loss, so the pool settles it with the market rather than leaving its account
+    ///      under water for the market to write off against underwriters.
+    function _coverMarketDeficit() internal {
+        int256 cash = market.balanceOf(address(this));
+        if (cash >= 0) return;
+        // forge-lint: disable-next-line(unsafe-typecast) — guarded negative.
+        uint256 deficit = uint256(-cash);
+        uint256 available = availableLiquidity();
+        uint256 amount = deficit < available ? deficit : available;
+        if (amount > 0) market.deposit(amount);
+    }
+
+    function _markClosed(uint256 loanId) internal {
+        _loans[loanId].closed = true;
+        uint256 slot = _openLoanSlot[loanId];
+        uint256 last = _openLoans.length - 1;
+        if (slot != last) {
+            uint256 moved = _openLoans[last];
+            _openLoans[slot] = moved;
+            _openLoanSlot[moved] = slot;
+        }
+        _openLoans.pop();
+        delete _openLoanSlot[loanId];
     }
 
     // ---------------------------------------------------------------------
@@ -505,10 +578,7 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
         return _loansOf[borrower];
     }
 
-    function setTerms(uint16 ltv, uint16 minMargin, uint16 rate, uint16 hedgeMargin)
-        external
-        onlyOwner
-    {
+    function setTerms(uint16 ltv, uint16 minMargin, uint16 rate, uint16 hedgeMargin) external onlyOwner {
         if (ltv == 0 || ltv > 9_000) revert InvalidParameter();
         if (minMargin > Units.BPS || rate > 5_000) revert InvalidParameter();
         if (hedgeMargin == 0 || hedgeMargin > Units.BPS) revert InvalidParameter();
@@ -517,6 +587,24 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
         rateBps = rate;
         hedgeMarginBps = hedgeMargin;
         emit TermsSet(ltv, minMargin, rate, hedgeMargin);
+    }
+
+    function setBorrower(address borrower, bool approved) external onlyOwner {
+        isApprovedBorrower[borrower] = approved;
+        emit BorrowerApproved(borrower, approved);
+    }
+
+    function setOpenBorrowing(bool open_) external onlyOwner {
+        openBorrowing = open_;
+        emit OpenBorrowingSet(open_);
+    }
+
+    function setMinPrincipal(uint256 minimum) external onlyOwner {
+        minPrincipal = minimum;
+    }
+
+    function openLoanCount() external view returns (uint256) {
+        return _openLoans.length;
     }
 
     function setGracePeriod(uint32 period) external onlyOwner {

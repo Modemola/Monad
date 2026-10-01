@@ -92,18 +92,18 @@ before anyone connects.
 
 | Component | State |
 |---|---|
-| `IngotIndex` — index oracle | Built, 19 tests passing |
-| `IngotMarket` — swaps, margin, settlement, liquidation | Built, 23 tests passing |
+| `IngotIndex` — index oracle | Built, 21 tests passing |
+| `IngotMarket` — swaps, margin, settlement, liquidation | Built, 29 tests passing |
 | `UnderwriterVault` — LP accounting over the vault account | Built, 11 tests passing |
-| `HedgedCredit` — loans with auto-hedge | Built, 22 tests passing |
-| `IngotIndexReceiver` — CRE workflow landing pad | Built, 8 tests passing |
+| `HedgedCredit` — loans with auto-hedge | Built, 25 tests passing |
+| `IngotIndexReceiver` — CRE workflow landing pad | Built, 11 tests passing |
 | Envio indexer — replayed against a recorded contract session | Built, 9 tests passing |
 | Front end — terminal, credit desk, underwriter vault | Built, builds clean |
 | End-to-end — trade, credit and underwrite driven through the UI against a fresh chain | 3 flows passing in CI (`scripts/e2e.sh`) |
 | Backtest over historical rental data | Replayed over 78 days, 3 tests passing |
 | Deploy seed — the real 78-day index history, on chain | Built, 4 tests passing |
 
-91 contract tests, 9 indexer tests, 6 scheduled-publisher tests and 3 end-to-end browser flows, all passing. Deployment to Monad testnet is the remaining step.
+105 contract tests, 9 indexer tests, 8 scheduled-publisher tests and 3 end-to-end browser flows, all passing. Two security reviews; every finding is in [docs/SECURITY.md](docs/SECURITY.md) with the test that pins it. Deployment to Monad testnet is the remaining step.
 
 ## The number that makes the case
 

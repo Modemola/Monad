@@ -65,15 +65,16 @@ export function SplitFlap({
   }[size];
 
   return (
-    <div ref={ref} className={`inline-flex flex-col items-center gap-2.5 ${className}`}>
+    // Read as one phrase — the final label and value — never letter by letter or mid-flip.
+    <div ref={ref} role="img" aria-label={`${label ?? ""} ${value}`.trim()} className={`inline-flex flex-col items-center gap-2.5 ${className}`}>
       {labelWidth > 0 && (
-        <div className="flex gap-[2px]">
+        <div aria-hidden className="flex gap-[2px]">
           {frame.label.padEnd(labelWidth, " ").split("").map((ch, i) => (
             <Cell key={i} ch={ch} className="h-[22px] w-[13px] text-[11px] text-ink-secondary" />
           ))}
         </div>
       )}
-      <div className="flex gap-[3px]">
+      <div aria-hidden className="flex gap-[3px]">
         {frame.value.padStart(width, " ").split("").map((ch, i) => (
           <Cell key={i} ch={ch} className={`${cell} text-gold`} />
         ))}

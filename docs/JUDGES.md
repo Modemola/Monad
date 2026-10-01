@@ -29,20 +29,24 @@ when your balance is low. That mints from the test token; there is nothing to as
 ## 3. What to look at, in order
 
 **Overview** — the landing page tells the story with real data: 78 days of posted H100 rates,
-60% annualised volatility, a 6x spread between providers on the same day, and a scroll-driven
-3D scene in which eight providers' prices rise as gold columns and the index settles through them
-as a plane of light, and an interactive version of the hedged-versus-unhedged recovery case. The
-gold bar in the hero, stamped with its hallmark, is rendered in real time.
+60% annualised volatility, and a 6x spread between providers on the same day. A scroll-driven 3D
+scene raises eight providers' prices as gold columns and settles the index through them as a plane
+of light; an animated sequence diagram shows the four things `HedgedCredit.open()` does inside one
+transaction; and an interactive chart sweeps the hedged-versus-unhedged recovery case. The gold
+bar in the hero, stamped with its hallmark, is rendered in real time. On a machine without a GPU
+the 3D scenes give way to drawn versions rather than a frozen page (`?3d=on` forces them).
 
 **Trade** — the H100 rental index, published onchain. Every print carries the hash of the
 methodology behind it, how many venue quotes it was built from, and how many venues. The chart
 starts with the real 78-day history the deploy backfilled — the same series the overview and the
-backtest use — and the scheduled publisher extends it every six hours. Hover the chart. Then put 10 lots in the ticket: before you sign, it shows the mark, your actual fill, the
-notional, the margin it locks, the fee, and the worst price the order can fill at — which the
-contract enforces, not just the interface.
+backtest use — and the scheduled publisher extends it every six hours. Hover the chart. Then put 10 lots in the ticket: before you sign, it shows the mark, your actual
+fill, the notional, the margin it locks, the fee, and the worst price the order can fill at — which
+the contract enforces, not just the interface. A toast follows the transaction from signature to
+block, with a MonadScan link; if the contract refuses, it says why in plain words. The position
+card then shows entry, mark, health and an estimated liquidation price, with one button to close.
 
-**Credit** — the part that does not exist elsewhere. Enter a 100,000 GPU-hour offtake, set your
-realized rate to 55% of the index, post margin, and draw. The loan and its hedge open in the same
+**Credit** — the part that does not exist elsewhere. Press **Example** for a 100,000 GPU-hour
+offtake, set your realized rate to 55% of the index, press **Minimum** on the margin, and draw. The loan and its hedge open in the same
 transaction.
 
 Then drag the slider under the recovery chart. The gold line is what the lender recovers hedged —
@@ -61,7 +65,7 @@ git submodule update --init --recursive
 cd contracts && forge test
 ```
 
-91 tests. The ones worth reading:
+105 tests. The ones worth reading:
 
 - `test_invariant_marketIsZeroSum` — total equity equals total deposits through opening, index
   moves, partial closes, flips, liquidation and settlement.
