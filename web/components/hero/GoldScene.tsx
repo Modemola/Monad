@@ -188,6 +188,7 @@ export default function GoldScene() {
   const [lite, setLite] = useState(false);
   const [still, setStill] = useState(false);
   const [dpr, setDpr] = useState(1.5);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     setLite(window.innerWidth < 768 || (navigator.hardwareConcurrency ?? 8) <= 4);
@@ -213,8 +214,10 @@ export default function GoldScene() {
   }, []);
 
   return (
-    <div ref={container} className="absolute inset-0">
+    // The canvas fades up once the first frame is drawn, so shader compilation never shows as a pop.
+    <div ref={container} className={`absolute inset-0 transition-opacity duration-[1600ms] ease-out ${ready ? "opacity-100" : "opacity-0"}`}>
       <Canvas
+        onCreated={() => requestAnimationFrame(() => setReady(true))}
         dpr={lite ? Math.min(dpr, 1.25) : dpr}
         camera={{ position: [0, 2.9, 6.2], fov: 30 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
