@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useInView, useReducedMotion } from "motion/react";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 
 /// Charts in the Molten Glass language: a gradient stroke that glows, light pooled beneath the
 /// line, and a draw-in the first time the chart is seen. Interrogable — crosshair and tooltip on
@@ -69,10 +69,11 @@ function nearestIndex(points: Point[], x: number) {
 /// Draw at the container's real width so labels stay legible on a phone instead of being scaled
 /// down with the whole drawing. The prop width is what the server renders before measuring.
 function useFit(defaultWidth: number, defaultHeight: number) {
-  const box = useRef<HTMLDivElement>(null);
+  // A callback ref held in state, so the observer follows the wrapper whenever it is replaced —
+  // the placeholder and the drawn chart are different elements.
+  const [node, setNode] = useState<HTMLDivElement | null>(null);
   const [size, setSize] = useState({ width: defaultWidth, height: defaultHeight });
   useEffect(() => {
-    const node = box.current;
     if (!node) return;
     const observer = new ResizeObserver(([entry]) => {
       const w = Math.round(entry.contentRect.width);
@@ -82,18 +83,22 @@ function useFit(defaultWidth: number, defaultHeight: number) {
     });
     observer.observe(node);
     return () => observer.disconnect();
-  }, [defaultHeight]);
-  return { box, ...size };
+  }, [node, defaultHeight]);
+  return { box: setNode, node, ...size };
 }
 
-function useDraw() {
-  const ref = useRef<SVGSVGElement>(null);
+/// Whether the chart has scrolled into view and should draw. It watches whichever wrapper is
+/// mounted: the SVG only appears once data arrives, and an observer created before then would
+/// have found nothing and never fired, leaving the line undrawn. A fresh ref object per element
+/// makes the observer re-attach.
+function useDraw(node: HTMLDivElement | null) {
+  const ref = useMemo(() => ({ current: node }), [node]);
   const inView = useInView(ref, { once: true, margin: "-40px" });
   const prefersReduced = useReducedMotion();
   // Decided after mount, so the server and the first client render agree.
   const [pulse, setPulse] = useState(false);
   useEffect(() => setPulse(!prefersReduced), [prefersReduced]);
-  return { ref, drawn: inView || Boolean(prefersReduced), pulse };
+  return { drawn: inView || Boolean(prefersReduced), pulse };
 }
 
 // ---------------------------------------------------------------------------
@@ -114,9 +119,9 @@ export function IndexChart({
   dateOnly?: boolean;
 }) {
   const id = useId().replace(/:/g, "");
-  const { box, width, height } = useFit(defaultWidth, defaultHeight);
+  const { box, node, width, height } = useFit(defaultWidth, defaultHeight);
   const [hover, setHover] = useState<number | null>(null);
-  const { ref, drawn, pulse } = useDraw();
+  const { drawn, pulse } = useDraw(node);
 
   const geometry = useMemo(() => {
     if (data.length < 2) return null;
@@ -139,7 +144,7 @@ export function IndexChart({
 
   if (!geometry) {
     return (
-      <div className="flex h-[240px] flex-col items-center justify-center gap-3 text-[13px] text-ink-muted">
+      <div ref={box} className="flex h-[240px] flex-col items-center justify-center gap-3 text-[13px] text-ink-muted">
         <span className="h-10 w-10 animate-spin-slow rounded-full border border-hairline border-t-gold/70" />
         Waiting for index prints…
       </div>
@@ -154,7 +159,6 @@ export function IndexChart({
   return (
     <div ref={box} className="relative">
       <svg
-        ref={ref}
         viewBox={`0 0 ${width} ${height}`}
         className="w-full overflow-visible"
         role="img"
@@ -279,9 +283,9 @@ export function RecoveryChart({
   width?: number;
 }) {
   const id = useId().replace(/:/g, "");
-  const { box, width, height } = useFit(defaultWidth, defaultHeight);
+  const { box, node, width, height } = useFit(defaultWidth, defaultHeight);
   const [hover, setHover] = useState<number | null>(null);
-  const { ref, drawn, pulse } = useDraw();
+  const { drawn, pulse } = useDraw(node);
   const pad = PAD_CAPTIONED;
 
   const geometry = useMemo(() => {
@@ -307,7 +311,7 @@ export function RecoveryChart({
 
   if (!geometry) {
     return (
-      <div className="flex h-[280px] items-center justify-center text-[13px] text-ink-muted">
+      <div ref={box} className="flex h-[280px] items-center justify-center text-[13px] text-ink-muted">
         Open a loan to see its recovery profile.
       </div>
     );
@@ -330,7 +334,6 @@ export function RecoveryChart({
 
       <div ref={box} className="relative">
         <svg
-          ref={ref}
           viewBox={`0 0 ${width} ${height}`}
           className="w-full overflow-visible"
           role="img"
