@@ -44,16 +44,41 @@ export function SplitWords({
   wordClassName,
   delay = 0,
   stagger = 0.06,
+  onLoad = false,
 }: {
   text: string;
   className?: string;
   wordClassName?: (word: string, index: number) => string | undefined;
   delay?: number;
   stagger?: number;
+  /// Animate on first paint with CSS instead of on scroll-into-view: for above-the-fold headlines,
+  /// which must not wait for hydration to become visible.
+  onLoad?: boolean;
 }) {
   const words = text.split(" ");
+  if (onLoad) {
+    return (
+      <span className={className}>
+        <span className="sr-only">{text}</span>
+        {words.map((word, i) => (
+          <span key={`${word}-${i}`} aria-hidden className="inline-block overflow-hidden pb-[0.12em] align-bottom">
+            <span
+              className={`word-rise inline-block ${wordClassName?.(word, i) ?? ""}`}
+              style={{ animationDelay: `${delay + i * stagger}s` }}
+            >
+              {word}
+              {i < words.length - 1 ? " " : ""}
+            </span>
+          </span>
+        ))}
+      </span>
+    );
+  }
   return (
-    <span className={className} aria-label={text}>
+    // Screen readers get the sentence once, as text; the animated words are hidden from them.
+    // (An aria-label on a plain span is not allowed, and is ignored by some readers.)
+    <span className={className}>
+      <span className="sr-only">{text}</span>
       {words.map((word, i) => (
         <span key={`${word}-${i}`} aria-hidden className="inline-block overflow-hidden pb-[0.12em] align-bottom">
           <motion.span

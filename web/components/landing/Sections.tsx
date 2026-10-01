@@ -7,7 +7,9 @@ import { useMemo, useRef, useState } from "react";
 
 import { HEDGED, IndexChart, RecoveryChart, UNHEDGED } from "@/components/charts";
 import { AnimatedNumber, Magnetic, Marquee, Reveal, SplitWords } from "@/components/fx/motion";
+import { Scene } from "@/components/fx/Scene";
 import { SplitFlap, providerBoard } from "@/components/fx/SplitFlap";
+import { ColumnsFallback } from "@/components/hero/Fallbacks";
 import { Hallmarks } from "@/components/ui";
 import { INDEX_SERIES } from "@/lib/story-data";
 
@@ -176,7 +178,9 @@ export function IndexStage() {
   return (
     <section ref={ref} className="relative mt-32 h-[320vh]">
       <div className="sticky top-0 h-[100svh] overflow-hidden">
-        <PriceColumns venues={venues} index={LATEST} progress={progress} />
+        <Scene mount="near" fallback={<ColumnsFallback venues={venues} index={LATEST} />}>
+          <PriceColumns venues={venues} index={LATEST} progress={progress} />
+        </Scene>
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_50%,rgba(9,8,7,0.85))]" />
 
         <div className="pointer-events-none relative z-10 mx-auto flex h-full max-w-6xl flex-col px-4 pt-24 sm:px-6 sm:pt-28">
