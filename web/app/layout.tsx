@@ -9,6 +9,7 @@ import { Providers } from "./providers";
 import { Footer } from "@/components/Footer";
 import { Atmosphere } from "@/components/fx/Atmosphere";
 import { SmoothScroll } from "@/components/fx/SmoothScroll";
+import { Toasts } from "@/components/Toasts";
 import { Nav } from "@/components/Nav";
 
 const DESCRIPTION =
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Nav />
           <main className="relative">{children}</main>
           <Footer />
+          <Toasts />
         </Providers>
       </body>
     </html>

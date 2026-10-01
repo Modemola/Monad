@@ -1,13 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  useAccount,
-  useReadContract,
-  useReadContracts,
-  useWaitForTransactionReceipt,
-  useWriteContract,
-} from "wagmi";
+import { useState } from "react";
+import { useAccount, useReadContract, useReadContracts } from "wagmi";
 import { maxUint256 } from "viem";
 
 import { Reveal } from "@/components/fx/motion";
@@ -16,7 +10,8 @@ import { AppFrame, PageHeader } from "@/components/PageHeader";
 import { Button, Card, Disclosure, Field, Row, Stat, StatStrip, TextInput } from "@/components/ui";
 import { ingotMarketAbi, mockUSDCAbi, underwriterVaultAbi } from "@/lib/abis";
 import { useDeployment, useFrontSeries } from "@/lib/useIngot";
-import { formatLots, formatPrice, formatShares, formatSignedUsdc, formatUsdc, parseDecimal } from "@/lib/format";
+import { formatLots, formatPrice, formatShares, formatSignedUsdc, formatUsdc, parseDecimal, toInputAmount } from "@/lib/format";
+import { useTx } from "@/lib/tx";
 
 export default function Underwrite() {
   const { address } = useAccount();
@@ -70,14 +65,15 @@ export default function Underwrite() {
     query: { enabled: Boolean(deployment) && shares !== undefined && shares > 0n },
   });
 
-  const { writeContract, data: hash, isPending, error } = useWriteContract();
-  const { isLoading: confirming, isSuccess: confirmed } = useWaitForTransactionReceipt({ hash });
-  // Clear the amount once a deposit or withdrawal lands, not after an approval: the deposit that
-  // follows an approval still needs it.
-  const [clearAfter, setClearAfter] = useState<`0x${string}`>();
-  useEffect(() => {
-    if (confirmed && hash !== undefined && hash === clearAfter) setAmount("");
-  }, [confirmed, hash, clearAfter]);
+  const tx = useTx();
+
+  const { data: walletBalance } = useReadContract({
+    address: deployment?.usdc,
+    abi: mockUSDCAbi,
+    functionName: "balanceOf",
+    args: address ? [address] : undefined,
+    query: { enabled: Boolean(deployment && address) },
+  });
 
   const assets = pool?.[0]?.result as bigint | undefined;
   const available = pool?.[1]?.result as bigint | undefined;
@@ -94,7 +90,8 @@ export default function Underwrite() {
     : undefined;
   const inventoryPnl = holding && mark ? (holding.size * mark) / 10n ** 30n - holding.cost : undefined;
   const needsApproval = parsed !== null && (allowance ?? 0n) < parsed;
-  const busy = isPending || confirming;
+  const busy = tx.busy;
+  const overWallet = parsed !== null && walletBalance !== undefined && parsed > walletBalance;
 
   if (!deployment) {
     return (
@@ -132,7 +129,6 @@ export default function Underwrite() {
           label="Inventory"
           value={position ? `${formatLots(position.size)} lots` : "—"}
           detail={position && position.size !== 0n ? (position.size > 0n ? "net long" : "net short") : "flat"}
-          tone={position && position.size !== 0n ? (position.size > 0n ? "good" : "critical") : "default"}
           accent="violet"
         />
       </StatStrip>
@@ -146,7 +142,8 @@ export default function Underwrite() {
               onChange={setAmount}
               placeholder="0.00"
               suffix="USDC"
-              invalid={amount !== "" && parsed === null}
+              invalid={(amount !== "" && parsed === null) || overWallet}
+              shortcuts={[{ label: "Wallet", value: walletBalance === undefined ? undefined : toInputAmount(walletBalance) }]}
             />
           </Field>
 
@@ -155,12 +152,10 @@ export default function Underwrite() {
               <Button
                 disabled={busy}
                 onClick={() =>
-                  writeContract({
-                    address: deployment.usdc,
-                    abi: mockUSDCAbi,
-                    functionName: "approve",
-                    args: [deployment.underwriterVault, maxUint256],
-                  })
+                  tx.send(
+                    { address: deployment.usdc, abi: mockUSDCAbi, functionName: "approve", args: [deployment.underwriterVault, maxUint256] },
+                    { label: "Approve USDC for the vault", success: "Approved — now deposit" },
+                  )
                 }
               >
                 {busy ? "…" : "Approve"}
@@ -168,19 +163,15 @@ export default function Underwrite() {
             ) : (
               <Button
                 variant="gold"
-                disabled={parsed === null || parsed === 0n || busy}
-                onClick={() =>
-                  parsed !== null &&
-                  writeContract(
-                    {
-                      address: deployment.underwriterVault,
-                      abi: underwriterVaultAbi,
-                      functionName: "deposit",
-                      args: [parsed],
-                    },
-                    { onSuccess: setClearAfter },
-                  )
-                }
+                disabled={parsed === null || parsed === 0n || overWallet || busy}
+                onClick={async () => {
+                  if (parsed === null) return;
+                  const receipt = await tx.send(
+                    { address: deployment.underwriterVault, abi: underwriterVaultAbi, functionName: "deposit", args: [parsed] },
+                    { label: `Underwrite ${formatUsdc(parsed)}`, success: "Vault shares minted" },
+                  );
+                  if (receipt) setAmount("");
+                }}
               >
                 {busy ? "…" : "Deposit"}
               </Button>
@@ -191,12 +182,10 @@ export default function Underwrite() {
               disabled={!shares || shares === 0n || busy}
               onClick={() =>
                 shares &&
-                writeContract({
-                  address: deployment.underwriterVault,
-                  abi: underwriterVaultAbi,
-                  functionName: "redeem",
-                  args: [shares],
-                })
+                tx.send(
+                  { address: deployment.underwriterVault, abi: underwriterVaultAbi, functionName: "redeem", args: [shares] },
+                  { label: "Redeem all vault shares", success: "USDC returned to your wallet" },
+                )
               }
             >
               Redeem all
@@ -205,7 +194,10 @@ export default function Underwrite() {
 
           <div className="mt-4 border-t border-hairline pt-1">
             <Row label="Your shares" value={shares === undefined ? "—" : formatShares(shares)} />
-            <Row label="Your claim" value={claim === undefined ? "—" : formatUsdc(claim)} />
+            <Row
+              label="Your claim"
+              value={shares === undefined ? "—" : shares === 0n ? formatUsdc(0n) : claim === undefined ? "—" : formatUsdc(claim)}
+            />
             <Row
               label="Pool share"
               value={
@@ -217,7 +209,7 @@ export default function Underwrite() {
             />
           </div>
 
-          {error && <p className="mt-2 break-words text-[12px] text-critical">{error.message.split("\n")[0]}</p>}
+          {tx.status === "error" && <p className="mt-2 break-words text-[12px] text-critical">{tx.error}</p>}
 
           <Disclosure>
             The vault is the counterparty to every trade on Ingot. It earns the half-spread and

@@ -2,11 +2,12 @@
 
 import { motion } from "motion/react";
 import { useState } from "react";
-import { useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useReadContract } from "wagmi";
 
 import { ingotMarketAbi } from "@/lib/abis";
 import { useDeployment } from "@/lib/useIngot";
 import { LOT_HOURS, formatPrice, formatUsdc, parseDecimal } from "@/lib/format";
+import { useTx } from "@/lib/tx";
 import {
   DEFAULT_SLIPPAGE_BPS,
   SLIPPAGE_OPTIONS,
@@ -35,8 +36,8 @@ export function Ticket({
   takerFeeBps: number | undefined;
 }) {
   const { deployment } = useDeployment();
-  const [side, setSide] = useState<Side>("long");
-  const [lots, setLots] = useState("");
+  const [side, setSideState] = useState<Side>("long");
+  const [lots, setLotsState] = useState("");
   const [toleranceBps, setToleranceBps] = useState<number>(DEFAULT_SLIPPAGE_BPS);
 
   const parsedLots = parseDecimal(lots, 18);
@@ -51,8 +52,16 @@ export function Ticket({
     query: { enabled: Boolean(deployment) && seriesId !== undefined && size !== null && size !== 0n },
   });
 
-  const { writeContract, data: hash, isPending, error } = useWriteContract();
-  const { isLoading: confirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const tx = useTx();
+  // A new order starts clean: the last fill's confirmation or error belongs to that order.
+  const setSide = (next: Side) => {
+    if (tx.status === "success" || tx.status === "error") tx.reset();
+    setSideState(next);
+  };
+  const setLots = (next: string) => {
+    if (tx.status === "success" || tx.status === "error") tx.reset();
+    setLotsState(next);
+  };
 
   const notional =
     quoted && magnitude !== null ? (magnitude * quoted) / 10n ** 30n : undefined;
@@ -77,7 +86,7 @@ export function Ticket({
   const insufficient =
     marginRequired !== undefined && freeCollateral !== undefined && marginRequired > freeCollateral;
 
-  const busy = isPending || confirming;
+  const busy = tx.busy;
   const canSubmit =
     Boolean(deployment) &&
     seriesId !== undefined &&
@@ -180,29 +189,37 @@ export function Ticket({
         <Button
           variant={side === "long" ? "good" : "critical"}
           disabled={!canSubmit}
-          onClick={() =>
-            deployment &&
-            seriesId !== undefined &&
-            size !== null &&
-            priceLimit !== undefined &&
-            writeContract({
-              address: deployment.market,
-              abi: ingotMarketAbi,
-              functionName: "trade",
-              args: [seriesId, size, priceLimit],
-            })
-          }
+          onClick={async () => {
+            if (!deployment || seriesId === undefined || size === null || priceLimit === undefined) return;
+            const receipt = await tx.send(
+              {
+                address: deployment.market,
+                abi: ingotMarketAbi,
+                functionName: "trade",
+                args: [seriesId, size, priceLimit],
+              },
+              {
+                label: `${side === "long" ? "Long" : "Short"} ${lots} lot${lots === "1" ? "" : "s"}`,
+                success: quoted ? `Filled near ${formatPrice(quoted)}` : "Filled",
+              },
+            );
+            if (receipt) setLotsState("");
+          }}
         >
-          {busy ? "Submitting…" : insufficient ? "Insufficient free collateral" : side === "long" ? "Go long" : "Go short"}
+          {tx.status === "signing"
+            ? "Confirm in wallet…"
+            : tx.status === "pending"
+              ? "Filling…"
+              : insufficient
+                ? "Insufficient free collateral"
+                : side === "long"
+                  ? "Go long"
+                  : "Go short"}
         </Button>
       </div>
 
-      {isSuccess && <p className="mt-3 text-center text-[12.5px] text-good">Filled. Your position is live.</p>}
-      {error && (
-        <p className="mt-3 break-words text-[12px] text-critical">
-          {error.message.split("\n")[0]}
-        </p>
-      )}
+      {tx.status === "success" && <p className="mt-3 text-center text-[12.5px] text-good">Filled. Your position is live.</p>}
+      {tx.status === "error" && <p className="mt-3 break-words text-[12px] text-critical">{tx.error}</p>}
 
       <Disclosure>
         Your order will not fill worse than the bound above. Positions are marked continuously

@@ -1,12 +1,13 @@
 "use client";
 
-import { useReadContract } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 
 import { MarketActivity } from "@/components/Activity";
 import { IndexChart } from "@/components/charts";
 import { Collateral } from "@/components/Collateral";
 import { Reveal } from "@/components/fx/motion";
 import { NotDeployed } from "@/components/NotDeployed";
+import { PositionPanel } from "@/components/Position";
 import { AppFrame, PageHeader } from "@/components/PageHeader";
 import { Ticket } from "@/components/Ticket";
 import { Card, Empty, LiveDot, Row, Stat, StatStrip } from "@/components/ui";
@@ -16,16 +17,31 @@ import {
   formatHours,
   formatLots,
   formatPrice,
-  formatSignedUsdc,
-  formatUsdc,
-  healthRatio,
 } from "@/lib/format";
+
+/// When the newest print was taken, in UTC, so a stale index is never mistaken for a live one.
+function asOf(timestamp: number): string {
+  const date = new Date(timestamp * 1000);
+  const ageHours = (Date.now() - date.getTime()) / 3_600_000;
+  if (ageHours < 1) return "under an hour ago";
+  if (ageHours < 48) return `${Math.round(ageHours)}h ago`;
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+}
 
 export default function Terminal() {
   const { deployment } = useDeployment();
   const { seriesId, series, mark } = useFrontSeries();
   const history = useIndexHistory();
   const account = useAccountState(seriesId);
+
+  const { address } = useAccount();
+  const { data: openSeries } = useReadContract({
+    address: deployment?.market,
+    abi: ingotMarketAbi,
+    functionName: "openSeriesOf",
+    args: address ? [address] : undefined,
+    query: { enabled: Boolean(deployment && address) },
+  });
 
   const { data: takerFeeBps } = useReadContract({
     address: deployment?.market,
@@ -57,11 +73,6 @@ export default function Terminal() {
     : undefined;
 
   const position = account.position;
-  const unrealized =
-    position && mark && position.size !== 0n
-      ? (position.size * mark) / 10n ** 30n - position.cost
-      : 0n;
-  const health = healthRatio(account.equity ?? 0n, account.maintenanceRequirement ?? 0n);
 
   return (
     <AppFrame>
@@ -93,7 +104,7 @@ export default function Terminal() {
         <Stat
           label="Index"
           value={latest ? `$${latest.price.toFixed(4)}` : "—"}
-          detail="USD / GPU-hour, H100 on-demand"
+          detail={latest ? `USD / GPU-hr · as of ${asOf(latest.timestamp)}` : "USD / GPU-hour, H100 on-demand"}
           accent="cobalt"
         />
         <Stat
@@ -124,8 +135,11 @@ export default function Terminal() {
       </StatStrip>
       </Reveal>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_340px]">
-        <div className="min-w-0 space-y-4">
+      {/* One grid, so phones read chart → ticket → position → collateral (the ticket is the page's
+          main action), while desktop keeps the ticket in a sticky right column spanning the rest.
+          The last row is flexible so the ticket's height never opens gaps between left cards. */}
+      <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_340px] lg:grid-rows-[auto_auto_auto_1fr]">
+        <div className="min-w-0 lg:col-start-1 lg:row-start-1">
           <Reveal delay={0.05}>
             <Card
               eyebrow="Oracle"
@@ -135,48 +149,9 @@ export default function Terminal() {
               <IndexChart data={history} />
             </Card>
           </Reveal>
-
-          <Reveal delay={0.1}>
-            <Card eyebrow="Portfolio" title="Your position" subtitle="Marked continuously against the index">
-              {!position || position.size === 0n ? (
-                <Empty>No open position in the front contract. Open one from the ticket.</Empty>
-              ) : (
-                <div className="grid gap-x-10 sm:grid-cols-2">
-                  <div>
-                    <Row label="Side" value={position.size > 0n ? "Long" : "Short"} tone={position.size > 0n ? "good" : "critical"} />
-                    <Row label="Size" value={`${formatLots(position.size)} lots`} />
-                    <Row label="GPU-hours" value={formatHours(position.size)} />
-                    <Row label="Cost basis" value={formatUsdc(position.cost)} />
-                  </div>
-                  <div>
-                    <Row label="Unrealized" value={formatSignedUsdc(unrealized)} tone={unrealized >= 0n ? "good" : "critical"} />
-                    <Row label="Equity" value={account.equity === undefined ? "—" : formatUsdc(account.equity)} />
-                    <Row
-                      label="Maintenance"
-                      value={account.maintenanceRequirement === undefined ? "—" : formatUsdc(account.maintenanceRequirement)}
-                    />
-                    <Row
-                      label="Health"
-                      value={health === null ? "—" : `${health.toFixed(2)}×`}
-                      hint={health !== null && health < 1.2 ? "at risk" : undefined}
-                      tone={health === null ? "muted" : health < 1 ? "critical" : health < 1.2 ? "default" : "good"}
-                    />
-                  </div>
-                </div>
-              )}
-            </Card>
-          </Reveal>
-
-          <Reveal delay={0.15}>
-            <Card eyebrow="Margin" title="Collateral" subtitle="Margin is shared across every position you hold">
-              <Collateral balance={account.balance} freeCollateral={account.freeCollateral} />
-            </Card>
-          </Reveal>
-
-          <MarketActivity seriesId={seriesId} />
         </div>
 
-        <div className="space-y-4 lg:sticky lg:top-28 lg:self-start">
+        <div className="lg:sticky lg:top-28 lg:col-start-2 lg:row-span-4 lg:row-start-1 lg:self-start">
           <Reveal delay={0.1}>
             <Card eyebrow="Ticket" title="Open a position" subtitle={series ? "Front contract · settles to the window average" : undefined}>
               <Ticket
@@ -188,7 +163,34 @@ export default function Terminal() {
               />
             </Card>
           </Reveal>
+        </div>
 
+        <div className="min-w-0 lg:col-start-1 lg:row-start-2">
+          <Reveal delay={0.1}>
+            <Card eyebrow="Portfolio" title="Your position" subtitle="Marked continuously against the index">
+              <PositionPanel
+                seriesId={seriesId}
+                position={position}
+                mark={mark}
+                equity={account.equity}
+                maintenanceRequirement={account.maintenanceRequirement}
+                maintenanceBps={account.maintenanceBps}
+                onlyPosition={(openSeries?.length ?? 0) <= 1}
+              />
+            </Card>
+          </Reveal>
+        </div>
+
+        <div className="min-w-0 lg:col-start-1 lg:row-start-3">
+          <Reveal delay={0.15}>
+            <Card eyebrow="Margin" title="Collateral" subtitle="Margin is shared across every position you hold">
+              <Collateral balance={account.balance} freeCollateral={account.freeCollateral} />
+            </Card>
+          </Reveal>
+        </div>
+
+        <div className="min-w-0 lg:col-start-1 lg:row-start-4">
+          <MarketActivity seriesId={seriesId} />
         </div>
       </div>
     </AppFrame>

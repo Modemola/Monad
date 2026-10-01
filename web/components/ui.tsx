@@ -174,12 +174,15 @@ export function TextInput({
   placeholder,
   suffix,
   invalid,
+  shortcuts,
 }: {
   value: string;
   onChange: (next: string) => void;
   placeholder?: string;
   suffix?: string;
   invalid?: boolean;
+  /// Quick fills shown inside the field, e.g. "Max".
+  shortcuts?: { label: string; value: string | undefined }[];
 }) {
   return (
     <div
@@ -189,11 +192,25 @@ export function TextInput({
     >
       <input
         value={value}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={(event) => onChange(event.target.value.replace(/,/g, ""))}
         placeholder={placeholder}
         inputMode="decimal"
-        className="tnum w-full bg-transparent font-mono text-[16px] text-ink outline-none placeholder:text-ink-muted/40"
+        autoComplete="off"
+        spellCheck={false}
+        aria-invalid={invalid || undefined}
+        className="tnum w-full min-w-0 bg-transparent font-mono text-[16px] text-ink outline-none placeholder:text-ink-muted/40"
       />
+      {shortcuts?.map((shortcut) => (
+        <button
+          key={shortcut.label}
+          type="button"
+          disabled={shortcut.value === undefined}
+          onClick={() => shortcut.value !== undefined && onChange(shortcut.value)}
+          className="shrink-0 border border-gold/30 px-1.5 py-0.5 font-mono text-[9.5px] uppercase tracking-[0.16em] text-gold/80 transition-colors hover:border-gold/70 hover:text-gold disabled:opacity-30"
+        >
+          {shortcut.label}
+        </button>
+      ))}
       {suffix && <span className="label shrink-0">{suffix}</span>}
     </div>
   );
