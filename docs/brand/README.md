@@ -1,26 +1,32 @@
 # Brand assets
 
-The mark is a silicon ingot in section: the bar compute is cut from, and the bar a commodity
-market trades. It is the same geometry the app's nav renders, so the submission graphic and the
-product agree.
+The mark is an ingot in section: the bar compute is cut from, and the bar a commodity market
+trades. It is the same geometry and the same three gold gradients the app's nav renders, so the
+submission graphics and the product agree.
 
 | File | Use |
 |---|---|
 | `ingot-logo.png` | 1024×1024 square logo — the submission's project logo |
-| `ingot-cover.png` | 1600×900 graphic with wordmark and one-line description |
+| `ingot-cover.png` | 1600×900 cover: headline, the index on a split-flap board, eight venues against one index |
 | `ingot-mark.svg` | Vector source, for any size not covered above |
+| `../../web/app/opengraph-image.png` | 1200×630 social preview card |
 
-The flat colours (`#3987e5` on `#0d0d0d`) are the original submission graphics. The product now
-uses the "Foundry" palette: warm black, bone type and molten gold (`web/tailwind.config.ts`). The
-same mark is cast in gold in the app (`web/components/Nav.tsx`, `web/app/icon.svg`), the landing
-hero renders a hallmarked 3D gold bar, and the social preview card is
-`web/app/opengraph-image.png`.
+The palette is "Foundry" (`web/tailwind.config.ts`): warm black `#090807`, bone type `#f3ecdf`,
+one molten-gold accent `#e8b661`. Type is Newsreader for display and Geist / Geist Mono for
+interface and figures — the same font files the app ships.
 
-Both PNGs are rendered from the same geometry by `tools/render_brand.py` (needs Pillow):
+All three PNGs are rendered from HTML by one script, in the app's own fonts:
 
 ```bash
-python3 tools/render_brand.py
+(cd web && pnpm install)                         # the fonts come from web/node_modules
+npm i -g playwright && npx playwright install chromium
+NODE_PATH=$(npm root -g) node tools/brand/render.mjs
 ```
 
-Change the mark and you must change all three, or the submission graphic and the product drift
+The index level, provider prices and the dearest-to-cheapest ratio on the graphics are read from
+`web/lib/story-data.ts`, the split-flap board's basis table and `docs/BACKTEST.md`, so re-running
+the script after the data changes keeps the graphics and the app showing the same numbers.
+
+Change the mark and you must change it in `web/components/Nav.tsx`, `web/app/icon.svg`,
+`ingot-mark.svg` and `tools/brand/render.mjs`, or the submission graphics and the product drift
 apart.

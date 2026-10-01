@@ -35,8 +35,9 @@ as a plane of light, and an interactive version of the hedged-versus-unhedged re
 gold bar in the hero, stamped with its hallmark, is rendered in real time.
 
 **Trade** — the H100 rental index, published onchain. Every print carries the hash of the
-methodology behind it, how many venue quotes it was built from, and how many venues. Hover the
-chart. Then put 10 lots in the ticket: before you sign, it shows the mark, your actual fill, the
+methodology behind it, how many venue quotes it was built from, and how many venues. The chart
+starts with the real 78-day history the deploy backfilled — the same series the overview and the
+backtest use — and the scheduled publisher extends it every six hours. Hover the chart. Then put 10 lots in the ticket: before you sign, it shows the mark, your actual fill, the
 notional, the margin it locks, the fee, and the worst price the order can fill at — which the
 contract enforces, not just the interface.
 
@@ -60,13 +61,16 @@ git submodule update --init --recursive
 cd contracts && forge test
 ```
 
-87 tests. The ones worth reading:
+91 tests. The ones worth reading:
 
 - `test_invariant_marketIsZeroSum` — total equity equals total deposits through opening, index
   moves, partial closes, flips, liquidation and settlement.
 - `test_thesis_poolNavIsIndexInvariant` — credit pool NAV does not move when the index does.
 - `test_backtest_walkForwardHedgedVersusUnhedged` — replays 78 days of real posted H100 rates
   through the real contracts. Run it with `-vv` to see the cohort table.
+- `SeedHistory.t.sol` — the deploy seeds the real 78-day index history, not a made-up series;
+  this proves every print clears the index's production guards and the live publisher continues
+  from the last real level.
 - `IndexerTrace.t.sol` + `indexer/test/replay.test.ts`: a session recorded from the real
   contracts is replayed through the Envio indexer (`cd indexer && pnpm install && pnpm codegen &&
   pnpm test`). Every position, cost basis and open-interest figure, the vault's included, must

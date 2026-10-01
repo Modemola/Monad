@@ -1,5 +1,7 @@
 # Ingot
 
+![Ingot — compute, priced & hedged. The H100 index on a split-flap board, and eight GPU providers' prices against one index.](docs/brand/ingot-cover.png)
+
 **A cash-settled market for compute, and the credit layer it unlocks.**
 
 Built for Metropolis — Onchain Finance & Trading track. Deployed on Monad.
@@ -54,7 +56,7 @@ a wallet and testnet gas.
 | [`docs/INDEXER.md`](docs/INDEXER.md) | The Envio HyperIndex data layer, and how it is proven against the contracts |
 | [`docs/DEPLOY.md`](docs/DEPLOY.md) | Deploying contracts and hosting the front end |
 | [`docs/VIDEO-SCRIPTS.md`](docs/VIDEO-SCRIPTS.md) | Demo and pitch scripts |
-| [`docs/brand/`](docs/brand) | Logo, cover and mark |
+| [`docs/brand/`](docs/brand) | Logo, cover, mark and the script that renders them |
 
 ## Repository layout
 
@@ -66,7 +68,7 @@ contracts/      Foundry workspace — index, market, vault, credit
 web/            Next.js front end — terminal, credit desk, underwriter vault
 oracle/         Chainlink CRE workflow that publishes the index by DON consensus
 indexer/        Envio HyperIndex indexer: trades, both sides of every position, loans, history
-tools/          Index construction, basis analysis, scheduled publisher, brand renderer
+tools/          Index construction, basis analysis, scheduled publisher, brand renderer (tools/brand)
 scripts/        One-command deploy
 docs/           Judge walkthrough, deploy, backtest, security model, oracle, indexer
   brand/        Logo, cover and mark
@@ -98,8 +100,9 @@ before anyone connects.
 | Envio indexer — replayed against a recorded contract session | Built, 9 tests passing |
 | Front end — terminal, credit desk, underwriter vault | Built, builds clean |
 | Backtest over historical rental data | Replayed over 78 days, 3 tests passing |
+| Deploy seed — the real 78-day index history, on chain | Built, 4 tests passing |
 
-87 contract tests, 9 indexer tests and 6 scheduled-publisher tests, all passing. Deployment to Monad testnet is the remaining step.
+91 contract tests, 9 indexer tests and 6 scheduled-publisher tests, all passing. Deployment to Monad testnet is the remaining step.
 
 ## The number that makes the case
 

@@ -132,7 +132,8 @@ export function useAccountState(seriesId: bigint | undefined) {
   };
 }
 
-const HISTORY_DEPTH = 72;
+/// Enough for the 78-day backfill plus the first few days of live prints.
+const HISTORY_DEPTH = 96;
 
 /// The index's recent prints, for the chart. Read straight from the oracle rather than an
 /// indexer — at this depth it is one multicall, and it keeps the chart honest about what
