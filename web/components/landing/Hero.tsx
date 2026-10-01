@@ -38,7 +38,7 @@ export function Hero() {
 
       <motion.div
         style={{ y: textY, opacity: textOpacity }}
-        className="relative z-10 mx-auto flex max-w-5xl flex-col items-center px-4 pt-32 text-center sm:px-6 sm:pt-36"
+        className="relative z-10 mx-auto flex max-w-5xl flex-col items-center px-4 pt-32 text-center sm:px-6 sm:pt-36 [@media(max-height:820px)]:sm:pt-28"
       >
         <motion.span
           initial={{ opacity: 0, y: 8 }}
@@ -50,7 +50,7 @@ export function Hero() {
           GPU compute, as a market<span className="hidden sm:inline">&nbsp;· on Monad</span>
         </motion.span>
 
-        <h1 className="mt-7 font-display text-[clamp(3rem,7.4vw,6.8rem)] font-light leading-[0.98] tracking-[-0.025em]">
+        <h1 className="mt-7 font-display text-[clamp(3rem,min(7.4vw,11svh),6.8rem)] [@media(max-height:820px)]:mt-5 font-light leading-[0.98] tracking-[-0.025em]">
           <SplitWords text="Compute," className="block" delay={0.3} wordClassName={() => "text-ink"} />
           <SplitWords
             text="priced & hedged."
@@ -64,7 +64,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 1, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-6 max-w-[36rem] text-[15.5px] leading-relaxed text-ink-secondary sm:text-[17px]"
+          className="mt-6 max-w-[36rem] [@media(max-height:820px)]:mt-4 text-[15.5px] leading-relaxed text-ink-secondary sm:text-[17px]"
         >
           The rate a GPU rents for is the most important number in AI infrastructure, and nobody can
           hedge it. Ingot is a cash-settled market for that rate, and loans whose hedge opens in the
@@ -75,7 +75,7 @@ export function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 1.2 }}
-          className="mt-8"
+          className="mt-8 [@media(max-height:820px)]:mt-6"
         >
           <SplitFlap value={`$${LATEST.toFixed(4)}`} label="INGOT H100 INDEX" sequence={BOARD} size="md" />
           <div className="label mt-2.5">USD per GPU-hour · eight venues flip, one price lands</div>
@@ -85,7 +85,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 1.4, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-9 flex flex-col items-center gap-3 sm:flex-row"
+          className="mt-9 flex flex-col items-center gap-3 sm:flex-row [@media(max-height:820px)]:mt-7"
         >
           <Magnetic strength={0.18}>
             <Link
