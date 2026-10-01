@@ -89,7 +89,7 @@ export function Thesis() {
       <Reveal>
         <Label>I — The problem</Label>
       </Reveal>
-      <h2 className="mt-5 max-w-4xl font-display text-[clamp(2.3rem,5.4vw,4.6rem)] font-light leading-[1.03] tracking-[-0.02em]">
+      <h2 className="text-balance mt-5 max-w-4xl font-display text-[clamp(2.3rem,5.4vw,4.6rem)] font-light leading-[1.03] tracking-[-0.02em]">
         <SplitWords text="The most important price in AI has no market." wordClassName={goldWords("no", "market")} />
       </h2>
       <Reveal delay={0.15}>
@@ -190,7 +190,7 @@ export function IndexStage() {
                 animate={{ opacity: stage === i ? 1 : 0, y: stage === i ? 0 : stage > i ? -18 : 18, filter: stage === i ? "blur(0px)" : "blur(6px)" }}
                 transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
               >
-                <h2 className="font-display text-[clamp(2.2rem,5vw,4.2rem)] font-light leading-[1.02] tracking-[-0.02em]">
+                <h2 className="text-balance font-display text-[clamp(2.2rem,5vw,4.2rem)] font-light leading-[1.02] tracking-[-0.02em]">
                   {i === 2 ? <span className="italic text-molten">{c.k}</span> : c.k}
                 </h2>
                 <p className="mt-3 max-w-md text-[14.5px] leading-relaxed text-ink-secondary">{c.s}</p>
@@ -235,7 +235,7 @@ export function IndexStory() {
           <Reveal>
             <Label>III — 78 days</Label>
           </Reveal>
-          <h2 className="mt-5 font-display text-[clamp(2.2rem,4.8vw,4rem)] font-light leading-[1.04] tracking-[-0.02em]">
+          <h2 className="text-balance mt-5 font-display text-[clamp(2.2rem,4.8vw,4rem)] font-light leading-[1.04] tracking-[-0.02em]">
             <SplitWords text="Real prices, not a simulation." wordClassName={goldWords("Real", "prices")} />
           </h2>
           <Reveal delay={0.1}>
@@ -262,7 +262,9 @@ export function IndexStory() {
       <Reveal delay={0.1} className="relative mt-10 border border-hairline bg-coal p-4 sm:p-7">
         <Hallmarks />
         <div className="mb-4 flex items-center justify-between">
-          <span className="label">Ingot H100 index · USD per GPU-hour</span>
+          <span className="label">
+            Ingot H100 index<span className="hidden sm:inline"> · USD per GPU-hour</span>
+          </span>
           <span className="label text-gold/70">Series 0001 · 78D</span>
         </div>
         <IndexChart data={data} height={300} width={980} dateOnly />
@@ -302,21 +304,24 @@ export function HowItWorks() {
       <Reveal>
         <Label>IV — How it works</Label>
       </Reveal>
-      <h2 className="mt-5 max-w-3xl font-display text-[clamp(2.2rem,4.8vw,4rem)] font-light leading-[1.04] tracking-[-0.02em]">
-        <SplitWords text="Three contracts. One bar of value." wordClassName={goldWords("One", "bar", "of", "value")} />
+      <h2 className="mt-5 max-w-4xl text-balance font-display text-[clamp(2.2rem,4.8vw,4rem)] font-light leading-[1.04] tracking-[-0.02em]">
+        <SplitWords text="Three layers. One bar of value." wordClassName={goldWords("One", "bar", "of", "value")} />
       </h2>
 
       <div className="relative mt-14 grid gap-px border border-hairline bg-hairline md:grid-cols-3">
         <Hallmarks />
         {STEPS.map((step, i) => (
-          <Reveal key={step.n} delay={i * 0.1} className="group relative bg-coal p-7 transition-colors duration-500 hover:bg-ash sm:p-8">
+          <Reveal key={step.n} delay={i * 0.1} className="group relative flex flex-col bg-coal p-7 transition-colors duration-500 hover:bg-ash sm:p-8">
             <div className="flex items-start justify-between">
               <span className="font-display text-[56px] font-light italic leading-none text-gold/90">{step.n}</span>
               <span className="border border-hairline px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-secondary">{step.tag}</span>
             </div>
             <h3 className="mt-8 font-display text-[24px] font-light leading-tight text-ink">{step.title}</h3>
             <p className="mt-4 text-[14px] leading-relaxed text-ink-secondary">{step.body}</p>
-            <div className="mt-8 h-px w-full origin-left scale-x-[0.15] bg-gold/60 transition-transform duration-700 group-hover:scale-x-100" />
+            {/* Pinned to the card's foot, so the rules line up whatever the copy length. */}
+            <div className="mt-auto pt-8">
+              <div className="h-px w-full origin-left scale-x-[0.15] bg-gold/60 transition-transform duration-700 group-hover:scale-x-100" />
+            </div>
           </Reveal>
         ))}
       </div>
@@ -353,9 +358,9 @@ export function TheCase() {
       <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
         <div>
           <Reveal>
-            <Label>V — The case</Label>
+            <Label>VI — The case</Label>
           </Reveal>
-          <h2 className="mt-5 font-display text-[clamp(2.2rem,4.6vw,3.8rem)] font-light leading-[1.04] tracking-[-0.02em]">
+          <h2 className="text-balance mt-5 font-display text-[clamp(2.2rem,4.6vw,3.8rem)] font-light leading-[1.04] tracking-[-0.02em]">
             <SplitWords text="Hedged, the lender is whole at every rate." wordClassName={goldWords("whole")} />
           </h2>
           <Reveal delay={0.1}>
@@ -425,7 +430,7 @@ function CaseFigure({ label, value, colour, divider }: { label: string; value: n
 const STACK = [
   {
     name: "Monad",
-    line: "Every fill, every hedge, in one block",
+    line: "Loan and hedge in one block",
     body: "Sub-second finality is what lets a loan and its hedge open atomically, and lets the mark track the index in real time.",
   },
   {
@@ -444,7 +449,7 @@ export function BuiltWith() {
   return (
     <section className="relative mx-auto max-w-6xl px-4 pt-36 sm:px-6">
       <Reveal>
-        <Label>VI — Built with</Label>
+        <Label>VII — Built with</Label>
       </Reveal>
       <div className="relative mt-8 grid gap-px border border-hairline bg-hairline md:grid-cols-3">
         <Hallmarks />
@@ -466,11 +471,11 @@ export function BuiltWith() {
 
 export function Closing() {
   return (
-    <section className="relative mt-40 overflow-hidden border-y border-hairline">
+    <section className="relative mt-40 overflow-hidden border-t border-hairline">
       <div className="assay absolute inset-0" />
       <div className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[820px] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(ellipse,rgba(232,182,97,0.16),transparent_65%)]" />
       <div className="relative mx-auto max-w-4xl px-4 py-32 text-center sm:px-6">
-        <h2 className="font-display text-[clamp(2.6rem,6.4vw,5.6rem)] font-light leading-[1] tracking-[-0.025em]">
+        <h2 className="text-balance font-display text-[clamp(2.6rem,6.4vw,5.6rem)] font-light leading-[1] tracking-[-0.025em]">
           <SplitWords text="Price the future of compute." wordClassName={goldWords("future")} />
         </h2>
         <Reveal delay={0.2}>
