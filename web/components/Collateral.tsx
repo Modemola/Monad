@@ -48,6 +48,17 @@ export function Collateral({
     query: { enabled: Boolean(deployment && address) },
   });
 
+  // Only realized cash can leave the market, so what is withdrawable is the smaller of free
+  // collateral and the cash balance — unrealized profit backs margin but is not paid out.
+  const withdrawable =
+    freeCollateral === undefined || balance === undefined
+      ? undefined
+      : freeCollateral < (balance > 0n ? balance : 0n)
+        ? freeCollateral
+        : balance > 0n
+          ? balance
+          : 0n;
+
   const needsApproval = parsed !== null && (allowance ?? 0n) < parsed;
   const busy = isPending || confirming;
 
@@ -56,9 +67,9 @@ export function Collateral({
       <Row label="Wallet USDC" value={walletBalance === undefined ? "—" : formatUsdc(walletBalance)} />
       <Row label="Posted as margin" value={balance === undefined ? "—" : formatUsdc(balance)} />
       <Row
-        label="Free collateral"
-        value={freeCollateral === undefined ? "—" : formatUsdc(freeCollateral)}
-        hint="withdrawable"
+        label="Withdrawable"
+        value={withdrawable === undefined ? "—" : formatUsdc(withdrawable)}
+        hint="realized cash above margin"
         tone="muted"
       />
 
