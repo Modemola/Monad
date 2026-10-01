@@ -56,7 +56,7 @@ export function Collateral({
         tone="muted"
       />
 
-      <div className="mt-3 space-y-2">
+      <div className="mt-4 space-y-2.5">
         <Field label="Amount" hint="USDC">
           <TextInput
             value={amount}
@@ -121,7 +121,7 @@ export function Collateral({
 
         {deployment && walletBalance !== undefined && walletBalance < 100n * USDC && (
           <Button
-            variant="ghost"
+            variant="gold"
             disabled={!address || busy}
             onClick={() =>
               address &&

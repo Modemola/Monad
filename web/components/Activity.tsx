@@ -53,7 +53,7 @@ export function MarketActivity({ seriesId }: { seriesId: bigint | undefined }) {
   const inventory = big(series?.vaultInventory);
 
   return (
-    <Card title="Market activity" subtitle="Indexed by Envio HyperIndex">
+    <Card eyebrow="Envio HyperIndex" title="Market activity" subtitle="Every fill, both sides of it, including the vault's">
       {isError ? (
         <Empty>Indexer unreachable. Trading is unaffected: it reads the contracts directly.</Empty>
       ) : (
@@ -79,7 +79,7 @@ export function MarketActivity({ seriesId }: { seriesId: bigint | undefined }) {
               <Empty>No trades in this series yet.</Empty>
             ) : (
               <table className="w-full text-left text-[12px]">
-                <thead className="text-ink-muted">
+                <thead className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">
                   <tr className="border-b border-hairline">
                     <th className="pb-2 font-normal">Time</th>
                     <th className="pb-2 font-normal">Side</th>
@@ -88,11 +88,11 @@ export function MarketActivity({ seriesId }: { seriesId: bigint | undefined }) {
                     <th className="pb-2 text-right font-normal">Account</th>
                   </tr>
                 </thead>
-                <tbody className="tnum">
+                <tbody className="tnum font-mono text-[12px]">
                   {(data?.Trade ?? []).map((trade) => {
                     const size = big(trade.size);
                     return (
-                      <tr key={trade.id} className="border-b border-hairline/60 last:border-0">
+                      <tr key={trade.id} className="border-b border-white/[0.04] last:border-0">
                         <td className="py-1.5 text-ink-muted">{time(trade.timestamp)}</td>
                         <td className={`py-1.5 ${size > 0n ? "text-good" : "text-critical"}`}>
                           {size > 0n ? "Buy" : "Sell"}
@@ -165,6 +165,7 @@ export function LoanBook() {
 
   return (
     <Card
+      eyebrow="Envio HyperIndex"
       title="Loan book"
       subtitle={
         protocol
@@ -179,7 +180,7 @@ export function LoanBook() {
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-[12px]">
-            <thead className="text-ink-muted">
+            <thead className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">
               <tr className="border-b border-hairline">
                 <th className="pb-2 font-normal">Loan</th>
                 <th className="pb-2 font-normal">Borrower</th>
@@ -191,11 +192,11 @@ export function LoanBook() {
                 <th className="pb-2 text-right font-normal">Status</th>
               </tr>
             </thead>
-            <tbody className="tnum">
+            <tbody className="tnum font-mono text-[12px]">
               {(data?.Loan ?? []).map((loan) => {
                 const pnl = loan.hedgePnl === null ? undefined : big(loan.hedgePnl);
                 return (
-                  <tr key={loan.id} className="border-b border-hairline/60 last:border-0">
+                  <tr key={loan.id} className="border-b border-white/[0.04] last:border-0">
                     <td className="py-1.5 text-ink-muted">#{loan.id}</td>
                     <td className="py-1.5 text-ink-muted">{shortAddress(loan.borrower_id)}</td>
                     <td className="py-1.5">{(loan.basisRatioBps / 100).toFixed(0)}%</td>

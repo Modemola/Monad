@@ -100,7 +100,7 @@ export function RecoveryPanel({
   return (
     <div className="space-y-4">
       {worst && (
-        <p className="rounded border border-critical/30 bg-critical/5 px-3 py-2 text-[12px] leading-relaxed text-ink-secondary">
+        <p className="rounded-2xl border border-critical/25 bg-gradient-to-r from-critical/[0.1] to-transparent px-4 py-3 text-[12.5px] leading-relaxed text-ink-secondary">
           If the rate settles at{" "}
           <span className="tnum text-ink">${worst.price.toFixed(2)}</span>/GPU-hour, an unhedged
           lender on this loan recovers{" "}
@@ -117,9 +117,9 @@ export function RecoveryPanel({
         <div className="mb-2 flex items-baseline justify-between">
           <span className="text-[12px] text-ink-secondary">
             If the contract settles at{" "}
-            <span className="tnum text-ink">{formatPrice(selectedPrice)}</span> / GPU-hour
+            <span className="tnum font-mono text-ink">{formatPrice(selectedPrice)}</span> / GPU-hour
           </span>
-          <span className="text-[11px] text-ink-muted">drag to explore</span>
+          <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-gold/80">drag to explore</span>
         </div>
         <input
           type="range"
@@ -132,7 +132,7 @@ export function RecoveryPanel({
         />
       </div>
 
-      <div className="grid gap-x-8 sm:grid-cols-2">
+      <div className="grid gap-x-10 sm:grid-cols-2">
         <div>
           <Row label="Debt at maturity" value={formatUsdc(debt)} />
           <Row
@@ -150,7 +150,7 @@ export function RecoveryPanel({
           <Row
             label="Lender recovery, hedged"
             value={selected ? formatUsdc(selected[3]) : "—"}
-            tone="good"
+            tone="gold"
           />
           <Row
             label="Lender recovery, unhedged"
