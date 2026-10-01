@@ -16,12 +16,12 @@ import { AppFrame, PageHeader } from "@/components/PageHeader";
 import { Button, Card, Disclosure, Field, Row, Stat, StatStrip, TextInput } from "@/components/ui";
 import { ingotMarketAbi, mockUSDCAbi, underwriterVaultAbi } from "@/lib/abis";
 import { useDeployment, useFrontSeries } from "@/lib/useIngot";
-import { formatLots, formatSignedUsdc, formatUsdc, parseDecimal } from "@/lib/format";
+import { formatLots, formatPrice, formatSignedUsdc, formatUsdc, parseDecimal } from "@/lib/format";
 
 export default function Underwrite() {
   const { address } = useAccount();
   const { deployment } = useDeployment();
-  const { seriesId } = useFrontSeries();
+  const { seriesId, mark } = useFrontSeries();
   const [amount, setAmount] = useState("");
 
   const parsed = parseDecimal(amount, 6);
@@ -79,6 +79,14 @@ export default function Underwrite() {
   const supply = pool?.[3]?.result as bigint | undefined;
 
   const position = inventory as { size: bigint; cost: bigint } | undefined;
+  // Size is 18-decimal GPU-hours and cost 6-decimal USDC, so cost × 1e30 / size is an
+  // 18-decimal price, and size × mark / 1e30 is the inventory's value in USDC.
+  const holding = position && position.size !== 0n ? position : undefined;
+  const entryPrice = holding
+    ? ((holding.cost < 0n ? -holding.cost : holding.cost) * 10n ** 30n) /
+      (holding.size < 0n ? -holding.size : holding.size)
+    : undefined;
+  const inventoryPnl = holding && mark ? (holding.size * mark) / 10n ** 30n - holding.cost : undefined;
   const needsApproval = parsed !== null && (allowance ?? 0n) < parsed;
   const busy = isPending || confirming;
 
@@ -237,9 +245,15 @@ export default function Underwrite() {
                 tone={position && position.size !== 0n ? "default" : "muted"}
               />
               <Row
-                label="Inventory cost basis"
-                value={position && position.size !== 0n ? formatSignedUsdc(position.cost) : "—"}
-                tone="muted"
+                label="Average entry"
+                value={entryPrice === undefined ? "—" : `${formatPrice(entryPrice)} / GPU-hr`}
+                tone={entryPrice === undefined ? "muted" : "default"}
+              />
+              <Row
+                label="Unrealized on inventory"
+                hint="at the mark"
+                value={inventoryPnl === undefined ? "—" : formatSignedUsdc(inventoryPnl)}
+                tone={inventoryPnl === undefined ? "muted" : inventoryPnl >= 0n ? "good" : "critical"}
               />
             </div>
           </div>

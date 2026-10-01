@@ -133,9 +133,12 @@ export function Stat({
 }) {
   const toneClass = { default: "text-ink", good: "text-good", critical: "text-critical" }[tone];
   return (
-    <div className="relative bg-coal px-5 py-5">
+    <div className="relative min-w-0 bg-coal px-4 py-5 sm:px-5">
       <div className="label">{label}</div>
-      <div className="tnum mt-3 font-mono text-[24px] leading-none tracking-tight sm:text-[26px]">
+      {/* Money like "$2,003,067.82" is too wide for half a phone screen at full size. */}
+      <div
+        className={`tnum mt-3 font-mono leading-none tracking-tight sm:text-[26px] ${value.length > 9 ? "text-[17px]" : "text-[24px]"}`}
+      >
         <Ticking value={value} className="" textClassName={toneClass} />
       </div>
       {detail && <div className="mt-2 text-[12px] text-ink-muted">{detail}</div>}
