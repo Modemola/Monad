@@ -32,6 +32,8 @@ jobs:
           node-version: 22
 
       - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.5.1
 
       - name: Compute the print
         id: print
@@ -68,7 +70,9 @@ jobs:
           # print that moves more than the deviation band, so a broken upstream feed fails here
           # rather than repricing the market.
           LAST=$(cast call "$INDEX" 'finalizedThrough()(uint64)' --rpc-url "$RPC" | awk '{print $1}')
-          NOW=$(date +%s)
+          # The chain's clock, not the runner's: a runner even a second ahead of the latest block
+          # would be rejected as a print from the future.
+          NOW=$(cast block latest --field timestamp --rpc-url "$RPC")
 
           if [ "$NOW" -le "$LAST" ]; then
             echo "index already has a print at or after now ($LAST); nothing to do"
