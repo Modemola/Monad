@@ -42,11 +42,19 @@ jobs:
           echo "samples=$(jq -r .sampleCount print.json)" >> "$GITHUB_OUTPUT"
           echo "sources=$(jq -r .sourceCount print.json)" >> "$GITHUB_OUTPUT"
 
+      # Nothing to publish to until the deploy workflow has recorded a deployment; skip cleanly
+      # rather than failing four times a day.
       - name: Resolve the index address
         id: addr
-        run: echo "index=$(jq -r .index contracts/deployments/10143.json)" >> "$GITHUB_OUTPUT"
+        run: |
+          if [ ! -f contracts/deployments/10143.json ]; then
+            echo "no Monad testnet deployment recorded yet; skipping"
+            exit 0
+          fi
+          echo "index=$(jq -r .index contracts/deployments/10143.json)" >> "$GITHUB_OUTPUT"
 
       - name: Publish onchain
+        if: steps.addr.outputs.index != ''
         env:
           RPC: https://testnet-rpc.monad.xyz
           KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}

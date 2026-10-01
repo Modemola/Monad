@@ -1,5 +1,20 @@
 # Deploying Ingot
 
+## From GitHub, with no local setup
+
+If your machine can't reach Monad, or you'd rather not install Foundry, let GitHub Actions do it:
+
+1. Add a repository secret named `DEPLOYER_PRIVATE_KEY` (Settings → Secrets and variables →
+   Actions → New repository secret) holding a throwaway testnet key funded from
+   <https://faucet.monad.xyz>. The scheduled index publisher uses the same secret.
+2. Open the **Actions** tab, pick **Deploy to Monad testnet**, and press **Run workflow**.
+3. When the run finishes, its summary shows the addresses and an **open the pull request** link.
+   Merge that pull request, and the live site and indexer point at the new contracts.
+
+The workflow runs `scripts/deploy.sh`, exactly as below: tests first, then deploy, seed, and sync
+the web app and indexer. The results land on a `deploy/monad-testnet-<run>` branch, never on
+`main` directly.
+
 ## Prerequisites
 
 Foundry, and a `contracts/.env` with:

@@ -1,6 +1,7 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MotionConfig } from "motion/react";
 import { useState } from "react";
 import { WagmiProvider, createConfig, http } from "wagmi";
 import { injected } from "wagmi/connectors";
@@ -38,7 +39,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        {/* One reduced-motion policy for every animation, decided on the client so server and
+            client render the same markup. */}
+        <MotionConfig reducedMotion="user">{children}</MotionConfig>
+      </QueryClientProvider>
     </WagmiProvider>
   );
 }

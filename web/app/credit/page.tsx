@@ -11,7 +11,9 @@ import {
 import { maxUint256 } from "viem";
 
 import { LoanBook } from "@/components/Activity";
+import { Reveal } from "@/components/fx/motion";
 import { NotDeployed } from "@/components/NotDeployed";
+import { AppFrame, PageHeader } from "@/components/PageHeader";
 import { RecoveryPanel } from "@/components/RecoveryPanel";
 import { Button, Card, Disclosure, Empty, Field, Row, Segmented, Stat, TextInput } from "@/components/ui";
 import { hedgedCreditAbi, ingotMarketAbi, mockUSDCAbi } from "@/lib/abis";
@@ -100,16 +102,32 @@ export default function CreditDesk() {
   const active = open.at(-1) ?? fallback;
   const showingOwn = open.length > 0;
 
-  if (!deployment) return <NotDeployed />;
+  if (!deployment) {
+    return (
+      <AppFrame>
+        <NotDeployed />
+      </AppFrame>
+    );
+  }
 
   return (
+    <AppFrame>
+      <PageHeader
+        eyebrow="Credit desk · HedgedCredit"
+        title="Credit that hedges itself."
+        accent="hedges"
+        subtitle="Draw against GPU offtake revenue. The short opens in the same transaction, sized to your basis, so the lender is repaid at any rate."
+      />
     <div className="space-y-4">
-      <PoolHeader />
+      <Reveal>
+        <PoolHeader />
+      </Reveal>
 
-      <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
+      <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
         <OriginationForm seriesId={seriesId} mark={mark} />
 
         <Card
+          eyebrow="HedgedCredit.project()"
           title="Recovery profile"
           subtitle={
             active
@@ -133,10 +151,10 @@ export default function CreditDesk() {
       </div>
 
       {open.length > 0 && (
-        <Card title="Your loans">
+        <Card eyebrow="Portfolio" title="Your loans">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-[12px]">
-              <thead className="text-ink-muted">
+              <thead className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-muted">
                 <tr className="border-b border-hairline">
                   <th className="pb-2 font-normal">Offtake</th>
                   <th className="pb-2 font-normal">Basis</th>
@@ -148,9 +166,9 @@ export default function CreditDesk() {
                   <th className="pb-2 font-normal">Matures</th>
                 </tr>
               </thead>
-              <tbody className="tnum">
+              <tbody className="tnum font-mono text-[12px]">
                 {open.map(({ id, loan }) => (
-                  <tr key={id.toString()} className="border-b border-hairline/60 last:border-0">
+                  <tr key={id.toString()} className="border-b border-white/[0.04] last:border-0">
                     <td className="py-2">{formatHours(loan.offtakeHours)} hrs</td>
                     <td className="py-2">{(loan.basisRatioBps / 100).toFixed(0)}%</td>
                     <td className="py-2">{formatHours(loan.hedgeSize)} hrs</td>
@@ -171,6 +189,7 @@ export default function CreditDesk() {
 
       <LoanBook />
     </div>
+    </AppFrame>
   );
 }
 
@@ -196,10 +215,10 @@ function PoolHeader() {
 
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      <Stat label="Pool size" value={assets === undefined ? "—" : formatUsdc(assets)} detail="lender capital" />
-      <Stat label="Available" value={available === undefined ? "—" : formatUsdc(available)} detail="undrawn" />
-      <Stat label="Advance rate" value={ltv === undefined ? "—" : `${ltv / 100}%`} detail="of hedged revenue" />
-      <Stat label="Term rate" value={rate === undefined ? "—" : `${rate / 100}%`} detail="flat, to maturity" />
+      <Stat label="Pool size" value={assets === undefined ? "—" : formatUsdc(assets)} detail="lender capital" accent="gold" />
+      <Stat label="Available" value={available === undefined ? "—" : formatUsdc(available)} detail="undrawn" accent="cobalt" />
+      <Stat label="Advance rate" value={ltv === undefined ? "—" : `${ltv / 100}%`} detail="of hedged revenue" accent="violet" />
+      <Stat label="Term rate" value={rate === undefined ? "—" : `${rate / 100}%`} detail="flat, to maturity" accent="good" />
     </div>
   );
 }
@@ -280,7 +299,7 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
   const busy = isPending || confirming;
 
   return (
-    <Card title="Draw against an offtake" subtitle="The hedge opens in the same transaction">
+    <Card eyebrow="Origination" title="Draw against an offtake" subtitle="The hedge opens in the same transaction">
       <Field label="Offtake" hint="GPU-hours for the delivery window">
         <TextInput
           value={hours}
@@ -301,7 +320,7 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
             invalid={basis !== "" && !basisValid}
           />
         </Field>
-        <p className="mt-1 text-[11px] leading-relaxed text-ink-muted">
+        <p className="mt-2 text-[11.5px] leading-relaxed text-ink-muted">
           What you actually sell at, relative to the index. Across 23 providers over 78 days,
           levels ran from 45% below the index to 237% above it — so the hedge is sized to your
           exposure, not your hour count.
@@ -320,7 +339,7 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
         </Field>
       </div>
 
-      <div className="mt-3 border-t border-hairline pt-2">
+      <div className="mt-4 border-t border-white/[0.06] pt-1">
         <Row label="Forward rate" value={mark === undefined ? "—" : formatPrice(mark)} />
         <Row
           label="Hedge size"
@@ -371,6 +390,7 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
           </Button>
         ) : (
           <Button
+            variant="gold"
             disabled={
               !deployment ||
               seriesId === undefined ||
@@ -397,7 +417,7 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
               })
             }
           >
-            {busy ? "Opening…" : "Draw, hedged"}
+            {busy ? "Opening…" : "Draw, hedged →"}
           </Button>
         )}
       </div>

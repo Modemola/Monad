@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import { useState } from "react";
 import { useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
@@ -88,23 +89,33 @@ export function Ticket({
 
   return (
     <div>
-      <div className="mb-3 grid grid-cols-2 gap-1 rounded bg-plane p-1">
-        {(["long", "short"] as const).map((option) => (
-          <button
-            key={option}
-            type="button"
-            onClick={() => setSide(option)}
-            className={`rounded px-3 py-1.5 text-[13px] font-medium capitalize transition-colors ${
-              side === option
-                ? option === "long"
-                  ? "bg-good/15 text-good ring-1 ring-inset ring-good/40"
-                  : "bg-critical/15 text-critical ring-1 ring-inset ring-critical/40"
-                : "text-ink-muted hover:text-ink-secondary"
-            }`}
-          >
-            {option}
-          </button>
-        ))}
+      <div className="relative mb-4 grid grid-cols-2 gap-1 rounded-2xl border border-white/[0.06] bg-black/30 p-1">
+        {(["long", "short"] as const).map((option) => {
+          const on = side === option;
+          return (
+            <button
+              key={option}
+              type="button"
+              onClick={() => setSide(option)}
+              className={`relative rounded-xl px-3 py-2.5 text-[13.5px] font-semibold capitalize transition-colors duration-300 ${
+                on ? (option === "long" ? "text-good" : "text-critical") : "text-ink-muted hover:text-ink-secondary"
+              }`}
+            >
+              {on && (
+                <motion.span
+                  layoutId="ticket-side"
+                  className={`absolute inset-0 rounded-xl border ${
+                    option === "long"
+                      ? "border-good/40 bg-good/[0.12] shadow-glow-good"
+                      : "border-critical/40 bg-critical/[0.12] shadow-glow-critical"
+                  }`}
+                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                />
+              )}
+              <span className="relative">{option === "long" ? "↗ Long" : "↘ Short"}</span>
+            </button>
+          );
+        })}
       </div>
 
       <Field label="Size" hint="1 lot = 730 GPU-hours">
@@ -116,8 +127,24 @@ export function Ticket({
           invalid={lots !== "" && parsedLots === null}
         />
       </Field>
+      <div className="mt-2 flex gap-1.5">
+        {["1", "5", "10", "25"].map((preset) => (
+          <button
+            key={preset}
+            type="button"
+            onClick={() => setLots(preset)}
+            className={`flex-1 rounded-lg border py-1 font-mono text-[11.5px] transition-all duration-300 ${
+              lots === preset
+                ? "border-gold/50 bg-gold/10 text-gold"
+                : "border-white/[0.07] bg-white/[0.02] text-ink-muted hover:border-white/[0.16] hover:text-ink-secondary"
+            }`}
+          >
+            {preset}
+          </button>
+        ))}
+      </div>
 
-      <div className="mt-3 border-t border-hairline pt-2">
+      <div className="mt-4 border-t border-white/[0.06] pt-1">
         <Row label="Mark" value={mark === undefined ? "—" : formatPrice(mark)} />
         <Row
           label="Your fill"
@@ -139,8 +166,8 @@ export function Ticket({
         />
       </div>
 
-      <div className="mt-3 flex items-center justify-between">
-        <span className="text-[12px] text-ink-secondary">Slippage tolerance</span>
+      <div className="mt-4 flex items-center justify-between">
+        <span className="text-[12.5px] text-ink-secondary">Slippage tolerance</span>
         <Segmented
           options={SLIPPAGE_OPTIONS}
           value={toleranceBps}
@@ -149,7 +176,7 @@ export function Ticket({
         />
       </div>
 
-      <div className="mt-3">
+      <div className="mt-4">
         <Button
           variant={side === "long" ? "good" : "critical"}
           disabled={!canSubmit}
@@ -166,13 +193,13 @@ export function Ticket({
             })
           }
         >
-          {busy ? "Submitting…" : insufficient ? "Insufficient free collateral" : `Buy ${side}`}
+          {busy ? "Submitting…" : insufficient ? "Insufficient free collateral" : side === "long" ? "Go long" : "Go short"}
         </Button>
       </div>
 
-      {isSuccess && <p className="mt-2 text-[12px] text-good">Filled.</p>}
+      {isSuccess && <p className="mt-3 text-center text-[12.5px] text-good">Filled. Your position is live.</p>}
       {error && (
-        <p className="mt-2 break-words text-[12px] text-critical">
+        <p className="mt-3 break-words text-[12px] text-critical">
           {error.message.split("\n")[0]}
         </p>
       )}

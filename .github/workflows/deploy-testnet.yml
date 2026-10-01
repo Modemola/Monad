@@ -1,0 +1,86 @@
+# Deploys Ingot to Monad testnet from GitHub, for when no local machine can reach Monad.
+#
+# Run it from the Actions tab: "Deploy to Monad testnet" → Run workflow. It runs the same
+# scripts/deploy.sh a developer would (tests first, then deploy, seed, and sync the web app and
+# indexer), then pushes the recorded addresses to a new branch and links a one-click compare
+# page in the run summary. Nothing lands on main until that branch is merged.
+#
+# Requires one repository secret:
+#   DEPLOYER_PRIVATE_KEY   a throwaway testnet key funded with MON from https://faucet.monad.xyz
+
+name: Deploy to Monad testnet
+
+on:
+  workflow_dispatch:
+    inputs:
+      rpc_url:
+        description: Monad testnet RPC endpoint
+        required: true
+        default: https://testnet-rpc.monad.xyz
+
+concurrency:
+  group: deploy-testnet
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.5.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check the deployer secret
+        env:
+          DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+        run: |
+          if [ -z "$DEPLOYER_PRIVATE_KEY" ]; then
+            echo "::error::Add a DEPLOYER_PRIVATE_KEY repository secret (Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
+
+      - name: Deploy, seed and sync
+        env:
+          DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+          RPC_URL: ${{ inputs.rpc_url }}
+          EXPECTED_CHAIN_ID: "10143"
+        run: ./scripts/deploy.sh
+
+      - name: Push the recorded deployment to a branch
+        id: branch
+        run: |
+          set -euo pipefail
+          branch="deploy/monad-testnet-${GITHUB_RUN_NUMBER}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add contracts/deployments/10143.json web/lib/addresses.ts web/lib/abis.ts \
+            indexer/config.yaml indexer/abis
+          git commit -m "chore: record Monad testnet deployment (run ${GITHUB_RUN_NUMBER})"
+          git push origin "$branch"
+          echo "name=$branch" >> "$GITHUB_OUTPUT"
+
+      - name: Summary
+        run: |
+          compare="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/${GITHUB_REF_NAME}...${{ steps.branch.outputs.name }}?expand=1"
+          {
+            echo "## Deployed to Monad testnet"
+            echo
+            echo '```json'
+            cat contracts/deployments/10143.json
+            echo '```'
+            echo
+            echo "**Next:** [open the pull request]($compare) and merge it. The live site picks up the"
+            echo "addresses on the next Vercel deploy, and the scheduled index publisher starts printing."
+          } >> "$GITHUB_STEP_SUMMARY"

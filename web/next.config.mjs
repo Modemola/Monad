@@ -17,6 +17,11 @@ const nextConfig = {
       ...config.resolve.alias,
       "@base-org/account": false,
       "@coinbase/cdp-sdk": false,
+      // The same barrel reaches the MetaMask SDK, whose React Native storage fallback is never
+      // used in a browser; stubbing it silences a spurious "module not found" on every build.
+      "@react-native-async-storage/async-storage": false,
+      // And a logger's optional pretty-printer, pulled in by the WalletConnect stack.
+      "pino-pretty": false,
     };
     return config;
   },

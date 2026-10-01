@@ -10,7 +10,9 @@ import {
 } from "wagmi";
 import { maxUint256 } from "viem";
 
+import { Reveal } from "@/components/fx/motion";
 import { NotDeployed } from "@/components/NotDeployed";
+import { AppFrame, PageHeader } from "@/components/PageHeader";
 import { Button, Card, Disclosure, Field, Row, Stat, TextInput } from "@/components/ui";
 import { ingotMarketAbi, mockUSDCAbi, underwriterVaultAbi } from "@/lib/abis";
 import { useDeployment, useFrontSeries } from "@/lib/useIngot";
@@ -80,32 +82,48 @@ export default function Underwrite() {
   const needsApproval = parsed !== null && (allowance ?? 0n) < parsed;
   const busy = isPending || confirming;
 
-  if (!deployment) return <NotDeployed />;
+  if (!deployment) {
+    return (
+      <AppFrame>
+        <NotDeployed />
+      </AppFrame>
+    );
+  }
 
   return (
+    <AppFrame>
+      <PageHeader
+        eyebrow="Underwriter vault"
+        title="Be the market."
+        accent="market"
+        subtitle="Every trade on Ingot fills against this vault. Underwriters earn the spread and the fees, and carry the inventory that comes with them."
+      />
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Vault NAV" value={assets === undefined ? "—" : formatUsdc(assets)} detail="mark to market" />
+      <Reveal className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Stat label="Vault NAV" value={assets === undefined ? "—" : formatUsdc(assets)} detail="mark to market" accent="gold" />
         <Stat
           label="Share price"
           value={sharePrice === undefined ? "—" : formatUsdc(sharePrice, 4)}
           detail="per share"
+          accent="cobalt"
         />
         <Stat
           label="Free liquidity"
           value={available === undefined ? "—" : formatUsdc(available)}
           detail="redeemable now"
+          accent="good"
         />
         <Stat
           label="Inventory"
           value={position ? `${formatLots(position.size)} lots` : "—"}
           detail={position && position.size !== 0n ? (position.size > 0n ? "net long" : "net short") : "flat"}
           tone={position && position.size !== 0n ? (position.size > 0n ? "good" : "critical") : "default"}
+          accent="violet"
         />
-      </div>
+      </Reveal>
 
-      <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
-        <Card title="Underwrite" subtitle="Take the other side, earn the spread">
+      <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
+        <Card eyebrow="Deposit" title="Underwrite" subtitle="Take the other side, earn the spread">
           <Field label="Amount" hint="USDC">
             <TextInput
               value={amount}
@@ -133,6 +151,7 @@ export default function Underwrite() {
               </Button>
             ) : (
               <Button
+                variant="gold"
                 disabled={parsed === null || parsed === 0n || busy}
                 onClick={() =>
                   parsed !== null &&
@@ -165,7 +184,7 @@ export default function Underwrite() {
             </Button>
           </div>
 
-          <div className="mt-3 border-t border-hairline pt-2">
+          <div className="mt-4 border-t border-white/[0.06] pt-1">
             <Row label="Your shares" value={shares === undefined ? "—" : formatUsdc(shares, 2)} />
             <Row label="Your claim" value={claim === undefined ? "—" : formatUsdc(claim)} />
             <Row
@@ -189,7 +208,7 @@ export default function Underwrite() {
           </Disclosure>
         </Card>
 
-        <Card title="How the vault makes money" subtitle="And how it loses it">
+        <Card eyebrow="Economics" title="How the vault makes money" subtitle="And how it loses it">
           <div className="space-y-4 text-[13px] leading-relaxed text-ink-secondary">
             <p>
               Every trade on Ingot is filled against this vault. It quotes a two-way price off the
@@ -209,7 +228,7 @@ export default function Underwrite() {
               as every trader, so when it can no longer meet maintenance margin, quotes simply
               stop.
             </p>
-            <div className="border-t border-hairline pt-3">
+            <div className="border-t border-white/[0.06] pt-2">
               <Row
                 label="Current inventory"
                 value={position ? `${formatLots(position.size)} lots` : "flat"}
@@ -225,5 +244,6 @@ export default function Underwrite() {
         </Card>
       </div>
     </div>
+    </AppFrame>
   );
 }

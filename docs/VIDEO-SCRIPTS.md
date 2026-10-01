@@ -16,7 +16,7 @@ settlement and real pricing logic, not a UI over static data.
 
 ### 0:00 – 0:25 — The index
 
-*Screen: Terminal page, index chart filled.*
+*Screen: Trade page, index chart filled.*
 
 > This is Ingot, live on Monad. What you're looking at is a rental-rate index for one NVIDIA H100,
 > in dollars per GPU-hour, published onchain. Every print carries the hash of the methodology that
@@ -67,8 +67,8 @@ settlement and real pricing logic, not a UI over static data.
 
 *Action: move to the recovery chart. Drag the slider slowly from right to left.*
 
-> Now the important bit. I'm sweeping the rate this contract could settle at. The blue line is
-> what the lender gets back hedged. It doesn't move. The orange line is the same loan unhedged —
+> Now the important bit. I'm sweeping the rate this contract could settle at. The gold line is
+> what the lender gets back hedged. It doesn't move. The coral line is the same loan unhedged —
 > and as the rate falls, it falls through the debt.
 >
 > Every point on that chart is a number this contract returned. The browser can't draw it without

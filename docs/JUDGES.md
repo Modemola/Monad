@@ -23,12 +23,17 @@ anything. You need a little to send a transaction: [faucet.monad.xyz](https://fa
 
 ## 2. Get test USDC
 
-Connect your wallet, open **Terminal**, and the collateral panel offers **Get 250,000 test USDC**
+Connect your wallet, open **Trade**, and the collateral panel offers **Get 250,000 test USDC**
 when your balance is low. That mints from the test token; there is nothing to ask us for.
 
 ## 3. What to look at, in order
 
-**Terminal** — the H100 rental index, published onchain. Every print carries the hash of the
+**Overview** — the landing page tells the story with real data: 78 days of posted H100 rates,
+60% annualised volatility, a 6x spread between providers on the same day, and an interactive
+version of the hedged-versus-unhedged recovery case. The glass ingot in the hero is the brand mark,
+rendered in real time.
+
+**Trade** — the H100 rental index, published onchain. Every print carries the hash of the
 methodology behind it, how many venue quotes it was built from, and how many venues. Hover the
 chart. Then put 10 lots in the ticket: before you sign, it shows the mark, your actual fill, the
 notional, the margin it locks, the fee, and the worst price the order can fill at — which the
@@ -38,9 +43,9 @@ contract enforces, not just the interface.
 realized rate to 55% of the index, post margin, and draw. The loan and its hedge open in the same
 transaction.
 
-Then drag the slider under the recovery chart. The blue line is what the lender recovers hedged —
-it does not move. The orange line is the same loan unhedged, and it falls through the debt as the
-rate drops. **Every point on that chart is a value `HedgedCredit.project()` returned.** The
+Then drag the slider under the recovery chart. The gold line is what the lender recovers hedged —
+it does not move. The coral line is the same loan unhedged, and it falls through the debt as the
+rate drops; the shaded gap between them is the shortfall the hedge prevents. **Every point on that chart is a value `HedgedCredit.project()` returned.** The
 browser cannot draw it without asking the chain.
 
 **Underwrite** — the vault that takes the other side of every trade, its live inventory, and NAV
