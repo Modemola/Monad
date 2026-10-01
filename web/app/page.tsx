@@ -1,12 +1,13 @@
 import { Hero } from "@/components/landing/Hero";
-import { BasisRibbon, BuiltWith, Closing, HowItWorks, IndexStory, TheCase, Thesis } from "@/components/landing/Sections";
+import { BuiltWith, Closing, HowItWorks, IndexStage, IndexStory, TheCase, Thesis, TickerBand } from "@/components/landing/Sections";
 
 export default function Landing() {
   return (
     <>
       <Hero />
-      <BasisRibbon />
+      <TickerBand />
       <Thesis />
+      <IndexStage />
       <IndexStory />
       <HowItWorks />
       <TheCase />

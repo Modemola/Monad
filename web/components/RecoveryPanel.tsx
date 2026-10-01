@@ -100,7 +100,7 @@ export function RecoveryPanel({
   return (
     <div className="space-y-4">
       {worst && (
-        <p className="rounded-2xl border border-critical/25 bg-gradient-to-r from-critical/[0.1] to-transparent px-4 py-3 text-[12.5px] leading-relaxed text-ink-secondary">
+        <p className="border-l-2 border-critical bg-critical/[0.06] px-4 py-3 text-[12.5px] leading-relaxed text-ink-secondary">
           If the rate settles at{" "}
           <span className="tnum text-ink">${worst.price.toFixed(2)}</span>/GPU-hour, an unhedged
           lender on this loan recovers{" "}

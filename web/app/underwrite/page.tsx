@@ -13,7 +13,7 @@ import { maxUint256 } from "viem";
 import { Reveal } from "@/components/fx/motion";
 import { NotDeployed } from "@/components/NotDeployed";
 import { AppFrame, PageHeader } from "@/components/PageHeader";
-import { Button, Card, Disclosure, Field, Row, Stat, TextInput } from "@/components/ui";
+import { Button, Card, Disclosure, Field, Row, Stat, StatStrip, TextInput } from "@/components/ui";
 import { ingotMarketAbi, mockUSDCAbi, underwriterVaultAbi } from "@/lib/abis";
 import { useDeployment, useFrontSeries } from "@/lib/useIngot";
 import { formatLots, formatSignedUsdc, formatUsdc, parseDecimal } from "@/lib/format";
@@ -99,7 +99,8 @@ export default function Underwrite() {
         subtitle="Every trade on Ingot fills against this vault. Underwriters earn the spread and the fees, and carry the inventory that comes with them."
       />
     <div className="space-y-4">
-      <Reveal className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <Reveal>
+      <StatStrip className="grid-cols-2 lg:grid-cols-4">
         <Stat label="Vault NAV" value={assets === undefined ? "—" : formatUsdc(assets)} detail="mark to market" accent="gold" />
         <Stat
           label="Share price"
@@ -120,6 +121,7 @@ export default function Underwrite() {
           tone={position && position.size !== 0n ? (position.size > 0n ? "good" : "critical") : "default"}
           accent="violet"
         />
+      </StatStrip>
       </Reveal>
 
       <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
@@ -184,7 +186,7 @@ export default function Underwrite() {
             </Button>
           </div>
 
-          <div className="mt-4 border-t border-white/[0.06] pt-1">
+          <div className="mt-4 border-t border-hairline pt-1">
             <Row label="Your shares" value={shares === undefined ? "—" : formatUsdc(shares, 2)} />
             <Row label="Your claim" value={claim === undefined ? "—" : formatUsdc(claim)} />
             <Row
@@ -228,7 +230,7 @@ export default function Underwrite() {
               as every trader, so when it can no longer meet maintenance margin, quotes simply
               stop.
             </p>
-            <div className="border-t border-white/[0.06] pt-2">
+            <div className="border-t border-hairline pt-2">
               <Row
                 label="Current inventory"
                 value={position ? `${formatLots(position.size)} lots` : "flat"}

@@ -10,10 +10,11 @@ product agree.
 | `ingot-cover.png` | 1600×900 graphic with wordmark and one-line description |
 | `ingot-mark.svg` | Vector source, for any size not covered above |
 
-The flat colours (`#3987e5` on `#0d0d0d`, top and side faces at 55% and 30% opacity) are the
-submission graphics. In the app the same geometry is lit: a cobalt-to-violet front, a gold top and a
-deep indigo side (`web/components/Nav.tsx`, `web/app/icon.svg`), and the landing hero renders it as
-a 3D glass ingot with a gold core. The social preview card is `web/app/opengraph-image.png`.
+The flat colours (`#3987e5` on `#0d0d0d`) are the original submission graphics. The product now
+uses the "Foundry" palette: warm black, bone type and molten gold (`web/tailwind.config.ts`). The
+same mark is cast in gold in the app (`web/components/Nav.tsx`, `web/app/icon.svg`), the landing
+hero renders a hallmarked 3D gold bar, and the social preview card is
+`web/app/opengraph-image.png`.
 
 Both PNGs are rendered from the same geometry by `tools/render_brand.py` (needs Pillow):
 

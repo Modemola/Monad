@@ -68,7 +68,7 @@ settlement and real pricing logic, not a UI over static data.
 *Action: move to the recovery chart. Drag the slider slowly from right to left.*
 
 > Now the important bit. I'm sweeping the rate this contract could settle at. The gold line is
-> what the lender gets back hedged. It doesn't move. The coral line is the same loan unhedged —
+> what the lender gets back hedged. It doesn't move. The ember-red line is the same loan unhedged —
 > and as the rate falls, it falls through the debt.
 >
 > Every point on that chart is a number this contract returned. The browser can't draw it without

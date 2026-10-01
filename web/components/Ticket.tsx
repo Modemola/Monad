@@ -89,7 +89,7 @@ export function Ticket({
 
   return (
     <div>
-      <div className="relative mb-4 grid grid-cols-2 gap-1 rounded-2xl border border-white/[0.06] bg-black/30 p-1">
+      <div className="relative mb-5 grid grid-cols-2 border border-hairline">
         {(["long", "short"] as const).map((option) => {
           const on = side === option;
           return (
@@ -97,17 +97,17 @@ export function Ticket({
               key={option}
               type="button"
               onClick={() => setSide(option)}
-              className={`relative rounded-xl px-3 py-2.5 text-[13.5px] font-semibold capitalize transition-colors duration-300 ${
+              className={`relative px-3 py-3 font-mono text-[11.5px] uppercase tracking-[0.18em] transition-colors duration-300 ${
                 on ? (option === "long" ? "text-good" : "text-critical") : "text-ink-muted hover:text-ink-secondary"
               }`}
             >
               {on && (
                 <motion.span
                   layoutId="ticket-side"
-                  className={`absolute inset-0 rounded-xl border ${
+                  className={`absolute inset-0 ${
                     option === "long"
-                      ? "border-good/40 bg-good/[0.12] shadow-glow-good"
-                      : "border-critical/40 bg-critical/[0.12] shadow-glow-critical"
+                      ? "bg-good/[0.1] shadow-[inset_0_-2px_0_rgba(127,209,166,0.9)]"
+                      : "bg-critical/[0.1] shadow-[inset_0_-2px_0_rgba(224,104,77,0.9)]"
                   }`}
                   transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 />
@@ -133,10 +133,10 @@ export function Ticket({
             key={preset}
             type="button"
             onClick={() => setLots(preset)}
-            className={`flex-1 rounded-lg border py-1 font-mono text-[11.5px] transition-all duration-300 ${
+            className={`flex-1 border py-1.5 font-mono text-[11px] transition-colors duration-300 ${
               lots === preset
-                ? "border-gold/50 bg-gold/10 text-gold"
-                : "border-white/[0.07] bg-white/[0.02] text-ink-muted hover:border-white/[0.16] hover:text-ink-secondary"
+                ? "border-gold/60 bg-gold/10 text-gold"
+                : "border-hairline text-ink-muted hover:border-axis hover:text-ink-secondary"
             }`}
           >
             {preset}
@@ -144,7 +144,7 @@ export function Ticket({
         ))}
       </div>
 
-      <div className="mt-4 border-t border-white/[0.06] pt-1">
+      <div className="mt-5 border-t border-hairline pt-1">
         <Row label="Mark" value={mark === undefined ? "—" : formatPrice(mark)} />
         <Row
           label="Your fill"
