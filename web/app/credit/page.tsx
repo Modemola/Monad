@@ -15,7 +15,7 @@ import { Reveal } from "@/components/fx/motion";
 import { NotDeployed } from "@/components/NotDeployed";
 import { AppFrame, PageHeader } from "@/components/PageHeader";
 import { RecoveryPanel } from "@/components/RecoveryPanel";
-import { Button, Card, Disclosure, Empty, Field, Row, Segmented, Stat, TextInput } from "@/components/ui";
+import { Button, Card, Disclosure, Empty, Field, Row, Segmented, Stat, StatStrip, TextInput } from "@/components/ui";
 import { hedgedCreditAbi, ingotMarketAbi, mockUSDCAbi } from "@/lib/abis";
 import {
   DEFAULT_SLIPPAGE_BPS,
@@ -168,7 +168,7 @@ export default function CreditDesk() {
               </thead>
               <tbody className="tnum font-mono text-[12px]">
                 {open.map(({ id, loan }) => (
-                  <tr key={id.toString()} className="border-b border-white/[0.04] last:border-0">
+                  <tr key={id.toString()} className="border-b border-hairline last:border-0">
                     <td className="py-2">{formatHours(loan.offtakeHours)} hrs</td>
                     <td className="py-2">{(loan.basisRatioBps / 100).toFixed(0)}%</td>
                     <td className="py-2">{formatHours(loan.hedgeSize)} hrs</td>
@@ -214,12 +214,12 @@ function PoolHeader() {
   const rate = data?.[3]?.result as number | undefined;
 
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <StatStrip className="grid-cols-2 lg:grid-cols-4">
       <Stat label="Pool size" value={assets === undefined ? "—" : formatUsdc(assets)} detail="lender capital" accent="gold" />
       <Stat label="Available" value={available === undefined ? "—" : formatUsdc(available)} detail="undrawn" accent="cobalt" />
       <Stat label="Advance rate" value={ltv === undefined ? "—" : `${ltv / 100}%`} detail="of hedged revenue" accent="violet" />
       <Stat label="Term rate" value={rate === undefined ? "—" : `${rate / 100}%`} detail="flat, to maturity" accent="good" />
-    </div>
+    </StatStrip>
   );
 }
 
@@ -339,7 +339,7 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
         </Field>
       </div>
 
-      <div className="mt-4 border-t border-white/[0.06] pt-1">
+      <div className="mt-4 border-t border-hairline pt-1">
         <Row label="Forward rate" value={mark === undefined ? "—" : formatPrice(mark)} />
         <Row
           label="Hedge size"

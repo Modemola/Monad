@@ -7,11 +7,11 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 /// line, and a draw-in the first time the chart is seen. Interrogable — crosshair and tooltip on
 /// hover — because a chart that cannot be questioned is a picture of a chart.
 
-const INK_MUTED = "#7c849f";
-const GRID = "rgba(255,255,255,0.05)";
-const AXIS = "rgba(255,255,255,0.14)";
-export const HEDGED = "#f3c66f";
-export const UNHEDGED = "#ff6b81";
+const INK_MUTED = "#867d70";
+const GRID = "rgba(243,236,223,0.06)";
+const AXIS = "rgba(243,236,223,0.2)";
+export const HEDGED = "#e8b661";
+export const UNHEDGED = "#e0684d";
 
 const PAD = { top: 16, right: 18, bottom: 28, left: 56 };
 const PAD_CAPTIONED = { ...PAD, bottom: 46 };
@@ -130,7 +130,9 @@ export function IndexChart({
     const xRange: [number, number] = [PAD.left, width - PAD.right];
     const yRange: [number, number] = [height - PAD.bottom, PAD.top];
     const points = data.map((d) => ({ x: scale(d.timestamp, xDomain, xRange), y: scale(d.price, yDomain, yRange) }));
-    const line = smoothPath(points);
+    // Straight segments between prints: a price series should show what was printed, not a
+    // curve between prints that never happened.
+    const line = points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(" ");
     const area = `${line} L${points[points.length - 1].x} ${height - PAD.bottom} L${points[0].x} ${height - PAD.bottom} Z`;
     return { points, line, area, yDomain, yRange };
   }, [data, height, width]);
@@ -138,7 +140,7 @@ export function IndexChart({
   if (!geometry) {
     return (
       <div className="flex h-[240px] flex-col items-center justify-center gap-3 text-[13px] text-ink-muted">
-        <span className="h-10 w-10 animate-spin-slow rounded-full border border-white/10 border-t-gold/70" />
+        <span className="h-10 w-10 animate-spin-slow rounded-full border border-hairline border-t-gold/70" />
         Waiting for index prints…
       </div>
     );
@@ -165,14 +167,14 @@ export function IndexChart({
       >
         <defs>
           <linearGradient id={`stroke-${id}`} x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0" stopColor="#4f8cff" />
-            <stop offset="0.55" stopColor="#8b6cff" />
-            <stop offset="1" stopColor="#f3c66f" />
+            <stop offset="0" stopColor="#b98535" />
+            <stop offset="0.6" stopColor="#e8b661" />
+            <stop offset="1" stopColor="#fff4dc" />
           </linearGradient>
           <linearGradient id={`fill-${id}`} x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0" stopColor="#8b6cff" stopOpacity="0.32" />
-            <stop offset="0.6" stopColor="#4f8cff" stopOpacity="0.06" />
-            <stop offset="1" stopColor="#4f8cff" stopOpacity="0" />
+            <stop offset="0" stopColor="#e8b661" stopOpacity="0.22" />
+            <stop offset="0.6" stopColor="#b98535" stopOpacity="0.05" />
+            <stop offset="1" stopColor="#b98535" stopOpacity="0" />
           </linearGradient>
           <filter id={`glow-${id}`} filterUnits="userSpaceOnUse" x={0} y={0} width={width} height={height}>
             <feGaussianBlur stdDeviation="5" result="blur" />
@@ -217,25 +219,25 @@ export function IndexChart({
 
         {/* The latest print, breathing. */}
         <motion.g initial={{ opacity: 0 }} animate={drawn ? { opacity: 1 } : undefined} transition={{ delay: 2 }}>
-          <circle cx={last.x} cy={last.y} r={10} fill="#f3c66f" opacity={0.18}>
+          <circle cx={last.x} cy={last.y} r={10} fill="#e8b661" opacity={0.18}>
             {pulse && <animate attributeName="r" values="6;16;6" dur="2.4s" repeatCount="indefinite" />}
             {pulse && <animate attributeName="opacity" values="0.35;0;0.35" dur="2.4s" repeatCount="indefinite" />}
           </circle>
-          <circle cx={last.x} cy={last.y} r={4} fill="#ffe3a6" stroke="#03040a" strokeWidth={2} />
+          <circle cx={last.x} cy={last.y} r={4} fill="#fff4dc" stroke="#090807" strokeWidth={2} />
         </motion.g>
 
         {activePoint && (
           <g>
             <line x1={activePoint.x} x2={activePoint.x} y1={PAD.top} y2={height - PAD.bottom} stroke={AXIS} strokeWidth={1} strokeDasharray="2 4" />
-            <circle cx={activePoint.x} cy={activePoint.y} r={9} fill="#8b6cff" opacity={0.25} />
-            <circle cx={activePoint.x} cy={activePoint.y} r={4.5} fill="#ffffff" stroke="#8b6cff" strokeWidth={2} />
+            <circle cx={activePoint.x} cy={activePoint.y} r={9} fill="#e8b661" opacity={0.2} />
+            <circle cx={activePoint.x} cy={activePoint.y} r={4.5} fill="#090807" stroke="#e8b661" strokeWidth={2} />
           </g>
         )}
       </svg>
 
       {active && activePoint && (
         <div
-          className="glass pointer-events-none absolute top-0 rounded-xl px-3 py-2 text-[11px]"
+          className="pointer-events-none absolute top-0 border border-hairline bg-void/95 px-3 py-2 text-[11px]"
           style={{
             left: `${(activePoint.x / width) * 100}%`,
             transform: `translateX(${activePoint.x / width > 0.7 ? "-110%" : "12px"})`,
@@ -321,7 +323,7 @@ export function RecoveryChart({
         <Legend colour={HEDGED} label="Lender recovery, hedged" />
         <Legend colour={UNHEDGED} label="Lender recovery, unhedged" />
         <span className="flex items-center gap-1.5 text-ink-muted">
-          <span className="h-2.5 w-3 rounded-sm bg-critical/25" />
+          <span className="h-2.5 w-3 bg-critical/25" />
           shortfall the hedge prevents
         </span>
       </div>
@@ -381,7 +383,7 @@ export function RecoveryChart({
 
           {markerX !== null && (
             <motion.g initial={false} animate={{ x: markerX }} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
-              <line x1={0} x2={0} y1={pad.top} y2={height - pad.bottom} stroke="rgba(255,255,255,0.35)" strokeWidth={1} strokeDasharray="3 4" />
+              <line x1={0} x2={0} y1={pad.top} y2={height - pad.bottom} stroke="rgba(243,236,223,0.35)" strokeWidth={1} strokeDasharray="3 4" />
             </motion.g>
           )}
 
@@ -411,8 +413,8 @@ export function RecoveryChart({
           {hover !== null && (
             <g>
               <line x1={hedged[hover].x} x2={hedged[hover].x} y1={pad.top} y2={height - pad.bottom} stroke={AXIS} strokeDasharray="2 4" />
-              <circle cx={unhedged[hover].x} cy={unhedged[hover].y} r={4.5} fill="#ffffff" stroke={UNHEDGED} strokeWidth={2} />
-              <circle cx={hedged[hover].x} cy={hedged[hover].y} r={4.5} fill="#ffffff" stroke={HEDGED} strokeWidth={2} />
+              <circle cx={unhedged[hover].x} cy={unhedged[hover].y} r={4.5} fill="#090807" stroke={UNHEDGED} strokeWidth={2} />
+              <circle cx={hedged[hover].x} cy={hedged[hover].y} r={4.5} fill="#090807" stroke={HEDGED} strokeWidth={2} />
             </g>
           )}
 
@@ -428,13 +430,13 @@ export function RecoveryChart({
         </svg>
 
         {active && (
-          <div className="glass pointer-events-none absolute right-0 top-0 min-w-[190px] rounded-xl px-3 py-2.5 text-[11.5px]">
+          <div className="pointer-events-none absolute right-0 top-0 min-w-[190px] border border-hairline bg-void/95 px-3 py-2.5 text-[11.5px]">
             <div className="relative z-[2]">
               <div className="tnum mb-1.5 font-mono text-ink-secondary">at ${active.price.toFixed(2)}/hr</div>
               <TooltipRow colour={HEDGED} label="hedged" value={active.hedged} />
               <TooltipRow colour={UNHEDGED} label="unhedged" value={active.unhedged} />
               {active.unhedged < active.hedged && (
-                <div className="tnum mt-1.5 border-t border-white/10 pt-1.5 font-mono text-critical">
+                <div className="tnum mt-1.5 border-t border-hairline pt-1.5 font-mono text-critical">
                   shortfall ${Math.round(active.hedged - active.unhedged).toLocaleString()}
                 </div>
               )}
@@ -449,7 +451,7 @@ export function RecoveryChart({
 function Legend({ colour, label }: { colour: string; label: string }) {
   return (
     <span className="flex items-center gap-1.5 text-ink-secondary">
-      <span className="h-[3px] w-4 rounded-full" style={{ background: colour, boxShadow: `0 0 10px ${colour}` }} />
+      <span className="h-[2px] w-4" style={{ background: colour, boxShadow: `0 0 8px ${colour}` }} />
       {label}
     </span>
   );
@@ -458,7 +460,7 @@ function Legend({ colour, label }: { colour: string; label: string }) {
 function TooltipRow({ colour, label, value }: { colour: string; label: string; value: number }) {
   return (
     <div className="flex items-center gap-2 py-0.5">
-      <span className="h-[3px] w-3 rounded-full" style={{ background: colour }} />
+      <span className="h-[2px] w-3" style={{ background: colour }} />
       <span className="text-ink-muted">{label}</span>
       <span className="tnum ml-auto font-mono text-ink">${Math.round(value).toLocaleString()}</span>
     </div>

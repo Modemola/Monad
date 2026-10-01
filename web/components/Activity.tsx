@@ -92,7 +92,7 @@ export function MarketActivity({ seriesId }: { seriesId: bigint | undefined }) {
                   {(data?.Trade ?? []).map((trade) => {
                     const size = big(trade.size);
                     return (
-                      <tr key={trade.id} className="border-b border-white/[0.04] last:border-0">
+                      <tr key={trade.id} className="border-b border-hairline last:border-0">
                         <td className="py-1.5 text-ink-muted">{time(trade.timestamp)}</td>
                         <td className={`py-1.5 ${size > 0n ? "text-good" : "text-critical"}`}>
                           {size > 0n ? "Buy" : "Sell"}
@@ -196,7 +196,7 @@ export function LoanBook() {
               {(data?.Loan ?? []).map((loan) => {
                 const pnl = loan.hedgePnl === null ? undefined : big(loan.hedgePnl);
                 return (
-                  <tr key={loan.id} className="border-b border-white/[0.04] last:border-0">
+                  <tr key={loan.id} className="border-b border-hairline last:border-0">
                     <td className="py-1.5 text-ink-muted">#{loan.id}</td>
                     <td className="py-1.5 text-ink-muted">{shortAddress(loan.borrower_id)}</td>
                     <td className="py-1.5">{(loan.basisRatioBps / 100).toFixed(0)}%</td>

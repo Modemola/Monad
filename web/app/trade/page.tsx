@@ -9,7 +9,7 @@ import { Reveal } from "@/components/fx/motion";
 import { NotDeployed } from "@/components/NotDeployed";
 import { AppFrame, PageHeader } from "@/components/PageHeader";
 import { Ticket } from "@/components/Ticket";
-import { Card, Empty, LiveDot, Row, Stat } from "@/components/ui";
+import { Card, Empty, LiveDot, Row, Stat, StatStrip } from "@/components/ui";
 import { ingotMarketAbi } from "@/lib/abis";
 import { useAccountState, useDeployment, useFrontSeries, useIndexHistory } from "@/lib/useIngot";
 import {
@@ -67,14 +67,14 @@ export default function Terminal() {
         accent="compute"
         subtitle="Go long GPU rental rates if you rent compute, short if you sell it. Cash-settled to the average index over the delivery window."
         aside={
-          <div className="glass flex items-center gap-4 rounded-2xl px-5 py-3.5">
-            <div className="relative z-[2] flex items-center gap-4">
+          <div className="flex items-center gap-4 border border-hairline bg-coal px-5 py-3.5">
+            <div className="flex items-center gap-4">
               <LiveDot tone="good" />
               <div>
                 <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-muted">Mark</div>
                 <div className="tnum font-mono text-[22px] text-ink">{mark ? formatPrice(mark) : "—"}</div>
               </div>
-              <div className="h-9 w-px bg-white/10" />
+              <div className="h-9 w-px bg-hairline" />
               <div>
                 <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-muted">Expiry</div>
                 <div className="tnum font-mono text-[22px] text-ink">{daysToExpiry === undefined ? "—" : `${daysToExpiry}d`}</div>
@@ -84,7 +84,8 @@ export default function Terminal() {
         }
       />
 
-      <Reveal className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <Reveal>
+      <StatStrip className="grid-cols-2 lg:grid-cols-4">
         <Stat
           label="Index"
           value={latest ? `$${latest.price.toFixed(4)}` : "—"}
@@ -110,6 +111,7 @@ export default function Terminal() {
           detail={series ? `${formatHours(series.longOpenInterest)} GPU-hours` : undefined}
           accent="violet"
         />
+      </StatStrip>
       </Reveal>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_340px]">

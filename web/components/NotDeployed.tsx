@@ -6,6 +6,7 @@ import { useAccount } from "wagmi";
 
 import { usableDeployments } from "@/lib/addresses";
 import { IngotMark } from "./Nav";
+import { Hallmarks } from "./ui";
 
 /// What a visitor sees when there is nothing to read.
 ///
@@ -16,7 +17,7 @@ export function NotDeployed() {
   const { isConnected } = useAccount();
   const deployedSomewhere = usableDeployments().length > 0;
 
-  const title = deployedSomewhere ? "Wrong network" : "Contracts not deployed yet";
+  const title = deployedSomewhere ? "Wrong network" : "The foundry is cold";
   const body = deployedSomewhere
     ? isConnected
       ? "Your wallet is on a network Ingot is not deployed to. Switch to Monad testnet."
@@ -24,21 +25,23 @@ export function NotDeployed() {
     : "This build of Ingot has no contract addresses for Monad testnet yet. Nothing is wrong with your wallet or network — the deployment step has not run.";
 
   return (
-    <div className="glass relative mx-auto max-w-2xl overflow-hidden rounded-[32px] px-8 py-16 text-center">
-      <div className="pointer-events-none absolute left-1/2 top-10 h-64 w-64 -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(243,198,111,0.28),rgba(139,108,255,0.12)_45%,transparent_70%)] blur-2xl" />
-      <div className="relative z-[2]">
+    <div className="relative mx-auto max-w-2xl overflow-hidden border border-hairline bg-coal px-8 py-16 text-center">
+      <Hallmarks />
+      <div className="pointer-events-none absolute left-1/2 top-6 h-56 w-80 -translate-x-1/2 bg-[radial-gradient(ellipse,rgba(232,182,97,0.22),transparent_70%)] blur-xl" />
+      <div className="relative">
         <motion.div
           className="mx-auto flex h-24 w-24 items-center justify-center"
-          animate={{ y: [0, -10, 0], rotate: [0, 2, 0] }}
+          animate={{ y: [0, -8, 0] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         >
-          <IngotMark size={88} />
+          <IngotMark size={92} />
         </motion.div>
-        <h2 className="mt-6 font-display text-[40px] leading-tight text-chrome">{title}</h2>
+        <div className="label mt-4 text-gold/80">{deployedSomewhere ? "Network" : "Contracts not deployed yet"}</div>
+        <h2 className="mt-3 font-display text-[42px] font-light leading-tight text-ink">{title}</h2>
         <p className="mx-auto mt-4 max-w-md text-[14px] leading-relaxed text-ink-secondary">{body}</p>
         <Link
           href="/"
-          className="gloss mt-8 inline-flex rounded-full border border-white/[0.14] bg-white/[0.05] px-5 py-2.5 text-[13.5px] text-ink backdrop-blur-xl transition-colors hover:border-white/[0.28]"
+          className="mt-9 inline-flex border border-hairline px-6 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-ink-secondary transition-colors hover:border-gold/50 hover:text-ink"
         >
           ← Back to the overview
         </Link>

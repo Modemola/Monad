@@ -4,8 +4,8 @@ import type { ReactNode } from "react";
 
 import { Reveal, SplitWords } from "./fx/motion";
 
-/// The top of every app page: a mono eyebrow, a serif title with one word in molten gold, and
-/// whatever live context the page wants on the right.
+/// The top of every app page: a numbered eyebrow, a light serif title with one word in poured
+/// gold, and whatever live context the page wants on the right.
 export function PageHeader({
   eyebrow,
   title,
@@ -21,16 +21,16 @@ export function PageHeader({
   aside?: ReactNode;
 }) {
   return (
-    <header className="mb-8 flex flex-col gap-6 pt-2 lg:mb-10 lg:flex-row lg:items-end lg:justify-between">
+    <header className="mb-10 flex flex-col gap-6 border-b border-hairline pb-8 lg:flex-row lg:items-end lg:justify-between">
       <div>
         <Reveal className="eyebrow" y={10}>
           {eyebrow}
         </Reveal>
-        <h1 className="mt-3 font-display text-[clamp(2.6rem,5.4vw,4.4rem)] leading-[1] tracking-[-0.015em]">
+        <h1 className="mt-4 font-display text-[clamp(2.6rem,5.4vw,4.4rem)] font-light leading-[1] tracking-[-0.025em]">
           <SplitWords
             text={title}
             stagger={0.05}
-            wordClassName={(word) => (accent && word.replace(/[.,]/g, "") === accent ? "italic text-molten" : "text-chrome")}
+            wordClassName={(word) => (accent && word.replace(/[.,]/g, "") === accent ? "italic text-molten" : "text-ink")}
           />
         </h1>
         {subtitle && (
@@ -48,7 +48,7 @@ export function PageHeader({
   );
 }
 
-/// The frame every app page sits in: clear of the floating nav, centred, with room to breathe.
+/// The frame every app page sits in: clear of the nav, centred, with room to breathe.
 export function AppFrame({ children }: { children: ReactNode }) {
-  return <div className="mx-auto w-full max-w-6xl px-4 pb-10 pt-32 sm:px-6 sm:pt-36">{children}</div>;
+  return <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-28 sm:px-6 sm:pt-32">{children}</div>;
 }

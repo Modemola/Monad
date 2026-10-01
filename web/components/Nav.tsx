@@ -3,7 +3,7 @@
 import { motion, useMotionValueEvent, useScroll } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { ConnectButton } from "./ConnectButton";
 
@@ -14,98 +14,116 @@ const LINKS = [
   { href: "/underwrite", label: "Underwrite" },
 ];
 
-/// A capsule of glass floating over the page. It tightens and darkens once the page scrolls, and
-/// a lit bead slides beneath whichever section is open.
+/// A slim bar on a hairline. It steps out of the way while you read down the page and returns the
+/// moment you scroll back up. Under the open section sits a small gold ingot that slides between
+/// links. On a phone the links move to a dock at the bottom, where a thumb can reach them.
 export function Nav() {
   const pathname = usePathname();
   const { scrollY } = useScroll();
+  const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 24));
+  const last = useRef(0);
+
+  useMotionValueEvent(scrollY, "change", (y) => {
+    setScrolled(y > 12);
+    setHidden(y > 160 && y > last.current);
+    last.current = y;
+  });
 
   const active = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   return (
-    <motion.header
-      initial={{ y: -40, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-      className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-6 sm:pt-4"
-    >
-      <div
-        className={`glass mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 rounded-[22px] px-3 py-2 transition-[background,box-shadow] duration-500 sm:flex-nowrap sm:rounded-full sm:px-3 ${
-          scrolled ? "glass-strong" : ""
+    <>
+      <motion.header
+        initial={{ y: -30, opacity: 0 }}
+        animate={{ y: hidden ? -90 : 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 260, damping: 30 }}
+        className={`fixed inset-x-0 top-0 z-50 border-b transition-colors duration-500 ${
+          scrolled ? "border-hairline bg-void/80 backdrop-blur-md" : "border-transparent"
         }`}
       >
-        <Link href="/" className="relative z-[2] order-1 flex items-center gap-2.5 rounded-full py-1 pl-1.5 pr-3">
-          <IngotMark size={26} />
-          <span className="text-[16px] font-semibold tracking-tight">Ingot</span>
-        </Link>
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-6 px-4 sm:px-6">
+          <Link href="/" className="flex items-center gap-2.5">
+            <IngotMark size={24} />
+            <span className="font-display text-[21px] font-light tracking-tight">Ingot</span>
+          </Link>
 
-        <nav className="relative z-[2] order-3 -mx-1 flex w-full items-center justify-between gap-0.5 overflow-x-auto sm:order-2 sm:mx-auto sm:w-auto sm:justify-center">
-          {LINKS.map((link) => {
-            const on = active(link.href);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`relative rounded-full px-3.5 py-1.5 text-[13px] transition-colors duration-300 ${
-                  on ? "text-ink" : "text-ink-muted hover:text-ink-secondary"
-                }`}
-              >
-                {on && (
-                  <motion.span
-                    layoutId="nav-bead"
-                    className="absolute inset-0 rounded-full bg-gradient-to-b from-white/[0.14] to-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_0_24px_-6px_rgba(139,108,255,0.6)]"
-                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
-                  />
-                )}
-                <span className="relative">{link.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+          <nav className="relative ml-6 hidden items-center gap-1 sm:flex">
+            {LINKS.map((link) => (
+              <NavLink key={link.href} href={link.href} label={link.label} on={active(link.href)} id="nav-ingot" />
+            ))}
+          </nav>
 
-        <div className="relative z-[2] order-2 ml-auto sm:order-3 sm:ml-0">
-          <ConnectButton />
+          <div className="ml-auto">
+            <ConnectButton />
+          </div>
         </div>
-      </div>
-    </motion.header>
+      </motion.header>
+
+      {/* The phone dock. */}
+      <motion.nav
+        initial={{ y: 40, opacity: 0 }}
+        animate={{ y: hidden ? 90 : 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 260, damping: 30 }}
+        className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-50 flex items-center justify-around border border-hairline bg-void/90 px-1 py-1.5 backdrop-blur-md sm:hidden"
+      >
+        {LINKS.map((link) => (
+          <NavLink key={link.href} href={link.href} label={link.label} on={active(link.href)} id="dock-ingot" />
+        ))}
+      </motion.nav>
+    </>
   );
 }
 
-/// The brand mark: a silicon ingot in section, cut as a gem. Same geometry as
-/// docs/brand/ingot-mark.svg — the faces are lit rather than flat.
+function NavLink({ href, label, on, id }: { href: string; label: string; on: boolean; id: string }) {
+  return (
+    <Link
+      href={href}
+      className={`relative px-3 py-2.5 font-mono text-[10.5px] uppercase tracking-[0.2em] transition-colors duration-300 ${
+        on ? "text-ink" : "text-ink-muted hover:text-ink-secondary"
+      }`}
+    >
+      {label}
+      {on && (
+        <motion.span
+          layoutId={id}
+          className="absolute -bottom-0.5 left-1/2 -translate-x-1/2"
+          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+        >
+          <svg width="14" height="7" viewBox="0 0 14 7" aria-hidden>
+            <path d="M2 7 L4 1 L10 1 L12 7 Z" fill="#e8b661" />
+            <path d="M4 1 L10 1" stroke="#fff4dc" strokeWidth="0.8" />
+          </svg>
+          <span className="absolute left-1/2 top-0 h-3 w-6 -translate-x-1/2 -translate-y-1/2 bg-gold/40 blur-md" />
+        </motion.span>
+      )}
+    </Link>
+  );
+}
+
+/// The brand mark: a silicon ingot in section. Same geometry as docs/brand/ingot-mark.svg, cast in
+/// gold — lit front, bright top, shadowed side.
 export function IngotMark({ size = 22, className }: { size?: number; className?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 22 22" aria-hidden="true" className={className}>
       <defs>
         <linearGradient id="im-front" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#9cc2ff" />
-          <stop offset="0.45" stopColor="#4f8cff" />
-          <stop offset="1" stopColor="#5232d6" />
+          <stop offset="0" stopColor="#fff4dc" />
+          <stop offset="0.35" stopColor="#e8b661" />
+          <stop offset="1" stopColor="#9c6a26" />
         </linearGradient>
         <linearGradient id="im-top" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#ffe3a6" />
-          <stop offset="1" stopColor="#f3c66f" />
+          <stop offset="0" stopColor="#fffaf0" />
+          <stop offset="1" stopColor="#f6dca6" />
         </linearGradient>
         <linearGradient id="im-side" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#2b3fa8" />
-          <stop offset="1" stopColor="#140d4a" />
+          <stop offset="0" stopColor="#a8742c" />
+          <stop offset="1" stopColor="#4d3311" />
         </linearGradient>
-        <filter id="im-glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="1.2" result="b" />
-          <feMerge>
-            <feMergeNode in="b" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
       </defs>
-      <g filter="url(#im-glow)">
-        <path d="M4 14.5 L7 7.5 L15 7.5 L18 14.5 Z" fill="url(#im-front)" />
-        <path d="M7 7.5 L9 5 L17 5 L15 7.5 Z" fill="url(#im-top)" />
-        <path d="M15 7.5 L17 5 L20 12 L18 14.5 Z" fill="url(#im-side)" />
-        <path d="M7 7.5 L15 7.5" stroke="#ffffff" strokeOpacity="0.7" strokeWidth="0.5" />
-      </g>
+      <path d="M4 14.5 L7 7.5 L15 7.5 L18 14.5 Z" fill="url(#im-front)" />
+      <path d="M7 7.5 L9 5 L17 5 L15 7.5 Z" fill="url(#im-top)" />
+      <path d="M15 7.5 L17 5 L20 12 L18 14.5 Z" fill="url(#im-side)" />
     </svg>
   );
 }

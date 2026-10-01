@@ -29,9 +29,10 @@ when your balance is low. That mints from the test token; there is nothing to as
 ## 3. What to look at, in order
 
 **Overview** — the landing page tells the story with real data: 78 days of posted H100 rates,
-60% annualised volatility, a 6x spread between providers on the same day, and an interactive
-version of the hedged-versus-unhedged recovery case. The glass ingot in the hero is the brand mark,
-rendered in real time.
+60% annualised volatility, a 6x spread between providers on the same day, and a scroll-driven
+3D scene in which eight providers' prices rise as gold columns and the index settles through them
+as a plane of light, and an interactive version of the hedged-versus-unhedged recovery case. The
+gold bar in the hero, stamped with its hallmark, is rendered in real time.
 
 **Trade** — the H100 rental index, published onchain. Every print carries the hash of the
 methodology behind it, how many venue quotes it was built from, and how many venues. Hover the
@@ -44,7 +45,7 @@ realized rate to 55% of the index, post margin, and draw. The loan and its hedge
 transaction.
 
 Then drag the slider under the recovery chart. The gold line is what the lender recovers hedged —
-it does not move. The coral line is the same loan unhedged, and it falls through the debt as the
+it does not move. The ember-red line is the same loan unhedged, and it falls through the debt as the
 rate drops; the shaded gap between them is the shortfall the hedge prevents. **Every point on that chart is a value `HedgedCredit.project()` returned.** The
 browser cannot draw it without asking the chain.
 

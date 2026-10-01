@@ -6,12 +6,12 @@ const REPO = "https://github.com/Modemola/Monad";
 
 export function Footer() {
   return (
-    <footer className="relative mt-24 px-4 pb-10 sm:px-6">
+    <footer className="relative mt-24 px-4 pb-28 sm:px-6 sm:pb-10">
       <div className="hairline-x mx-auto mb-8 max-w-6xl" />
       <div className="mx-auto flex max-w-6xl flex-col gap-6 text-[12.5px] text-ink-muted sm:flex-row sm:items-center">
         <div className="flex items-center gap-2.5">
           <IngotMark size={20} />
-          <span className="text-ink-secondary">Ingot</span>
+          <span className="font-display text-[17px] font-light text-ink">Ingot</span>
           <span className="text-ink-muted/60">·</span>
           <span>Compute, priced and hedged. Built on Monad.</span>
         </div>
