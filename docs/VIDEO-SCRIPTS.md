@@ -44,7 +44,13 @@ settlement and real pricing logic, not a UI over static data.
 > That's filled. Monad settles it in under a second, which is what lets positions mark
 > continuously against the index instead of once a day.
 
-*Action: point at the position card — size, unrealized, health.*
+*Action: point at the toast in the corner — it followed the order from signature to block — and
+click "View on MonadScan" for one second to show the real transaction, then come back.*
+
+*Action: point at the position card — entry, mark, unrealized, health, liquidation price.*
+
+> Entry, mark, health, and where this position would be liquidated. And one button to close it,
+> with the same on-chain price bound as the ticket.
 
 ### 1:00 – 2:15 — The part that doesn't exist anywhere else
 
@@ -53,7 +59,8 @@ settlement and real pricing logic, not a UI over static data.
 > Here's what the market is actually for. This is a GPU operator borrowing against next month's
 > compute revenue.
 
-*Action: enter 100,000 hours. Set realized rate to 55%.*
+*Action: press **Example** (fills 100,000 hours at the index), then set realized rate to 55% and
+press **Minimum** on the margin field.*
 
 > They sell 100,000 GPU-hours. They don't sell at the index — this operator sells at 55% of it,
 > and that's typical: we measured 23 providers over 78 days and levels ran from 45% below the index
@@ -90,9 +97,10 @@ settlement and real pricing logic, not a UI over static data.
 
 *Screen: back to the recovery chart.*
 
-> Index, market, margin engine, and a credit product where the hedge is part of the loan. Seventy-
-> seven tests, replayed against seventy-eight days of real posted H100 prices. It's live on Monad
-> testnet — the link's in the submission.
+> Index, market, margin engine, and a credit product where the hedge is part of the loan. A hundred
+> and five contract tests, two security reviews with every finding pinned by a test, and an
+> end-to-end browser test that runs this exact demo on every push — against seventy-eight days of
+> real posted H100 prices. It's live on Monad testnet — the link's in the submission.
 
 ---
 
