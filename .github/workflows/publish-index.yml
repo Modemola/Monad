@@ -1,9 +1,13 @@
-# Keeps the Ingot index alive.
+# Keeps the Ingot index, and the market's contract calendar, alive.
 #
 # A seeded deployment has history but no future: without ongoing prints the index goes stale,
 # the mark drifts away from the market, and the front contract can never settle, because
 # settlement needs a print covering the right edge of its delivery window. This publishes the
 # current rate on a schedule so the deployed product is still live when someone opens it.
+#
+# Then it keeps the calendar moving (tools/lifecycle.mjs): expired contracts are settled once the
+# index is final through their expiry, and next month is listed a few days before the front month
+# expires. Without that, trading and new loans would stop thirty days after the deploy.
 #
 # Requires one repository secret:
 #   DEPLOYER_PRIVATE_KEY   the testnet publisher key (the deployer is allowlisted at deploy time)
@@ -35,15 +39,6 @@ jobs:
         with:
           version: v1.5.1
 
-      - name: Compute the print
-        id: print
-        run: |
-          node tools/publish-index.mjs --json > print.json
-          cat print.json
-          echo "price=$(jq -r .priceWei print.json)"   >> "$GITHUB_OUTPUT"
-          echo "samples=$(jq -r .sampleCount print.json)" >> "$GITHUB_OUTPUT"
-          echo "sources=$(jq -r .sourceCount print.json)" >> "$GITHUB_OUTPUT"
-
       # Nothing to publish to until the deploy workflow has recorded a deployment; skip cleanly
       # rather than failing four times a day.
       - name: Resolve the index address
@@ -54,6 +49,16 @@ jobs:
             exit 0
           fi
           echo "index=$(jq -r .index contracts/deployments/10143.json)" >> "$GITHUB_OUTPUT"
+          echo "market=$(jq -r .market contracts/deployments/10143.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Compute the print
+        id: print
+        run: |
+          node tools/publish-index.mjs --json > print.json
+          cat print.json
+          echo "price=$(jq -r .priceWei print.json)"   >> "$GITHUB_OUTPUT"
+          echo "samples=$(jq -r .sampleCount print.json)" >> "$GITHUB_OUTPUT"
+          echo "sources=$(jq -r .sourceCount print.json)" >> "$GITHUB_OUTPUT"
 
       - name: Publish onchain
         if: steps.addr.outputs.index != ''
@@ -87,3 +92,23 @@ jobs:
             "$NOW" "$PRICE" "${{ steps.print.outputs.samples }}" "${{ steps.print.outputs.sources }}" \
             --rpc-url "$RPC" --private-key "$KEY" \
             | grep -E 'status|transactionHash'
+
+      # Runs whether or not a print was due: settlement only needs the index to be final through
+      # expiry, which can happen between prints once the finality delay has passed.
+      - name: Settle and roll contracts
+        # Also when the print could not be computed: a stale rate source must not stall settlement.
+        if: ${{ !cancelled() && steps.addr.outputs.market != '' }}
+        env:
+          RPC: https://testnet-rpc.monad.xyz
+          KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          MARKET="${{ steps.addr.outputs.market }}"
+          node tools/lifecycle.mjs --rpc "$RPC" --market "$MARKET" --index "${{ steps.addr.outputs.index }}" > plan.json
+          jq -r '.[] | "\(.signature) — \(.reason)"' plan.json
+          jq -c '.[]' plan.json | while read -r action; do
+            SIG=$(jq -r .signature <<<"$action")
+            mapfile -t ARGS < <(jq -r '.args[]' <<<"$action")
+            cast send "$MARKET" "$SIG" "${ARGS[@]}" --rpc-url "$RPC" --private-key "$KEY" \
+              | grep -E 'status|transactionHash'
+          done

@@ -59,6 +59,16 @@ last real level; every backfilled move, and the step to the first live print, si
 index's 25% deviation guard (`contracts/test/SeedHistory.t.sol` proves the backfill against the
 production guards).
 
+The same workflow keeps the contract calendar moving, so the deployment is still tradeable after
+the seeded month runs out. After each print it runs `tools/lifecycle.mjs`, which reads the market
+and plans what to send: next month is listed three days before the front month expires, with its
+delivery window opening where the old one closes; an expired contract is settled once the index is
+final through its expiry; and the underwriter vault's position in it is realized, so its profit is
+cash underwriters can redeem. Traders realize their own from the terminal's *Earlier contracts*
+list, and borrowers close matured loans from the credit desk, which settles the contract first if
+the keeper has not yet. The planner is pure and tested (`tools/lifecycle.test.mjs`); the whole
+roll-settle-realize-close sequence was rehearsed against a local chain moved forward a month.
+
 ## Verify it works
 
 Against a local chain:

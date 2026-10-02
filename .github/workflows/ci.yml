@@ -37,6 +37,11 @@ jobs:
           node indexer/scripts/sync.mjs --check
           git diff --exit-code -- web/lib/abis.ts indexer/abis indexer/config.yaml indexer/test/fixtures
 
+      # The keeper's contract-calendar script pins function selectors by hand; with the build
+      # present, its tests check them against the compiled ABIs.
+      - name: Keeper selectors match the contracts
+        run: node --test tools/lifecycle.test.mjs
+
       - name: Fail on any lint finding in src
         working-directory: contracts
         run: |
@@ -188,4 +193,4 @@ jobs:
           node-version: 22
 
       - name: Test
-        run: node --test tools/publish-index.test.mjs
+        run: node --test tools/publish-index.test.mjs tools/lifecycle.test.mjs

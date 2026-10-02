@@ -10,14 +10,14 @@ import { NotDeployed } from "@/components/NotDeployed";
 import { AppFrame, PageHeader } from "@/components/PageHeader";
 import { RecoveryPanel } from "@/components/RecoveryPanel";
 import { Button, Card, Disclosure, Empty, Field, Row, Segmented, Stat, StatStrip, TextInput } from "@/components/ui";
-import { hedgedCreditAbi, ingotMarketAbi, mockUSDCAbi } from "@/lib/abis";
+import { hedgedCreditAbi, ingotIndexAbi, ingotMarketAbi, mockUSDCAbi } from "@/lib/abis";
 import {
   DEFAULT_SLIPPAGE_BPS,
   SLIPPAGE_OPTIONS,
   formatTolerance,
   minFill,
 } from "@/lib/slippage";
-import { useDeployment, useFrontSeries } from "@/lib/useIngot";
+import { useDeployment, useFrontSeries, type Series } from "@/lib/useIngot";
 import { formatHours, formatPrice, formatUsdc, parseDecimal, toInputAmount } from "@/lib/format";
 import { useTx } from "@/lib/tx";
 
@@ -39,7 +39,7 @@ type Loan = {
 export default function CreditDesk() {
   const { address } = useAccount();
   const { deployment } = useDeployment();
-  const { seriesId, mark } = useFrontSeries();
+  const { seriesId, mark, expired } = useFrontSeries();
 
   const { data: loanIds } = useReadContract({
     address: deployment?.hedgedCredit,
@@ -119,7 +119,7 @@ export default function CreditDesk() {
       </Reveal>
 
       <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
-        <OriginationForm seriesId={seriesId} mark={mark} />
+        <OriginationForm seriesId={seriesId} mark={mark} expired={expired} />
 
         <Card
           eyebrow="HedgedCredit.project()"
@@ -176,7 +176,7 @@ export default function CreditDesk() {
                       {new Date(Number(loan.maturity) * 1000).toLocaleDateString()}
                     </td>
                     <td className="py-2 text-right">
-                      <CloseLoan id={id} maturity={loan.maturity} />
+                      <CloseLoan id={id} seriesId={loan.seriesId} maturity={loan.maturity} margin={loan.margin} />
                     </td>
                   </tr>
                 ))}
@@ -193,28 +193,94 @@ export default function CreditDesk() {
 }
 
 /// A matured loan closes against the settled contract: the hedge's PnL is netted against the debt
-/// and the margin is applied first. Before maturity there is nothing to press.
-function CloseLoan({ id, maturity }: { id: bigint; maturity: bigint }) {
-  const { deployment } = useDeployment();
+/// and the margin is applied first. Before maturity there is nothing to press. If the contract has
+/// not been settled yet, settling it is one permissionless call away, so the borrower can do it
+/// rather than wait for the keeper. Whatever the margin does not cover is pulled from the
+/// borrower's wallet, so that amount is shown, and approved, before the close.
+function CloseLoan({ id, seriesId, maturity, margin }: { id: bigint; seriesId: bigint; maturity: bigint; margin: bigint }) {
+  const { address } = useAccount();
+  const { deployment, chainId } = useDeployment();
   const tx = useTx();
   const matured = Date.now() / 1000 >= Number(maturity);
 
+  const { data } = useReadContracts({
+    contracts:
+      deployment && address
+        ? [
+            { chainId, address: deployment.market, abi: ingotMarketAbi, functionName: "seriesAt", args: [seriesId] },
+            { chainId, address: deployment.index, abi: ingotIndexAbi, functionName: "finalizedThrough" },
+            { chainId, address: deployment.hedgedCredit, abi: hedgedCreditAbi, functionName: "debtOf", args: [id] },
+            { chainId, address: deployment.hedgedCredit, abi: hedgedCreditAbi, functionName: "hedgePnlOf", args: [id] },
+            {
+              chainId,
+              address: deployment.usdc,
+              abi: mockUSDCAbi,
+              functionName: "allowance",
+              args: [address, deployment.hedgedCredit],
+            },
+            { chainId, address: deployment.usdc, abi: mockUSDCAbi, functionName: "balanceOf", args: [address] },
+          ]
+        : [],
+    query: { enabled: Boolean(deployment && address) && matured },
+  });
+  const series = data?.[0]?.result as Series | undefined;
+  const finalizedThrough = data?.[1]?.result as bigint | undefined;
+  const debt = data?.[2]?.result as bigint | undefined;
+  const hedgePnl = data?.[3]?.result as bigint | undefined;
+  const allowance = data?.[4]?.result as bigint | undefined;
+  const wallet = data?.[5]?.result as bigint | undefined;
+
   if (!matured) return <span className="text-ink-muted">Open</span>;
+  if (!series || debt === undefined || hedgePnl === undefined) return <span className="text-ink-muted">…</span>;
+
+  const settleFirst = !series.settled;
+  if (settleFirst && (finalizedThrough === undefined || finalizedThrough < series.expiry)) {
+    return <span className="text-ink-muted" title="Settles once the index is final through expiry">Awaiting print</span>;
+  }
+
+  // What the wallet pays on close: the debt, less the hedge's gain (or plus its loss), less margin.
+  const due = settleFirst ? 0n : debt - hedgePnl - margin;
+  const short = due > 0n && wallet !== undefined && wallet < due;
+  const needsApproval = due > 0n && (allowance ?? 0n) < due;
+
+  const style =
+    "border border-gold/40 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-gold transition-colors hover:border-gold disabled:opacity-40";
+  const label = settleFirst ? "Settle" : needsApproval ? "Approve" : "Close";
+
   return (
-    <button
-      type="button"
-      disabled={!deployment || tx.busy}
-      onClick={() =>
-        deployment &&
-        tx.send(
-          { address: deployment.hedgedCredit, abi: hedgedCreditAbi, functionName: "close", args: [id] },
-          { label: `Close loan #${id.toString()}`, success: "Loan closed; margin returned" },
-        )
-      }
-      className="border border-gold/40 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-gold transition-colors hover:border-gold disabled:opacity-40"
-    >
-      {tx.busy ? "Closing…" : "Close"}
-    </button>
+    <div className="inline-flex flex-col items-end gap-1">
+      <button
+        type="button"
+        disabled={!deployment || tx.busy || short}
+        onClick={() => {
+          if (!deployment) return;
+          if (settleFirst) {
+            tx.send(
+              { address: deployment.market, abi: ingotMarketAbi, functionName: "settleSeries", args: [seriesId] },
+              { label: `Settle series #${seriesId.toString()}`, success: "Contract settled — now close the loan" },
+            );
+          } else if (needsApproval) {
+            tx.send(
+              { address: deployment.usdc, abi: mockUSDCAbi, functionName: "approve", args: [deployment.hedgedCredit, due] },
+              { label: `Approve ${formatUsdc(due)} to repay loan #${id.toString()}`, success: "Approved — now close the loan" },
+            );
+          } else {
+            tx.send(
+              { address: deployment.hedgedCredit, abi: hedgedCreditAbi, functionName: "close", args: [id] },
+              { label: `Close loan #${id.toString()}`, success: "Loan closed" },
+            );
+          }
+        }}
+        className={style}
+      >
+        {tx.busy ? "…" : label}
+      </button>
+      {!settleFirst && (
+        <span className={`text-[10.5px] ${short ? "text-critical" : "text-ink-muted"}`}>
+          {due > 0n ? `${formatUsdc(due)} due${short ? " · wallet short" : ""}` : `${formatUsdc(-due)} back to you`}
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -248,7 +314,16 @@ function PoolHeader() {
   );
 }
 
-function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mark: bigint | undefined }) {
+function OriginationForm({
+  seriesId,
+  mark,
+  expired,
+}: {
+  seriesId: bigint | undefined;
+  mark: bigint | undefined;
+  /// The front contract has stopped trading, so there is nothing to hedge into until next month lists.
+  expired: boolean;
+}) {
   const { address } = useAccount();
   const { deployment } = useDeployment();
   const [hours, setHours] = useState("");
@@ -457,6 +532,7 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
               marginShort ||
               principalTooSmall ||
               minHedgePrice === undefined ||
+              expired ||
               busy
             }
             onClick={() =>
@@ -485,6 +561,12 @@ function OriginationForm({ seriesId, mark }: { seriesId: bigint | undefined; mar
         )}
       </div>
 
+      {expired && (
+        <p className="mt-2 text-[12px] text-ink-secondary">
+          The front contract has expired, so there is no hedge to open. The keeper lists next month on its
+          next run.
+        </p>
+      )}
       {principalTooSmall && minPrincipal !== undefined && (
         <p className="mt-2 text-[12px] text-critical">
           The smallest loan is {formatUsdc(minPrincipal)}. Increase the offtake or your realized rate.
