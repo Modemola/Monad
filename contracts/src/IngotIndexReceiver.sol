@@ -59,6 +59,7 @@ contract IngotIndexReceiver is Ownable {
     error UnexpectedWorkflowOwner(address owner);
     error UnexpectedWorkflowId(bytes32 workflowId);
     error MalformedMetadata();
+    error WorkflowNotPinned();
 
     constructor(IngotIndex index_, bytes32 workflowTag_, address owner_) Ownable(owner_) {
         index = index_;
@@ -92,7 +93,9 @@ contract IngotIndexReceiver is Ownable {
     function _checkWorkflow(bytes calldata metadata) internal view {
         address owner_ = expectedWorkflowOwner;
         bytes32 id_ = expectedWorkflowId;
-        if (owner_ == address(0) && id_ == bytes32(0)) return;
+        // Fail closed. The forwarder is shared by every workflow on the chain, so with nothing
+        // pinned any of them could print here by copying the tag.
+        if (owner_ == address(0) && id_ == bytes32(0)) revert WorkflowNotPinned();
         if (metadata.length < 62) revert MalformedMetadata();
 
         bytes32 workflowId = bytes32(metadata[0:32]);

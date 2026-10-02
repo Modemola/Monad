@@ -313,6 +313,9 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
 
         usdc.safeTransferFrom(msg.sender, address(this), assets);
         _mint(msg.sender, shares);
+        // New cash settles any hedge deficit before anyone can have it written off: a write-off
+        // is a step up in this pool's NAV, and a deposit sandwiching one would collect it.
+        _coverMarketDeficit();
 
         emit LenderDeposited(msg.sender, assets, shares);
     }
@@ -320,6 +323,8 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
     /// @notice Redeem shares for USDC, bounded by cash not already lent out or posted as margin.
     function redeemLender(uint256 shares) external nonReentrant returns (uint256 assets) {
         if (shares == 0) revert ZeroAmount();
+        // The market is owed before lenders are paid out.
+        _coverMarketDeficit();
 
         uint256 supply = totalSupply();
         assets = (shares * totalAssets()) / supply;
@@ -487,9 +492,11 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
             marginReturned = margin + uint256(-netOwed);
         }
 
+        // The borrower's own money goes back first, so covering a hedge deficit below can only
+        // ever spend lender cash.
+        if (marginReturned > 0) usdc.safeTransfer(msg.sender, marginReturned);
         _coverMarketDeficit();
         _recoverHedgeMargin();
-        if (marginReturned > 0) usdc.safeTransfer(msg.sender, marginReturned);
 
         emit LoanClosed(loanId, hedgePnl, netOwed, marginReturned);
     }
@@ -530,8 +537,12 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
         int256 keep = market.marginRequirement(address(this), hedgeMarginBps).toInt256();
         int256 cash = market.balanceOf(address(this));
         int256 spare = equity_ - keep;
-        // Only realized cash can leave the market.
+        // Only realized cash can leave the market, and only above its initial margin, which can
+        // sit above `hedgeMarginBps` if either side is retuned. Asking for more would revert and
+        // take every close and seizure down with it.
         if (spare > cash) spare = cash;
+        int256 free = market.freeCollateral(address(this)).toInt256();
+        if (spare > free) spare = free;
         // forge-lint: disable-next-line(unsafe-typecast) — guarded positive.
         if (spare > 0) market.withdraw(uint256(spare));
     }
@@ -539,6 +550,14 @@ contract HedgedCredit is ERC20, Ownable, ReentrancyGuard {
     /// @dev A hedge can lose more than the margin posted for it; the borrower's payment covers
     ///      that loss, so the pool settles it with the market rather than leaving its account
     ///      under water for the market to write off against underwriters.
+    /// @notice Settle the pool's hedge deficit with the market from idle lender cash.
+    /// @dev Permissionless and NAV-neutral: cash moves into the market account it is owed to.
+    ///      Lets anyone pay the market before its grace runs out and the loss falls on
+    ///      underwriters instead.
+    function coverMarketDeficit() external nonReentrant {
+        _coverMarketDeficit();
+    }
+
     function _coverMarketDeficit() internal {
         int256 cash = market.balanceOf(address(this));
         if (cash >= 0) return;

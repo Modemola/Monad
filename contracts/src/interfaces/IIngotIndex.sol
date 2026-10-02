@@ -19,4 +19,13 @@ interface IIngotIndex {
 
     /// @notice Timestamp of the newest finalized observation.
     function finalizedThrough() external view returns (uint64);
+
+    /// @notice Timestamp of the first observation: no average can start before it.
+    function genesis() external view returns (uint64);
+
+    /// @notice Largest move, in basis points, between the newest finalized price and any print
+    ///         still inside its finality delay. Zero when nothing is pending.
+    /// @dev Provisional prints are public before they count. Consumers that quote against the
+    ///      finalized price use this to stop quoting into a move everyone can already see.
+    function pendingMoveBps() external view returns (uint256);
 }

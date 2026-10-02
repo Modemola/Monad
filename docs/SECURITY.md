@@ -1,7 +1,58 @@
 # Security model
 
-What Ingot trusts, what it does not, and what a reviewer should push on. Written after a
-security review of the protocol; findings are listed whether or not they were fixed.
+What Ingot trusts, what it does not, and what a reviewer should push on. Written after three
+security reviews of the protocol; findings are listed whether or not they were fixed.
+
+## Fixed — third review
+
+A third pass attacked the second review's own fixes. Each finding was reproduced as a passing
+exploit first; every one of those exploits now fails, and the suite carries a regression test
+for each.
+
+**A paid-off shortfall left its grace clock running.** `shortfallSince` was set on the first
+settlement shortfall and never cleared, so once an account (in practice the credit pool) had
+covered one, its next shortfall, months later, could be written off the moment it was recorded,
+with no grace at all. The clock now clears whenever the account's balance is back at or above
+zero, on deposit or settlement. `test_settlement_paidShortfallLeavesNoStaleGraceBehind`,
+`test_deficit_coveredShortfallDoesNotCarryOver`.
+
+**Writing off the credit pool's deficit could be sandwiched.** The pool counts its market account
+in NAV, negative or not, so writing that deficit off is a step up in its share price. With the
+pool's cash lent out, anyone could deposit, call `absorbShortfall`, and redeem at a profit,
+leaving the loss on underwriters. Lender deposits and redemptions now pay the market first, and
+`HedgedCredit.coverMarketDeficit()` lets anyone do so from idle cash at any time; both are
+NAV-neutral. `test_deficit_lenderDepositCannotSandwichAWriteOff`,
+`test_deficit_anyoneCanCoverItFromIdleCash`.
+
+**Provisional prints could be front-run.** A print is public for its whole finality delay before
+the mark reads it. Buying at the old mark while a +24% print waited to finalize, then selling once
+it had, turned 100,000 USDC into 187,708, all of it out of the vault. `IndexMoving` closes that
+gap: while a pending print sits more than `pendingMoveLimitBps` (50 bps, under a taker's 70 bps
+round trip) from the finalized price, the market lets positions shrink but not grow. The trade
+ticket says so when it happens. `test_trade_refusesToOpenIntoAPendingIndexMove`,
+`test_trade_ignoresPendingMovesInsideTheLimit`.
+
+**Underwriter redemptions reverted inside advertised liquidity.** Once withdrawals paid only
+realized cash, `UnderwriterVault.availableLiquidity` still counted unrealized gains, so a
+redemption it said would succeed could revert. It now reports the smaller of free collateral and
+realized cash. `test_availableLiquidity_countsOnlyWithdrawableCash`.
+
+**Closing a loan could be bricked by a margin retune.** The pool kept its 40% hedge buffer when
+pulling margin back, but the market releases only what clears its own initial margin; raising
+that above 40% made every `close` and `seize` revert. The pool now asks for no more than the
+market's free collateral. Its margin refund to the borrower is also paid before any hedge
+deficit is covered, so covering can only ever spend lender cash.
+`test_close_survivesAMarketMarginAboveTheHedgeBuffer`.
+
+**A series could be listed that could never settle.** A window opening before the index's first
+print cannot be averaged. `listSeries` now refuses one.
+`test_listSeries_rejectsAWindowBeforeTheFirstPrint`.
+
+**The CRE receiver accepted any workflow until configured.** With no expected workflow set, the
+owner and ID checks were skipped, and the forwarder is shared by every workflow on the chain. The
+receiver now fails closed (`WorkflowNotPinned`). The deploy script pins the workflow when
+`CRE_WORKFLOW_OWNER` / `CRE_WORKFLOW_ID` are set and otherwise prints the command.
+`test_onReport_failsClosedUntilAWorkflowIsPinned`.
 
 ## Fixed — second review
 
@@ -143,8 +194,9 @@ deliberate; any real deployment needs the standard treatment.
 - If the pool's hedge itself were liquidated, a loan's hedge PnL would keep marking a position that
   no longer exists. The 40% hedge buffer (now preserved across closes) makes this remote, but the
   loan should record the liquidation and freeze its hedge PnL.
-- A series whose window opens before the index's first print, or whose expiry is never covered by
-  a print, cannot settle. Series are listed by the owner, and the keeper prints every six hours.
+- A series whose expiry is never covered by a print cannot settle. The keeper prints every six
+  hours, so this needs the publisher to stop for good; a fallback to the last finalized print
+  after a long timeout would close it.
 
 - Liquidation closes any amount up to the full position while an account is below maintenance,
   rather than stopping at the point health is restored.

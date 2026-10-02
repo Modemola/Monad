@@ -72,6 +72,14 @@ contract Deploy is Script {
         UnderwriterVault underwriter = new UnderwriterVault(market, IERC20(usdc), deployer);
         HedgedCredit credit = new HedgedCredit(market, IERC20(usdc), deployer);
 
+        // The receiver refuses every report until it knows which workflow to trust. Pin it here
+        // when the workflow is already registered; otherwise after registration (docs/ORACLE.md).
+        address workflowOwner = vm.envOr("CRE_WORKFLOW_OWNER", address(0));
+        bytes32 workflowId = vm.envOr("CRE_WORKFLOW_ID", bytes32(0));
+        if (workflowOwner != address(0) || workflowId != bytes32(0)) {
+            receiver.setExpectedWorkflow(workflowOwner, workflowId);
+        }
+
         market.setVault(address(underwriter));
         // Testnet only: anyone may draw, so the product can be tried with mock USDC. Production
         // gates borrowers behind an underwriter (see HedgedCredit.openBorrowing, docs/SECURITY.md).
@@ -132,7 +140,10 @@ contract Deploy is Script {
         console.log("hedgedCredit    ", a.credit);
         console.log("written to      ", path);
         console.log("");
-        console.log("Set the CRE forwarder on the receiver once the workflow is registered:");
+        console.log("Once the CRE workflow is registered, point the receiver at it:");
         console.log("  cast send <indexReceiver> 'setForwarder(address)' <forwarder>");
+        console.log(
+            "  cast send <indexReceiver> 'setExpectedWorkflow(address,bytes32)' <workflowOwner> <workflowId>"
+        );
     }
 }

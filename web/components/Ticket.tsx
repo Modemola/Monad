@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { useReadContract } from "wagmi";
 
-import { ingotMarketAbi } from "@/lib/abis";
+import { ingotIndexAbi, ingotMarketAbi } from "@/lib/abis";
 import { useDeployment } from "@/lib/useIngot";
 import { LOT_HOURS, formatPrice, formatUsdc, parseDecimal } from "@/lib/format";
 import { useTx } from "@/lib/tx";
@@ -51,6 +51,23 @@ export function Ticket({
     args: seriesId !== undefined && size !== null && size !== 0n ? [seriesId, size] : undefined,
     query: { enabled: Boolean(deployment) && seriesId !== undefined && size !== null && size !== 0n },
   });
+
+  // A print is public for its finality delay before the mark reads it; while one moves the
+  // price past the market's limit, the contract only lets positions shrink.
+  const { data: pendingMove } = useReadContract({
+    address: deployment?.index,
+    abi: ingotIndexAbi,
+    functionName: "pendingMoveBps",
+    query: { enabled: Boolean(deployment), refetchInterval: 30_000 },
+  });
+  const { data: pendingLimit } = useReadContract({
+    address: deployment?.market,
+    abi: ingotMarketAbi,
+    functionName: "pendingMoveLimitBps",
+    query: { enabled: Boolean(deployment) },
+  });
+  const indexMoving =
+    pendingMove !== undefined && pendingLimit !== undefined && pendingMove > BigInt(pendingLimit);
 
   const tx = useTx();
   // A new order starts clean: the last fill's confirmation or error belongs to that order.
@@ -184,6 +201,14 @@ export function Ticket({
           render={formatTolerance}
         />
       </div>
+
+      {indexMoving && (
+        <p role="status" className="mt-4 border-l-2 border-gold/70 bg-gold/[0.06] px-3 py-2.5 text-[12px] leading-relaxed text-ink-secondary">
+          <span className="text-gold">New index print pending, {(Number(pendingMove) / 100).toFixed(2)}% from the mark.</span>{" "}
+          Opening new exposure is paused until it finalizes, within the hour, so nobody trades the old price
+          against a move already public. Reducing or closing still works.
+        </p>
+      )}
 
       <div className="mt-4">
         <Button

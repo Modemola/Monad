@@ -10,6 +10,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 import {HedgedCredit} from "../src/HedgedCredit.sol";
+import {IngotMarket} from "../src/IngotMarket.sol";
 import {UnderwriterVault} from "../src/UnderwriterVault.sol";
 
 contract HedgedCreditTest is Fixtures {
@@ -526,5 +527,92 @@ contract HedgedCreditTest is Fixtures {
         uint256 buffer = market.marginRequirement(address(credit), credit.hedgeMarginBps());
         assertGt(buffer, 0, "the 60-day hedge is still live");
         assertGe(market.equity(address(credit)), int256(buffer), "and keeps its full buffer");
+    }
+
+    // ------------------------------------------------------------------
+    // Hedge deficits
+    // ------------------------------------------------------------------
+
+    /// @dev Rates up 50%: the short loses more than the margin behind it, and settlement leaves
+    ///      the pool's market account under water.
+    function _settleIntoDeficit() internal returns (uint256 loanId) {
+        loanId = _openLoan();
+        _settleAt(3.75 * 1e18);
+        market.settlePosition(address(credit), seriesId); // any keeper
+        assertLt(market.balanceOf(address(credit)), 0, "pool account under water");
+    }
+
+    /// @dev Writing off the pool's deficit would be a step up in its NAV. A lender deposit that
+    ///      sandwiches the write-off must not collect it: new cash settles the deficit first, and
+    ///      there is nothing left to write off.
+    function test_deficit_lenderDepositCannotSandwichAWriteOff() public {
+        _openLoan();
+        // Lenders take out every idle dollar, so the pool has nothing left to cover with.
+        uint256 idle = credit.availableLiquidity();
+        uint256 redeemable = (idle * credit.totalSupply()) / credit.totalAssets();
+        vm.prank(lender);
+        credit.redeemLender(redeemable);
+        _settleAt(3.75 * 1e18);
+        market.settlePosition(address(credit), seriesId);
+        assertLt(market.balanceOf(address(credit)), 0, "pool account under water");
+        assertLt(credit.availableLiquidity(), 1 * USDC_ONE, "and no cash to cover it");
+        vm.warp(block.timestamp + market.shortfallGrace());
+
+        address attacker = address(0xBAD);
+        uint256 stake = 1_000_000 * USDC_ONE;
+        usdc.mint(attacker, stake);
+        vm.startPrank(attacker);
+        usdc.approve(address(credit), type(uint256).max);
+        uint256 shares = credit.depositLender(stake);
+        assertGe(market.balanceOf(address(credit)), 0, "the deposit paid the market first");
+        vm.expectRevert(IngotMarket.NoShortfall.selector);
+        market.absorbShortfall(address(credit));
+        vm.stopPrank();
+
+        // Part of the stake is now in the market paying the hedge, owed back by the borrower, so
+        // it cannot all leave at once — but none of it is a gain.
+        uint256 worth = (shares * credit.totalAssets()) / credit.totalSupply();
+        assertLe(worth, stake, "no profit from the round trip");
+        assertEq(market.badDebt(), 0, "and underwriters wore nothing");
+    }
+
+    /// @dev Anyone may settle the pool's deficit from idle lender cash, NAV-neutrally, before the
+    ///      grace period runs out.
+    function test_deficit_anyoneCanCoverItFromIdleCash() public {
+        _settleIntoDeficit();
+        uint256 navBefore = credit.totalAssets();
+
+        vm.prank(keeper);
+        credit.coverMarketDeficit();
+
+        assertGe(market.balanceOf(address(credit)), 0, "covered");
+        assertEq(market.shortfallSince(address(credit)), 0, "and the shortfall is over");
+        assertEq(credit.totalAssets(), navBefore, "NAV-neutral");
+    }
+
+    /// @dev A deficit covered on one loan must not leave its grace clock running, or the next
+    ///      loan's deficit could be written off the moment it is recorded.
+    function test_deficit_coveredShortfallDoesNotCarryOver() public {
+        uint256 loanId = _settleIntoDeficit();
+        vm.prank(neocloud);
+        credit.close(loanId);
+        assertEq(market.shortfallSince(address(credit)), 0, "cleared when the borrower paid");
+    }
+
+    /// @dev Recovering margin asks the market only for what it will release. With the market's
+    ///      initial margin retuned above the pool's hedge buffer, close and seize still work.
+    function test_close_survivesAMarketMarginAboveTheHedgeBuffer() public {
+        uint256 longSeries = _listSeries(60, 0);
+        uint256 loanId = _openLoan();
+        vm.prank(neocloud);
+        credit.open(longSeries, OFFTAKE, AT_INDEX, 60_000 * USDC_ONE, 0);
+
+        vm.prank(owner);
+        market.setRiskParams(5_000, 1_000, 10); // 50% initial margin, above the 40% buffer
+
+        _settleAt(2.5 * 1e18);
+        vm.prank(neocloud);
+        credit.close(loanId);
+        assertTrue(credit.loanAt(loanId).closed, "closed");
     }
 }

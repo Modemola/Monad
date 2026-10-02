@@ -13,6 +13,10 @@ contract IngotIndexReceiverTest is Test {
     address internal owner = address(0xA11CE);
     address internal forwarder = address(0xF0);
     address internal stranger = address(0xDEAD);
+    /// @dev The workflow owner the receiver is pinned to, and metadata the forwarder would pass
+    ///      for one of its reports.
+    address internal constant OURS = address(0xC0FFEE);
+    bytes internal meta;
 
     /// @dev The ASCII bytes32 of the workflow name, matching `bytes32FromAscii` in the workflow.
     ///      This started as keccak256 of the same string and the cross-language test caught it:
@@ -29,9 +33,11 @@ contract IngotIndexReceiverTest is Test {
 
         vm.startPrank(owner);
         receiver.setForwarder(forwarder);
+        receiver.setExpectedWorkflow(OURS, bytes32(0));
         // The receiver becomes the index's publisher. A quorum replaces a key.
         index.setPublisher(address(receiver), true);
         vm.stopPrank();
+        meta = _metadata(bytes32("workflow-1"), OURS);
     }
 
     function _report(uint64 observedAt, uint256 price) internal pure returns (bytes memory) {
@@ -41,7 +47,7 @@ contract IngotIndexReceiverTest is Test {
     function test_onReport_publishesThroughTheIndex() public {
         vm.warp(GENESIS + 1 hours);
         vm.prank(forwarder);
-        receiver.onReport("", _report(GENESIS + 1 hours, 3.6e18));
+        receiver.onReport(meta, _report(GENESIS + 1 hours, 3.6e18));
 
         vm.warp(GENESIS + 1 hours + index.finalityDelay());
         (uint256 price, uint64 observedAt) = index.latest();
@@ -58,7 +64,7 @@ contract IngotIndexReceiverTest is Test {
         vm.warp(GENESIS + 1 hours);
         vm.expectRevert(abi.encodeWithSelector(IngotIndexReceiver.NotForwarder.selector, stranger));
         vm.prank(stranger);
-        receiver.onReport("", _report(GENESIS + 1 hours, 3.6e18));
+        receiver.onReport(meta, _report(GENESIS + 1 hours, 3.6e18));
     }
 
     function test_onReport_rejectsAReportFromAnotherWorkflow() public {
@@ -69,7 +75,7 @@ contract IngotIndexReceiverTest is Test {
         vm.warp(GENESIS + 1 hours);
         vm.expectRevert(abi.encodeWithSelector(IngotIndexReceiver.UnexpectedWorkflow.selector, other));
         vm.prank(forwarder);
-        receiver.onReport("", report);
+        receiver.onReport(meta, report);
     }
 
     function test_onReport_revertsBeforeAForwarderIsConfigured() public {
@@ -78,19 +84,19 @@ contract IngotIndexReceiverTest is Test {
         vm.warp(GENESIS + 1 hours);
         vm.expectRevert(IngotIndexReceiver.ForwarderNotSet.selector);
         vm.prank(forwarder);
-        fresh.onReport("", _report(GENESIS + 1 hours, 3.6e18));
+        fresh.onReport(meta, _report(GENESIS + 1 hours, 3.6e18));
     }
 
     /// @dev A quorum is not licence to print anything: the index's own guards still apply.
     function test_onReport_stillSubjectToTheDeviationBand() public {
         vm.warp(GENESIS + 1 hours);
         vm.prank(forwarder);
-        receiver.onReport("", _report(GENESIS + 1 hours, 3.6e18));
+        receiver.onReport(meta, _report(GENESIS + 1 hours, 3.6e18));
 
         vm.warp(GENESIS + 2 hours);
         vm.expectRevert(abi.encodeWithSelector(IngotIndex.DeviationTooLarge.selector, 3.6e18, 36e18, 2_500));
         vm.prank(forwarder);
-        receiver.onReport("", _report(GENESIS + 2 hours, 36e18));
+        receiver.onReport(meta, _report(GENESIS + 2 hours, 36e18));
     }
 
     function test_setForwarder_onlyOwner() public {
@@ -131,7 +137,7 @@ contract IngotIndexReceiverTest is Test {
         // And it survives the whole path: forwarder -> receiver -> index.
         vm.warp(observedAt);
         vm.prank(forwarder);
-        receiver.onReport("", payload);
+        receiver.onReport(meta, payload);
 
         vm.warp(observedAt + index.finalityDelay());
         (uint256 published,) = index.latest();
@@ -155,9 +161,7 @@ contract IngotIndexReceiverTest is Test {
     ///      vouches for identifies the sender, so with an expected owner set, a report from anyone
     ///      else's workflow is refused even with the right tag.
     function test_onReport_rejectsAnotherOwnersWorkflowEvenWithTheRightTag() public {
-        address ours = address(0xC0FFEE);
-        vm.prank(owner);
-        receiver.setExpectedWorkflow(ours, bytes32(0));
+        address ours = OURS;
 
         vm.warp(GENESIS + 1 hours);
         vm.prank(forwarder);
@@ -185,11 +189,21 @@ contract IngotIndexReceiverTest is Test {
     }
 
     function test_onReport_rejectsTruncatedMetadataOnceConfigured() public {
-        vm.prank(owner);
-        receiver.setExpectedWorkflow(address(0xC0FFEE), bytes32(0));
-
         vm.prank(forwarder);
         vm.expectRevert(IngotIndexReceiver.MalformedMetadata.selector);
         receiver.onReport("", _report(GENESIS + 1 hours, 3.6e18));
+    }
+
+    /// @dev A receiver with a forwarder but no pinned workflow would take a report from any
+    ///      workflow on the shared forwarder that copied the tag. It refuses instead.
+    function test_onReport_failsClosedUntilAWorkflowIsPinned() public {
+        IngotIndexReceiver fresh = new IngotIndexReceiver(index, TAG, owner);
+        vm.prank(owner);
+        fresh.setForwarder(forwarder);
+
+        vm.warp(GENESIS + 1 hours);
+        vm.expectRevert(IngotIndexReceiver.WorkflowNotPinned.selector);
+        vm.prank(forwarder);
+        fresh.onReport(meta, _report(GENESIS + 1 hours, 3.6e18));
     }
 }
