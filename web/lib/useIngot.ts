@@ -30,7 +30,21 @@ export function useDeployment() {
   return { chainId, deployment: undefined, isFallback: false };
 }
 
-/// The front-month contract. v1 lists one series at a time; the UI reads the newest.
+export type Series = {
+  listedAt: bigint;
+  windowStart: bigint;
+  expiry: bigint;
+  settled: boolean;
+  basisBps: number;
+  settlementPrice: bigint;
+  longOpenInterest: bigint;
+};
+
+/// The front-month contract: the earliest listed series still trading.
+///
+/// The keeper lists next month a few days before the front expires, so for those days two series
+/// are live. Trading stays on the expiring one until it stops, then moves on; reading the newest
+/// would have pulled everyone into next month early and hidden the positions they still hold.
 export function useFrontSeries() {
   const { deployment, chainId } = useDeployment();
 
@@ -42,16 +56,27 @@ export function useFrontSeries() {
     query: { enabled: Boolean(deployment) },
   });
 
-  const seriesId = count && count > 0n ? count - 1n : undefined;
-
-  const { data: series } = useReadContract({
-    address: deployment?.market,
-    abi: ingotMarketAbi,
-    functionName: "seriesAt",
-    chainId,
-    args: seriesId === undefined ? undefined : [seriesId],
-    query: { enabled: Boolean(deployment) && seriesId !== undefined },
+  const ids = count === undefined ? [] : [count - 2n, count - 1n].filter((id) => id >= 0n);
+  const { data: listed } = useReadContracts({
+    contracts: deployment
+      ? ids.map((id) => ({
+          chainId,
+          address: deployment.market,
+          abi: ingotMarketAbi,
+          functionName: "seriesAt" as const,
+          args: [id] as const,
+        }))
+      : [],
+    query: { enabled: Boolean(deployment) && ids.length > 0 },
   });
+
+  const now = BigInt(Math.floor(Date.now() / 1000));
+  const candidates = ids.map((id, i) => ({ id, series: listed?.[i]?.result as Series | undefined }));
+  const front =
+    candidates.find((c) => c.series !== undefined && !c.series.settled && c.series.expiry > now) ??
+    candidates.at(-1);
+  const seriesId = front?.series ? front.id : undefined;
+  const series = front?.series;
 
   const { data: mark } = useReadContract({
     address: deployment?.market,
@@ -62,7 +87,7 @@ export function useFrontSeries() {
     query: { enabled: Boolean(deployment) && seriesId !== undefined },
   });
 
-  return { seriesId, series, mark };
+  return { seriesId, series, mark, expired: series !== undefined && series.expiry <= now };
 }
 
 /// A trader's cross-margin state: collateral, mark-to-market equity, and the two

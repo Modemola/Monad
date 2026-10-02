@@ -123,8 +123,9 @@ before anyone connects.
 | End-to-end — trade, credit and underwrite driven through the UI against a fresh chain | 3 flows passing in CI (`scripts/e2e.sh`) |
 | Backtest over historical rental data | Replayed over 78 days, 3 tests passing |
 | Deploy seed — the real 78-day index history, on chain | Built, 4 tests passing |
+| Keeper — index prints every six hours; lists, settles and realizes contracts as months roll | Built, 17 tests passing |
 
-115 contract tests, 9 indexer tests, 8 scheduled-publisher tests and 3 end-to-end browser flows, all passing. Three security reviews; every finding is in [docs/SECURITY.md](docs/SECURITY.md) with the test that pins it. Deployment to Monad testnet is the remaining step.
+115 contract tests, 9 indexer tests, 17 keeper tests (index publisher and contract calendar) and 3 end-to-end browser flows, all passing. Three security reviews; every finding is in [docs/SECURITY.md](docs/SECURITY.md) with the test that pins it. Deployment to Monad testnet is the remaining step.
 
 ## The number that makes the case
 

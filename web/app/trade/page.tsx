@@ -7,6 +7,7 @@ import { IndexChart } from "@/components/charts";
 import { Collateral } from "@/components/Collateral";
 import { Reveal } from "@/components/fx/motion";
 import { NotDeployed } from "@/components/NotDeployed";
+import { MaturedPositions } from "@/components/Matured";
 import { PositionPanel } from "@/components/Position";
 import { AppFrame, PageHeader } from "@/components/PageHeader";
 import { Ticket } from "@/components/Ticket";
@@ -30,7 +31,7 @@ function asOf(timestamp: number): string {
 
 export default function Terminal() {
   const { deployment } = useDeployment();
-  const { seriesId, series, mark } = useFrontSeries();
+  const { seriesId, series, mark, expired } = useFrontSeries();
   const history = useIndexHistory();
   const account = useAccountState(seriesId);
 
@@ -160,6 +161,7 @@ export default function Terminal() {
                 freeCollateral={account.freeCollateral}
                 initialBps={account.initialBps}
                 takerFeeBps={takerFeeBps as number | undefined}
+                expired={expired}
               />
             </Card>
           </Reveal>
@@ -177,6 +179,7 @@ export default function Terminal() {
                 maintenanceBps={account.maintenanceBps}
                 onlyPosition={(openSeries?.length ?? 0) <= 1}
               />
+              <MaturedPositions frontId={seriesId} openSeries={openSeries} />
             </Card>
           </Reveal>
         </div>

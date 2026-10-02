@@ -28,12 +28,15 @@ export function Ticket({
   freeCollateral,
   initialBps,
   takerFeeBps,
+  expired = false,
 }: {
   seriesId: bigint | undefined;
   mark: bigint | undefined;
   freeCollateral: bigint | undefined;
   initialBps: number | undefined;
   takerFeeBps: number | undefined;
+  /// The front contract has stopped trading and next month is not listed yet.
+  expired?: boolean;
 }) {
   const { deployment } = useDeployment();
   const [side, setSideState] = useState<Side>("long");
@@ -111,6 +114,7 @@ export function Ticket({
     size !== 0n &&
     priceLimit !== undefined &&
     !insufficient &&
+    !expired &&
     !busy;
 
   return (
@@ -201,6 +205,13 @@ export function Ticket({
           render={formatTolerance}
         />
       </div>
+
+      {expired && (
+        <p role="status" className="mt-4 border-l-2 border-gold/70 bg-gold/[0.06] px-3 py-2.5 text-[12px] leading-relaxed text-ink-secondary">
+          <span className="text-gold">This contract has expired.</span> It settles to the window average
+          once the index is final through expiry, and the keeper lists next month on its next run.
+        </p>
+      )}
 
       {indexMoving && (
         <p role="status" className="mt-4 border-l-2 border-gold/70 bg-gold/[0.06] px-3 py-2.5 text-[12px] leading-relaxed text-ink-secondary">

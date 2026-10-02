@@ -195,8 +195,8 @@ deliberate; any real deployment needs the standard treatment.
   no longer exists. The 40% hedge buffer (now preserved across closes) makes this remote, but the
   loan should record the liquidation and freeze its hedge PnL.
 - A series whose expiry is never covered by a print cannot settle. The keeper prints every six
-  hours, so this needs the publisher to stop for good; a fallback to the last finalized print
-  after a long timeout would close it.
+  hours and settles each expired series as soon as it can, so this needs the publisher to stop
+  for good; a fallback to the last finalized print after a long timeout would close it.
 
 - Liquidation closes any amount up to the full position while an account is below maintenance,
   rather than stopping at the point health is restored.
