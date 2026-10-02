@@ -75,8 +75,14 @@ contract UnderwriterVault is ERC20, Ownable, ReentrancyGuard {
     }
 
     /// @notice USDC that could be redeemed right now without breaching the vault's own margin.
+    /// @dev Free collateral counts unrealized PnL, which backs margin but cannot be withdrawn
+    ///      from the market. What can leave is the smaller of the two.
     function availableLiquidity() public view returns (uint256) {
-        return market.freeCollateral(address(this)) + usdc.balanceOf(address(this));
+        uint256 free = market.freeCollateral(address(this));
+        int256 cash = market.balanceOf(address(this));
+        // forge-lint: disable-next-line(unsafe-typecast) — guarded positive.
+        uint256 withdrawable = cash > 0 ? uint256(cash) : 0;
+        return (free < withdrawable ? free : withdrawable) + usdc.balanceOf(address(this));
     }
 
     /// @notice Value of one whole share, scaled to USDC decimals.

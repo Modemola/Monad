@@ -91,6 +91,14 @@ contract IngotMarket is Ownable, ReentrancyGuard {
     uint16 public liquidationFeeBps = 100; // 1% of closed notional
     uint16 public liquidatorShareBps = 5_000; // half the penalty to the liquidator
 
+    /// @notice Largest pending index move, in basis points, the market still opens positions into.
+    /// @dev A print is public for `finalityDelay` before it reaches the mark. Opening against the
+    ///      old mark while a larger move waits to finalize is a free option on the vault, so above
+    ///      this the market only lets positions shrink. The default sits under the round trip a
+    ///      taker pays (two half-spreads and two fees, 70 bps), so what is still allowed through
+    ///      does not pay.
+    uint16 public pendingMoveLimitBps = 50;
+
     VaultParams public vaultParams =
         VaultParams({spreadBps: 25, skewCoefBps: 200, maxAdjBps: 1_000, skewScale: 200_000e18});
 
@@ -165,6 +173,7 @@ contract IngotMarket is Ownable, ReentrancyGuard {
     error WithdrawExceedsBalance(int256 balance);
     error NoShortfall();
     error ShortfallInGrace(uint64 absorbableAt);
+    error IndexMoving(uint256 pendingMoveBps, uint16 limitBps);
 
     constructor(IIngotIndex index_, IERC20 usdc_, address owner_) Ownable(owner_) {
         index = index_;
@@ -183,6 +192,9 @@ contract IngotMarket is Ownable, ReentrancyGuard {
     {
         if (expiry <= windowStart || expiry <= block.timestamp) revert WindowInvalid();
         if (basisBps > 5_000 || basisBps < -5_000) revert InvalidParameter();
+        // A window that opens before the index's first print could never be averaged, so the
+        // series could never settle and every position in it would be stuck.
+        if (windowStart < index.genesis()) revert WindowInvalid();
 
         seriesId = _series.length;
         _series.push(
@@ -244,12 +256,13 @@ contract IngotMarket is Ownable, ReentrancyGuard {
         // receivable nobody pays, overstating NAV. It is not written off on the spot, though:
         // settlement is permissionless, and a solvent integrator (the credit pool covers its
         // hedge from lender cash) must get the chance to pay before its loss lands on the vault.
-        if (
-            account != vault && _openSeries[account].length == 0 && balanceOf[account] < 0
-                && shortfallSince[account] == 0
-        ) {
-            shortfallSince[account] = uint64(block.timestamp);
-            emit ShortfallRecorded(account, balanceOf[account]);
+        if (account != vault && _openSeries[account].length == 0 && balanceOf[account] < 0) {
+            if (shortfallSince[account] == 0) {
+                shortfallSince[account] = uint64(block.timestamp);
+                emit ShortfallRecorded(account, balanceOf[account]);
+            }
+        } else if (balanceOf[account] >= 0) {
+            _clearShortfall(account);
         }
     }
 
@@ -266,6 +279,12 @@ contract IngotMarket is Ownable, ReentrancyGuard {
         _absorbShortfall(account);
     }
 
+    /// @dev A shortfall that has been paid is over. Leaving its start time behind would let the
+    ///      next one, months later, be written off with no grace at all.
+    function _clearShortfall(address account) internal {
+        if (shortfallSince[account] != 0) shortfallSince[account] = 0;
+    }
+
     // ---------------------------------------------------------------------
     // Collateral
     // ---------------------------------------------------------------------
@@ -274,6 +293,7 @@ contract IngotMarket is Ownable, ReentrancyGuard {
         if (amount == 0) revert ZeroAmount();
         usdc.safeTransferFrom(msg.sender, address(this), amount);
         balanceOf[msg.sender] += amount.toInt256();
+        if (balanceOf[msg.sender] >= 0) _clearShortfall(msg.sender);
         emit Deposited(msg.sender, amount);
     }
 
@@ -549,6 +569,11 @@ contract IngotMarket is Ownable, ReentrancyGuard {
         shortfallGrace = grace;
     }
 
+    function setPendingMoveLimit(uint16 limitBps) external onlyOwner {
+        if (limitBps > 5_000) revert InvalidParameter();
+        pendingMoveLimitBps = limitBps;
+    }
+
     function setMarkWindow(uint32 window) external onlyOwner {
         if (window == 0) revert InvalidParameter();
         markWindow = window;
@@ -617,6 +642,10 @@ contract IngotMarket is Ownable, ReentrancyGuard {
         int256 vaultBefore
     ) internal view {
         bool traderReducing = _reduces(traderBefore, _positions[trader][seriesId].size);
+        if (!traderReducing) {
+            uint256 moving = index.pendingMoveBps();
+            if (moving > pendingMoveLimitBps) revert IndexMoving(moving, pendingMoveLimitBps);
+        }
         int256 traderEquity = equity(trader);
         uint256 traderRequired =
             marginRequirement(trader, traderReducing ? maintenanceMarginBps : initialMarginBps);

@@ -194,4 +194,23 @@ contract UnderwriterVaultTest is Fixtures {
         assertEq(sharesOne + sharesTwo + underwriter.MINIMUM_LIQUIDITY(), supply, "shares account for");
         assertLe(claimOne + claimTwo + lockedClaim, nav, "claims never exceed NAV");
     }
+
+    /// @dev Unrealized gains back the vault's margin but cannot leave the market, so they must not
+    ///      be advertised as redeemable. Every amount `availableLiquidity` reports can be redeemed.
+    function test_availableLiquidity_countsOnlyWithdrawableCash() public {
+        _lpDeposit(lpOne, 400_000 * USDC_ONE);
+        _fund(bob, 300_000 * USDC_ONE);
+        _buy(bob, seriesId, 500 * ONE_LOT); // the vault goes short
+        _setSpot(1.75 * 1e18); // and gains on it, unrealized
+
+        int256 cash = market.balanceOf(address(underwriter));
+        assertGt(market.equity(address(underwriter)), cash, "vault in unrealized profit");
+        // forge-lint: disable-next-line(unsafe-typecast)
+        assertLe(underwriter.availableLiquidity(), uint256(cash), "only realized cash advertised");
+
+        uint256 available = underwriter.availableLiquidity();
+        uint256 shares = (available * underwriter.totalSupply()) / underwriter.totalAssets();
+        vm.prank(lpOne);
+        underwriter.redeem(shares);
+    }
 }

@@ -98,7 +98,7 @@ press **Minimum** on the margin field.*
 *Screen: back to the recovery chart.*
 
 > Index, market, margin engine, and a credit product where the hedge is part of the loan. A hundred
-> and five contract tests, two security reviews with every finding pinned by a test, and an
+> and fifteen contract tests, three security reviews with every finding pinned by a test, and an
 > end-to-end browser test that runs this exact demo on every push — against seventy-eight days of
 > real posted H100 prices. It's live on Monad testnet — the link's in the submission.
 

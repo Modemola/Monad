@@ -66,6 +66,8 @@ const REVERTS: Record<string, string> = {
   InsufficientMargin: "Not enough free margin for this size. Deposit more collateral or trade smaller.",
   PriceLimitExceeded: "The price moved past your slippage tolerance. Try again, or widen the tolerance.",
   VaultAtCapacity: "The underwriter vault is at capacity on this side. Try a smaller size or the other side.",
+  IndexMoving:
+    "A new index print is waiting out its finality delay and moves the price sharply. Opening is paused until it lands (within the hour); closing still works.",
   WithdrawExceedsBalance: "Only realized cash can be withdrawn. Unrealized profit backs your margin until you close.",
   SeriesExpired: "This contract has expired. It can be settled, not traded.",
   SeriesAlreadySettled: "This contract has already settled.",

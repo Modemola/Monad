@@ -391,6 +391,77 @@ contract IngotMarketTest is Fixtures {
         assertEq(market.balanceOf(vault), vaultBefore + owed, "and the vault wore it");
     }
 
+    /// @dev A shortfall that is paid off is over. Its start time must not linger, or the next
+    ///      shortfall on the same account could be written off the moment it is recorded.
+    function test_settlement_paidShortfallLeavesNoStaleGraceBehind() public {
+        _buy(alice, seriesId, 200 * ONE_LOT);
+        uint256 free = market.freeCollateral(alice);
+        vm.prank(alice);
+        market.withdraw(free);
+
+        _setSpot(1.0 * 1e18);
+        vm.warp(market.seriesAt(seriesId).expiry + 1);
+        _setSpot(1.0 * 1e18);
+        market.settleSeries(seriesId);
+        market.settlePosition(alice, seriesId);
+        assertGt(market.shortfallSince(alice), 0, "recorded");
+
+        // Alice covers it inside the grace period.
+        int256 owed = market.balanceOf(alice);
+        // forge-lint: disable-next-line(unsafe-typecast)
+        _fund(alice, uint256(-owed));
+        assertEq(market.shortfallSince(alice), 0, "cleared once paid");
+
+        vm.warp(block.timestamp + market.shortfallGrace());
+        vm.expectRevert(IngotMarket.NoShortfall.selector);
+        market.absorbShortfall(alice);
+    }
+
+    /// @dev A print is public for its whole finality delay before the mark reads it. Opening into
+    ///      a large pending move against the old mark would be a free option on the vault, so the
+    ///      market only lets positions shrink until the print finalizes.
+    function test_trade_refusesToOpenIntoAPendingIndexMove() public {
+        _buy(alice, seriesId, 10 * ONE_LOT);
+
+        clock = uint64(block.timestamp) + 2 hours;
+        vm.warp(clock);
+        vm.prank(publisher);
+        index.publish(clock, 3.1 * 1e18, 150, 12); // +24%, provisional
+
+        assertEq(index.pendingMoveBps(), 2_400, "visible to everyone");
+        vm.expectRevert(abi.encodeWithSelector(IngotMarket.IndexMoving.selector, 2_400, 50));
+        _buy(bob, seriesId, 50 * ONE_LOT);
+
+        // Closing is always allowed.
+        _sell(alice, seriesId, -10 * ONE_LOT);
+        assertEq(market.positionOf(alice, seriesId).size, 0, "closed during the pending move");
+
+        // Once the print is final the mark has caught up, and trading reopens.
+        vm.warp(clock + index.finalityDelay() + 1);
+        assertEq(index.pendingMoveBps(), 0, "nothing pending");
+        _buy(bob, seriesId, 50 * ONE_LOT);
+    }
+
+    /// @dev Small moves, under a taker's round-trip cost, do not halt anything.
+    function test_trade_ignoresPendingMovesInsideTheLimit() public {
+        clock = uint64(block.timestamp) + 2 hours;
+        vm.warp(clock);
+        vm.prank(publisher);
+        index.publish(clock, 2.51 * 1e18, 150, 12); // +0.4%
+
+        _buy(bob, seriesId, 10 * ONE_LOT);
+        assertEq(market.positionOf(bob, seriesId).size, 10 * ONE_LOT);
+    }
+
+    /// @dev A window opening before the index's first print could never be averaged, so the
+    ///      series could never settle and its positions would be stuck forever.
+    function test_listSeries_rejectsAWindowBeforeTheFirstPrint() public {
+        uint64 before = index.genesis() - 1 days;
+        vm.prank(owner);
+        vm.expectRevert(IngotMarket.WindowInvalid.selector);
+        market.listSeries(before, uint64(block.timestamp + 30 days), 0);
+    }
+
     /// @dev Inside the delivery window part of the settlement average is already fixed. Halfway
     ///      through at 2.50, a jump to 3.50 should mark near the 3.00 blend, not at 3.50.
     function test_markPrice_blendsTheRealizedPartOfTheWindow() public {

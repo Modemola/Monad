@@ -137,7 +137,13 @@ is identical on both paths because both import the same `methodology.ts`. After 
 
 ```bash
 cast send <indexReceiver> 'setForwarder(address)' <cre-forwarder>
+cast send <indexReceiver> 'setExpectedWorkflow(address,bytes32)' <workflow-owner> <workflow-id>
 ```
+
+Both are needed. The forwarder is shared by every CRE workflow on the chain and the report body is
+written by whichever workflow sends it, so the receiver identifies the sender from the metadata the
+forwarder vouches for, and refuses every report (`WorkflowNotPinned`) until an owner or ID is
+pinned. `Deploy.s.sol` pins it at deploy time when `CRE_WORKFLOW_OWNER` / `CRE_WORKFLOW_ID` are set.
 
 Then revoke the deployer as a publisher, and the index has no key left to compromise:
 

@@ -241,6 +241,28 @@ contract IngotIndex is IIngotIndex, Ownable {
         return (_cumulativeAt(to) - _cumulativeAt(from)) / window;
     }
 
+    /// @inheritdoc IIngotIndex
+    function genesis() external view returns (uint64) {
+        if (_observations.length == 0) revert NoObservations();
+        return _observations[0].timestamp;
+    }
+
+    /// @inheritdoc IIngotIndex
+    /// @dev Bounded by the prints published inside one finality delay, which `minInterval` keeps
+    ///      to a handful.
+    function pendingMoveBps() external view returns (uint256 move) {
+        (bool found, uint256 tip) = _tryFinalizedTip();
+        if (!found) return 0;
+        uint256 anchor = _observations[tip].price;
+        uint256 length = _observations.length;
+        for (uint256 i = tip + 1; i < length; ++i) {
+            uint256 price = _observations[i].price;
+            uint256 delta = price > anchor ? price - anchor : anchor - price;
+            uint256 bps = (delta * 10_000) / anchor;
+            if (bps > move) move = bps;
+        }
+    }
+
     /// @notice Total number of prints held, including provisional ones.
     function observationCount() external view returns (uint256) {
         return _observations.length;
