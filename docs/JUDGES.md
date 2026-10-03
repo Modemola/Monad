@@ -65,7 +65,7 @@ git submodule update --init --recursive
 cd contracts && forge test
 ```
 
-115 tests. The ones worth reading:
+116 tests. The ones worth reading:
 
 - `test_invariant_marketIsZeroSum` — total equity equals total deposits through opening, index
   moves, partial closes, flips, liquidation and settlement.

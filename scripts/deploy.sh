@@ -68,6 +68,17 @@ echo "  balance    $(cast from-wei "$BALANCE") MON"
 [ "$BALANCE" != "0" ] \
   || fail "deployer has no native balance. Fund $DEPLOYER at https://faucet.monad.xyz"
 
+# Monad charges for a transaction's gas limit, not the gas it ends up using. Deploy, seed and the
+# demonstration loan come to about 31M gas of limit (measured on a local rehearsal); with headroom,
+# refuse to start on less than this, because running dry halfway through the seed leaves a market
+# with contracts but no history and no capital.
+DEPLOY_GAS=36000000
+GAS_PRICE=$(cast gas-price --rpc-url "$RPC_URL")
+NEEDED=$(node -e "console.log((BigInt('$DEPLOY_GAS') * BigInt('$GAS_PRICE')).toString())")
+echo "  needs      ~$(cast from-wei "$NEEDED") MON at $(cast from-wei "$GAS_PRICE" gwei) gwei"
+node -e "process.exit(BigInt('$BALANCE') >= BigInt('$NEEDED') ? 0 : 1)" \
+  || fail "deployer holds $(cast from-wei "$BALANCE") MON; the deploy needs about $(cast from-wei "$NEEDED"). Top up $DEPLOYER at https://faucet.monad.xyz"
+
 # ---------------------------------------------------------------- test first
 
 say "Running the test suite before touching a network"
