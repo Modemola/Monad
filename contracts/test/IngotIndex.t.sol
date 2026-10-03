@@ -305,4 +305,42 @@ contract IngotIndexTest is Test {
         assertGe(average, min, "at least the minimum");
         assertLe(average, max, "at most the maximum");
     }
+
+    /// @dev The newest finalized print is found by binary search over the history. Publish a run
+    ///      of prints a few minutes apart, then step the clock through every finality boundary and
+    ///      check the tip against a plain scan.
+    function testFuzz_finalizedTipMatchesAScan(uint8 prints, uint16 gapMinutes) public {
+        uint256 count = bound(prints, 1, 40);
+        uint64 gap = uint64(bound(gapMinutes, 5, 120)) * 60;
+        _relaxGuards();
+
+        uint64[] memory publishedAt = new uint64[](count);
+        uint64 clock = GENESIS;
+        for (uint256 i = 0; i < count; ++i) {
+            clock += gap;
+            vm.warp(clock);
+            vm.prank(publisher);
+            index.publish(clock, 2 * ONE + i * 1e15, 150, 12);
+            publishedAt[i] = clock;
+        }
+
+        uint64 delay = index.finalityDelay();
+        for (uint256 k = 0; k < count; ++k) {
+            // Just before print k finalizes, then exactly when it does.
+            for (uint64 offset = 0; offset < 2; ++offset) {
+                uint64 at = publishedAt[k] + delay - 1 + offset;
+                vm.warp(at);
+                uint256 expected = type(uint256).max;
+                for (uint256 j = 0; j < count; ++j) {
+                    if (publishedAt[j] + delay <= at) expected = j;
+                }
+                if (expected == type(uint256).max) {
+                    vm.expectRevert(IngotIndex.NoObservations.selector);
+                    index.finalizedThrough();
+                } else {
+                    assertEq(index.finalizedThrough(), index.observation(expected).timestamp, "tip");
+                }
+            }
+        }
+    }
 }

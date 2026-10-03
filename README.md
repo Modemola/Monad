@@ -113,7 +113,7 @@ before anyone connects.
 
 | Component | State |
 |---|---|
-| `IngotIndex` — index oracle | Built, 21 tests passing |
+| `IngotIndex` — index oracle | Built, 22 tests passing |
 | `IngotMarket` — swaps, margin, settlement, liquidation | Built, 33 tests passing |
 | `UnderwriterVault` — LP accounting over the vault account | Built, 12 tests passing |
 | `HedgedCredit` — loans with auto-hedge | Built, 29 tests passing |
@@ -125,7 +125,7 @@ before anyone connects.
 | Deploy seed — the real 78-day index history, on chain | Built, 4 tests passing |
 | Keeper — index prints every six hours; lists, settles and realizes contracts as months roll | Built, 17 tests passing |
 
-115 contract tests, 9 indexer tests, 17 keeper tests (index publisher and contract calendar) and 3 end-to-end browser flows, all passing. Three security reviews; every finding is in [docs/SECURITY.md](docs/SECURITY.md) with the test that pins it. Deployment to Monad testnet is the remaining step.
+116 contract tests, 9 indexer tests, 17 keeper tests (index publisher and contract calendar) and 3 end-to-end browser flows, all passing. Three security reviews; every finding is in [docs/SECURITY.md](docs/SECURITY.md) with the test that pins it. Deployment to Monad testnet is the remaining step.
 
 ## The number that makes the case
 

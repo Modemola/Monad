@@ -318,15 +318,28 @@ contract IngotIndex is IIngotIndex, Ownable {
         return id;
     }
 
+    /// @dev `publishedAt` never decreases and revocation only pops the tip, so the finalized
+    ///      prints are always a prefix of the history. The newest print is checked first, which
+    ///      settles the usual case in one read; otherwise the prefix's end is binary-searched. A
+    ///      linear scan back from the tip cost a read per pending print, which made a backfill —
+    ///      every print still pending — quadratic in its length.
     function _tryFinalizedTip() internal view returns (bool found, uint256 id) {
+        uint256 length = _observations.length;
+        if (length == 0) return (false, 0);
         uint256 cutoff = block.timestamp;
-        unchecked {
-            for (uint256 i = _observations.length; i > 0; --i) {
-                Observation storage candidate = _observations[i - 1];
-                if (candidate.publishedAt + finalityDelay <= cutoff) return (true, i - 1);
-            }
+        uint32 delay = finalityDelay;
+        if (_observations[length - 1].publishedAt + delay <= cutoff) return (true, length - 1);
+        if (_observations[0].publishedAt + delay > cutoff) return (false, 0);
+
+        // Invariant: low is final, high is not.
+        uint256 low = 0;
+        uint256 high = length - 1;
+        while (high - low > 1) {
+            uint256 mid = (low + high) / 2;
+            if (_observations[mid].publishedAt + delay <= cutoff) low = mid;
+            else high = mid;
         }
-        return (false, 0);
+        return (true, low);
     }
 
     function _checkDeviation(uint256 anchor, uint256 price) internal view {

@@ -11,6 +11,13 @@ If your machine can't reach Monad, or you'd rather not install Foundry, let GitH
 3. When the run finishes, its summary shows the addresses and an **open the pull request** link.
    Merge that pull request, and the live site and indexer point at the new contracts.
 
+**How much MON.** Monad charges for a transaction's gas *limit*, not the gas it uses. Deploy, seed
+and the demonstration loan come to about 31M gas of limit, so at a 100 gwei gas price that is about
+3.1 MON; `deploy.sh` reads the live gas price, prints what it needs, and refuses to start on less
+(a deploy that ran dry halfway through the seed would leave contracts with no history and no
+capital). Afterwards the keeper spends a few hundred thousand gas a day on prints, plus a handful
+of transactions when a month rolls, so leave some MON on the key.
+
 The workflow runs `scripts/deploy.sh`, exactly as below: tests first, then deploy, seed, and sync
 the web app and indexer. The results land on a `deploy/monad-testnet-<run>` branch, never on
 `main` directly.
