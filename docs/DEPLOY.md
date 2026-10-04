@@ -119,8 +119,13 @@ tells Vercel how to build and serve it. **No project settings need changing:** R
 left at the repository root, and it also still works if set to `web`, where Vercel's own Next.js
 preset takes over.
 
-Two optional settings:
+Three optional settings:
 
+- `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`, a free project id from <https://cloud.reown.com>. It
+  adds **WalletConnect** to the wallet picker, so any mobile wallet can connect by QR code or deep
+  link. Without it the picker still lists every browser-extension wallet it detects (MetaMask,
+  Rabby, Phantom, OKX, Coinbase Wallet and others announce themselves), and on a phone it offers
+  links that open the app inside a wallet's own browser.
 - `NEXT_PUBLIC_MONAD_RPC_URL`. Leave it unset and the app uses the public
   `https://testnet-rpc.monad.xyz`, which is rate-limited and shared — fine for a judge clicking
   through, worth replacing with a dedicated endpoint before a demo recording.
