@@ -4,7 +4,8 @@
 
 **A cash-settled market for compute, and the credit layer it unlocks.**
 
-Built for Metropolis — Onchain Finance & Trading track. Deployed on Monad.
+Built for Metropolis — Onchain Finance & Trading track. Live on Monad testnet:
+**<https://monad-six-sooty.vercel.app>** · five-minute walkthrough in [docs/JUDGES.md](docs/JUDGES.md).
 
 ---
 
@@ -125,7 +126,7 @@ before anyone connects.
 | Deploy seed — the real 78-day index history, on chain | Built, 4 tests passing |
 | Keeper — index prints every six hours; lists, settles and realizes contracts as months roll | Built, 17 tests passing |
 
-116 contract tests, 9 indexer tests, 17 keeper tests (index publisher and contract calendar) and 3 end-to-end browser flows, all passing. Three security reviews; every finding is in [docs/SECURITY.md](docs/SECURITY.md) with the test that pins it. Deployment to Monad testnet is the remaining step.
+116 contract tests, 9 indexer tests, 17 keeper tests (index publisher and contract calendar) and 3 end-to-end browser flows, all passing. Three security reviews; every finding is in [docs/SECURITY.md](docs/SECURITY.md) with the test that pins it. Deployed to Monad testnet; addresses in [docs/JUDGES.md](docs/JUDGES.md#contract-addresses).
 
 ## The number that makes the case
 
