@@ -25,8 +25,9 @@ export function Reveal({
 }: { children: ReactNode; delay?: number; y?: number } & HTMLMotionProps<"div">) {
   return (
     <motion.div
-      initial={{ opacity: 0, y, filter: "blur(10px)" }}
-      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      // Opacity and transform only, so a reveal never repaints mid-scroll.
+      initial={{ opacity: 0, y }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.9, delay, ease: EASE_OUT }}
       className={className}

@@ -8,6 +8,7 @@ import { injected, walletConnect } from "wagmi/connectors";
 
 import { deploymentFor } from "@/lib/addresses";
 import { LOCAL_CHAIN_ENABLED, anvil, monadTestnet } from "@/lib/chains";
+import { refreshInterval, staleTime } from "@/lib/refresh";
 
 /// Deployed chains first. With no wallet connected wagmi reports `chains[0]`, so ordering this way
 /// means a visitor's reads hit a chain Ingot actually lives on. The local chain is only configured
@@ -55,12 +56,12 @@ const config = createConfig({
 });
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  // Poll rather than subscribe: Monad finalizes in under a second, so a short
-  // interval keeps marks live without a websocket to babysit.
+  // Poll rather than subscribe, at the pace each value can actually change (lib/refresh.ts).
+  // Polling stops while the tab is hidden, and a confirmed transaction refreshes everything.
   const [queryClient] = useState(
     () =>
       new QueryClient({
-        defaultOptions: { queries: { refetchInterval: 2_000, staleTime: 1_000 } },
+        defaultOptions: { queries: { refetchInterval: refreshInterval, staleTime } },
       }),
   );
 

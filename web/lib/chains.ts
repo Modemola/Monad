@@ -13,6 +13,12 @@ export const monadTestnet = defineChain({
   blockExplorers: {
     default: { name: "MonadScan", url: "https://testnet.monadexplorer.com" },
   },
+  // The canonical Multicall3. With it, wagmi folds every read made in the same tick into one
+  // eth_call; without it, each value on a page was its own request to a rate-limited public RPC.
+  contracts: {
+    multicall3: { address: "0xcA11bde05977b3631167028862bE2a173976CA11", blockCreated: 251_449 },
+  },
+  blockTime: 400,
   testnet: true,
 });
 
@@ -22,6 +28,9 @@ export const anvil = defineChain({
   name: "Anvil",
   nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
   rpcUrls: { default: { http: ["http://127.0.0.1:8545"] } },
+  // scripts/deploy.sh places a Multicall3 at the canonical address on a local chain, so local
+  // runs batch reads exactly as the testnet does.
+  contracts: { multicall3: { address: "0xcA11bde05977b3631167028862bE2a173976CA11", blockCreated: 0 } },
   testnet: true,
 });
 
