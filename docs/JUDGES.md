@@ -1,7 +1,9 @@
 # Trying Ingot in five minutes
 
 Everything below runs on **Monad testnet**. No real funds are involved and no account is needed —
-just a browser wallet. There is no login and no password; the wallet is the credential.
+just a wallet: any EVM browser extension (MetaMask, Rabby, Phantom, OKX, Coinbase Wallet…), or on a
+phone, a wallet app's built-in browser. There is no login and no password; the wallet is the
+credential.
 
 **Live app:** <https://monad-six-sooty.vercel.app>
 

@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MotionConfig } from "motion/react";
 import { useState } from "react";
 import { WagmiProvider, createConfig, http } from "wagmi";
-import { injected } from "wagmi/connectors";
+import { injected, walletConnect } from "wagmi/connectors";
 
 import { deploymentFor } from "@/lib/addresses";
 import { LOCAL_CHAIN_ENABLED, anvil, monadTestnet } from "@/lib/chains";
@@ -17,9 +17,34 @@ const CHAINS = [...available].sort(
   (a, b) => Number(!deploymentFor(a.id)) - Number(!deploymentFor(b.id)),
 ) as unknown as readonly [typeof monadTestnet, ...(typeof anvil)[]];
 
+/// WalletConnect reaches every mobile wallet (and desktop apps) by QR code or deep link. It needs a
+/// free project id from https://cloud.reown.com; without one the option is simply not offered.
+const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
+
+/// Browser-extension wallets announce themselves (EIP-6963) and wagmi adds each as its own
+/// connector, so Rabby, Phantom, OKX, Coinbase Wallet and the rest all show up by name next to
+/// MetaMask. `injected()` stays as the fallback for wallets that only set `window.ethereum`, such
+/// as the in-app browsers of mobile wallets.
 const config = createConfig({
   chains: CHAINS,
-  connectors: [injected()],
+  multiInjectedProviderDiscovery: true,
+  connectors: [
+    injected(),
+    ...(WALLETCONNECT_PROJECT_ID
+      ? [
+          walletConnect({
+            projectId: WALLETCONNECT_PROJECT_ID,
+            showQrModal: true,
+            metadata: {
+              name: "Ingot",
+              description: "A cash-settled market for compute, and the credit layer it unlocks.",
+              url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://monad-six-sooty.vercel.app",
+              icons: [],
+            },
+          }),
+        ]
+      : []),
+  ],
   transports: Object.fromEntries(CHAINS.map((chain) => [chain.id, http()])) as Record<
     (typeof CHAINS)[number]["id"],
     ReturnType<typeof http>
