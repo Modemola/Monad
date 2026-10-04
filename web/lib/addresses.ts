@@ -34,10 +34,12 @@ export function deploymentFor(chainId: number | undefined): Deployment | undefin
 }
 
 /// Chains this build can actually serve, deployed ones first. The generated block above can hold
-/// a local rehearsal's addresses; this is where they stop mattering outside development.
+/// a local rehearsal's addresses; this is where they stop mattering outside development. Where the
+/// local chain is usable at all it is preferred, as in the wagmi chain order.
 export function usableDeployments(): Array<[number, Deployment]> {
   return Object.entries(DEPLOYMENTS)
     .map(([id, value]) => [Number(id), value] as const)
     .filter((entry): entry is readonly [number, Deployment] => entry[1] !== undefined && isUsable(entry[0]))
+    .sort(([a], [b]) => Number(b === anvil.id) - Number(a === anvil.id))
     .map(([id, value]) => [id, value]);
 }

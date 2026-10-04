@@ -55,6 +55,11 @@ const abis = Object.fromEntries(
 
 // Only what config.yaml subscribes to; share-token Transfers and admin events are skipped
 // exactly as the live indexer would skip them.
+// The trace is recorded on a fresh chain from block 1, but config.yaml starts the real chain at
+// the deployment block, and the test indexer will not process anything before it. Shift every
+// recorded block past that point; block numbers are only an ordering here, so nothing else moves.
+const OFFSET = Number(readFileSync(resolve(ROOT, "config.yaml"), "utf8").match(/^ {4}start_block: (\d+)/m)?.[1] ?? 0);
+
 const configured = (() => {
   const yaml = readFileSync(resolve(ROOT, "config.yaml"), "utf8");
   const events = new Map<Contract, Set<string>>();
@@ -109,8 +114,8 @@ function simulate(logs: Log[]) {
       contract,
       event: decoded.eventName,
       logIndex,
-      block: { number: log.block, timestamp: log.timestamp },
-      transaction: { hash: `0x${log.block.toString(16).padStart(64, "0")}` },
+      block: { number: log.block + OFFSET, timestamp: log.timestamp },
+      transaction: { hash: `0x${(log.block + OFFSET).toString(16).padStart(64, "0")}` },
       params,
     });
   }
@@ -128,7 +133,7 @@ describe("replay of a recorded session", () => {
     for (const checkpoint of trace.checkpoints) {
       const logs = trace.logs.filter((l) => l.block > from && l.block <= checkpoint.block);
       await indexer.process({
-        chains: { [CHAIN]: { simulate: simulate(logs), endBlock: checkpoint.block } },
+        chains: { [CHAIN]: { simulate: simulate(logs), endBlock: checkpoint.block + OFFSET } },
       });
       from = checkpoint.block;
 
