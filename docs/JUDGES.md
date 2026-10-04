@@ -15,7 +15,7 @@ credential.
 | Chain ID | `10143` |
 | RPC | `https://testnet-rpc.monad.xyz` |
 | Currency | MON |
-| Explorer | `https://testnet.monadexplorer.com` |
+| Explorer | `https://testnet.monadscan.com` |
 
 One click at [faucet.monad.xyz/add-network](https://faucet.monad.xyz/add-network), or add it by
 hand with the values above.
@@ -99,13 +99,13 @@ Monad testnet (chain 10143), deployed from block 68,070,599. The same addresses 
 
 | Contract | Address |
 |---|---|
-| IngotIndex — the rental-rate oracle | [`0xaD065A9D41092f371A83f730B3b375D171a066AC`](https://testnet.monadexplorer.com/address/0xaD065A9D41092f371A83f730B3b375D171a066AC) |
-| IngotIndexReceiver — Chainlink CRE landing pad | [`0xEcD7c0ECf2093415dEC999379e631002d637D254`](https://testnet.monadexplorer.com/address/0xEcD7c0ECf2093415dEC999379e631002d637D254) |
-| IngotMarket — swaps, margin, settlement | [`0x5811068aEb4037A7690D28387E29Fe0c4f90b820`](https://testnet.monadexplorer.com/address/0x5811068aEb4037A7690D28387E29Fe0c4f90b820) |
-| UnderwriterVault — takes the other side | [`0x7D8fb842ca5dC152854ED535B4b0C0e3b2ca82Ae`](https://testnet.monadexplorer.com/address/0x7D8fb842ca5dC152854ED535B4b0C0e3b2ca82Ae) |
-| HedgedCredit — loans with the hedge built in | [`0xcd7a1B8Fd9c67dAC3a97443c77199930eb6334D9`](https://testnet.monadexplorer.com/address/0xcd7a1B8Fd9c67dAC3a97443c77199930eb6334D9) |
-| MockUSDC — open-mint test collateral | [`0xe841dF0566e532822c50997e3084eF6fFB58ca5D`](https://testnet.monadexplorer.com/address/0xe841dF0566e532822c50997e3084eF6fFB58ca5D) |
-| Deployer, owner and index publisher (testnet key) | [`0x694277D5e6af85Cb892B11ED6bd47b567e81FBa1`](https://testnet.monadexplorer.com/address/0x694277D5e6af85Cb892B11ED6bd47b567e81FBa1) |
+| IngotIndex — the rental-rate oracle | [`0xaD065A9D41092f371A83f730B3b375D171a066AC`](https://testnet.monadscan.com/address/0xaD065A9D41092f371A83f730B3b375D171a066AC) |
+| IngotIndexReceiver — Chainlink CRE landing pad | [`0xEcD7c0ECf2093415dEC999379e631002d637D254`](https://testnet.monadscan.com/address/0xEcD7c0ECf2093415dEC999379e631002d637D254) |
+| IngotMarket — swaps, margin, settlement | [`0x5811068aEb4037A7690D28387E29Fe0c4f90b820`](https://testnet.monadscan.com/address/0x5811068aEb4037A7690D28387E29Fe0c4f90b820) |
+| UnderwriterVault — takes the other side | [`0x7D8fb842ca5dC152854ED535B4b0C0e3b2ca82Ae`](https://testnet.monadscan.com/address/0x7D8fb842ca5dC152854ED535B4b0C0e3b2ca82Ae) |
+| HedgedCredit — loans with the hedge built in | [`0xcd7a1B8Fd9c67dAC3a97443c77199930eb6334D9`](https://testnet.monadscan.com/address/0xcd7a1B8Fd9c67dAC3a97443c77199930eb6334D9) |
+| MockUSDC — open-mint test collateral | [`0xe841dF0566e532822c50997e3084eF6fFB58ca5D`](https://testnet.monadscan.com/address/0xe841dF0566e532822c50997e3084eF6fFB58ca5D) |
+| Deployer, owner and index publisher (testnet key) | [`0x694277D5e6af85Cb892B11ED6bd47b567e81FBa1`](https://testnet.monadscan.com/address/0x694277D5e6af85Cb892B11ED6bd47b567e81FBa1) |
 
 ## Known limits, stated plainly
 
