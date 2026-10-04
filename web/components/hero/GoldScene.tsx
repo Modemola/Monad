@@ -108,7 +108,8 @@ function Floor({ lite }: { lite: boolean }) {
       <planeGeometry args={[40, 40]} />
       <MeshReflectorMaterial
         blur={[400, 120]}
-        resolution={768}
+        // Blurred this hard, a 512 reflection is indistinguishable from 768 at under half the fill.
+        resolution={512}
         mixBlur={1}
         mixStrength={5}
         roughness={1}
@@ -187,7 +188,9 @@ export default function GoldScene() {
   const [visible, setVisible] = useState(true);
   const [lite, setLite] = useState(false);
   const [still, setStill] = useState(false);
-  const [dpr, setDpr] = useState(1.5);
+  // Start a notch under full sharpness and earn the rest: a GPU with headroom climbs to 1.5, one
+  // without drops to 1. A retina screen at 1.5x is over twice the pixels of 1x, every frame.
+  const [dpr, setDpr] = useState(1.25);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -220,10 +223,12 @@ export default function GoldScene() {
         onCreated={() => requestAnimationFrame(() => setReady(true))}
         dpr={lite ? Math.min(dpr, 1.25) : dpr}
         camera={{ position: [0, 2.9, 6.2], fov: 30 }}
-        gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+        // No antialiasing on the canvas itself: the effect composer below renders the scene into
+        // its own multisampled target, so canvas MSAA was paid for and then thrown away.
+        gl={{ antialias: false, alpha: true, powerPreference: "high-performance" }}
         frameloop={visible ? "always" : "never"}
       >
-        <PerformanceMonitor onDecline={() => setDpr(1)} flipflops={1} />
+        <PerformanceMonitor onIncline={() => setDpr(1.5)} onDecline={() => setDpr(1)} flipflops={2} />
         <fog attach="fog" args={["#090807", 9, 22]} />
         <Suspense fallback={null}>
           <Rig scroll={scroll} />

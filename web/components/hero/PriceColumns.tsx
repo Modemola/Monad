@@ -160,7 +160,7 @@ export default function PriceColumns({ venues, index, progress }: { venues: Venu
       <Canvas
         dpr={lite ? 1 : [1, 1.5]}
         camera={{ position: [-9, 2.2, 17], fov: 30 }}
-        gl={{ antialias: true, alpha: true }}
+        gl={{ antialias: false, alpha: true }} // the composer multisamples; see GoldScene
         frameloop={visible ? "always" : "never"}
       >
         <fog attach="fog" args={["#090807", 18, 40]} />
@@ -175,7 +175,7 @@ export default function PriceColumns({ venues, index, progress }: { venues: Venu
             {lite ? (
               <meshStandardMaterial color="#020202" metalness={0} roughness={1} envMapIntensity={0} />
             ) : (
-              <MeshReflectorMaterial blur={[300, 90]} resolution={512} mixBlur={1} mixStrength={6} roughness={1} depthScale={1} minDepthThreshold={0.4} maxDepthThreshold={1.2} color="#020202" metalness={0} envMapIntensity={0} mirror={0.35} />
+              <MeshReflectorMaterial blur={[300, 90]} resolution={384} mixBlur={1} mixStrength={6} roughness={1} depthScale={1} minDepthThreshold={0.4} maxDepthThreshold={1.2} color="#020202" metalness={0} envMapIntensity={0} mirror={0.35} />
             )}
           </mesh>
           <Sparkles count={lite ? 25 : 60} scale={[14, 7, 6]} position={[0, 3, 0]} size={1.8} speed={0.2} opacity={0.6} color="#f6dca6" />

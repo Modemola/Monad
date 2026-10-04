@@ -86,6 +86,15 @@ say "Running the test suite before touching a network"
 
 # ---------------------------------------------------------------- deploy
 
+# A fresh anvil has no Multicall3, which every public chain (Monad testnet included) carries at the
+# canonical address and the web app batches its reads through. Put one there so a local run
+# behaves like the real thing.
+if [ "$CHAIN_ID" = "31337" ]; then
+  MULTICALL3=0xcA11bde05977b3631167028862bE2a173976CA11
+  CODE=$(cd contracts && forge inspect Multicall3 deployedBytecode)
+  cast rpc anvil_setCode "$MULTICALL3" "$CODE" --rpc-url "$RPC_URL" >/dev/null
+fi
+
 say "Deploying contracts"
 ( cd contracts && forge script script/Deploy.s.sol \
     --rpc-url "$RPC_URL" --broadcast --slow ) \
