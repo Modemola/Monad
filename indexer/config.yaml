@@ -48,13 +48,13 @@ field_selection:
 
 chains:
   - id: 10143 # Monad testnet
-    start_block: 0 # not deployed yet: run scripts/deploy.sh
+    start_block: 68070599
     contracts:
       - name: IngotIndex
-        address: "0x0000000000000000000000000000000000000000"
+        address: "0xaD065A9D41092f371A83f730B3b375D171a066AC"
       - name: IngotMarket
-        address: "0x0000000000000000000000000000000000000000"
+        address: "0x5811068aEb4037A7690D28387E29Fe0c4f90b820"
       - name: UnderwriterVault
-        address: "0x0000000000000000000000000000000000000000"
+        address: "0x7D8fb842ca5dC152854ED535B4b0C0e3b2ca82Ae"
       - name: HedgedCredit
-        address: "0x0000000000000000000000000000000000000000"
+        address: "0xcd7a1B8Fd9c67dAC3a97443c77199930eb6334D9"

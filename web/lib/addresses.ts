@@ -14,14 +14,14 @@ export type Deployment = {
 /// Kept as a checked-in map rather than a fetch so the app renders addresses without a
 /// round trip and a judge can see exactly what is deployed.
 export const DEPLOYMENTS: Record<number, Deployment | undefined> = {
-  [anvil.id]: {
-    usdc: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-    index: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-    market: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
-    underwriterVault: "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
-    hedgedCredit: "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+  [anvil.id]: undefined,
+  [monadTestnet.id]: {
+    usdc: "0xe841dF0566e532822c50997e3084eF6fFB58ca5D",
+    index: "0xaD065A9D41092f371A83f730B3b375D171a066AC",
+    market: "0x5811068aEb4037A7690D28387E29Fe0c4f90b820",
+    underwriterVault: "0x7D8fb842ca5dC152854ED535B4b0C0e3b2ca82Ae",
+    hedgedCredit: "0xcd7a1B8Fd9c67dAC3a97443c77199930eb6334D9",
   },
-  [monadTestnet.id]: undefined,
 };
 
 function isUsable(chainId: number): boolean {
