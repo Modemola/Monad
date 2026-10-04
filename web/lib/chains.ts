@@ -11,7 +11,9 @@ export const monadTestnet = defineChain({
     },
   },
   blockExplorers: {
-    default: { name: "MonadScan", url: "https://testnet.monadexplorer.com" },
+    // Etherscan's explorer for Monad. testnet.monadexplorer.com now redirects to a different
+    // explorer whose node often fails to look transactions up, behind a link labelled MonadScan.
+    default: { name: "MonadScan", url: "https://testnet.monadscan.com" },
   },
   // The canonical Multicall3. With it, wagmi folds every read made in the same tick into one
   // eth_call; without it, each value on a page was its own request to a rate-limited public RPC.

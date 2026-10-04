@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState, useSyncExternalStore } from "react";
-import { BaseError, ContractFunctionRevertedError, UserRejectedRequestError } from "viem";
+import { BaseError, ContractFunctionRevertedError, UserRejectedRequestError, WaitForTransactionReceiptTimeoutError } from "viem";
 import { useChainId, useConfig, useWriteContract } from "wagmi";
 import { waitForTransactionReceipt } from "wagmi/actions";
 
@@ -143,7 +143,16 @@ export function useTx() {
         updateToast(id, { status: "pending", hash, explorer, detail: "Waiting for the block" });
         setState({ status: "pending", hash });
 
-        const receipt = await waitForTransactionReceipt(config, { hash });
+        // Monad blocks every 400 ms, so a healthy transaction lands in a second or two. Poll once a
+        // second, ride out a rate-limited or flaky RPC, and give up waiting after two minutes with
+        // something the visitor can act on, instead of "pending" forever.
+        const receipt = await waitForTransactionReceipt(config, {
+          hash,
+          chainId,
+          pollingInterval: 1_000,
+          retryCount: 20,
+          timeout: 120_000,
+        });
         if (receipt.status !== "success") throw new Error("The transaction reverted on chain.");
 
         updateToast(id, { status: "success", detail: copy.success ?? "Confirmed" });
@@ -152,7 +161,10 @@ export function useTx() {
         setTimeout(() => dismissToast(id), 6_000);
         return receipt;
       } catch (error) {
-        const message = explainError(error);
+        const message =
+          error instanceof WaitForTransactionReceiptTimeoutError
+            ? "Not confirmed after two minutes. Check your wallet's activity: if it is still pending, speed it up or cancel it and try again; if it was dropped, simply retry. Make sure the wallet is on Monad Testnet."
+            : explainError(error);
         updateToast(id, { status: "error", detail: message });
         setState({ status: "error", error: message });
         setTimeout(() => dismissToast(id), 12_000);
