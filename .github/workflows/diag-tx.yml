@@ -7,6 +7,7 @@ on:
 jobs:
   lookup:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: foundry-rs/foundry-toolchain@v1
         with:
@@ -15,12 +16,12 @@ jobs:
         run: |
           HASH=0x1a29cb726219819eb1148a80b8de28ea94ecbf42d4a3cae8208290f445125f9a
           for RPC in https://testnet-rpc.monad.xyz https://rpc.monad.xyz; do
-            ID=$(cast chain-id --rpc-url $RPC 2>&1 | head -1)
-            TX=$(cast tx $HASH --rpc-url $RPC --json 2>&1 | jq -c '{from,to,chainId,nonce,gasPrice,maxFeePerGas,input:(.input[0:10])}' 2>/dev/null || echo "not found")
-            RC=$(cast receipt $HASH --rpc-url $RPC --json 2>&1 | jq -c '{status,blockNumber,gasUsed}' 2>/dev/null || echo "no receipt")
+            ID=$(timeout 20 cast chain-id --rpc-url $RPC 2>&1 | head -1)
+            TX=$(timeout 20 cast tx $HASH --rpc-url $RPC --json 2>&1 | jq -c '{from,to,chainId,nonce,gasPrice,maxFeePerGas,input:(.input[0:10])}' 2>/dev/null || echo "not found")
+            RC=$(timeout 20 cast receipt $HASH --async --rpc-url $RPC --json 2>&1 | jq -c '{status,blockNumber,gasUsed}' 2>/dev/null || echo "no receipt")
             echo "::notice title=chain $ID::tx=$TX receipt=$RC"
           done
-          FROM=$(cast tx $HASH from --rpc-url https://testnet-rpc.monad.xyz 2>/dev/null || cast tx $HASH from --rpc-url https://rpc.monad.xyz 2>/dev/null || echo "")
+          FROM=$(timeout 20 cast tx $HASH from --rpc-url https://testnet-rpc.monad.xyz 2>/dev/null || timeout 20 cast tx $HASH from --rpc-url https://rpc.monad.xyz 2>/dev/null || echo "")
           if [ -n "$FROM" ]; then
             USDC=0xe841dF0566e532822c50997e3084eF6fFB58ca5D
             BAL=$(cast call $USDC 'balanceOf(address)(uint256)' $FROM --rpc-url https://testnet-rpc.monad.xyz 2>&1)
