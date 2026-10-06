@@ -1,0 +1,31 @@
+# Temporary: look a transaction up on Monad testnet and mainnet. Removed after use.
+name: diag tx
+on:
+  push:
+    branches: [claude/focused-allen-ggzad1]
+    paths: [.github/workflows/diag-tx.yml]
+jobs:
+  lookup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.5.1
+      - name: Look up
+        run: |
+          HASH=0x1a29cb726219819eb1148a80b8de28ea94ecbf42d4a3cae8208290f445125f9a
+          for RPC in https://testnet-rpc.monad.xyz https://rpc.monad.xyz; do
+            ID=$(cast chain-id --rpc-url $RPC 2>&1 | head -1)
+            TX=$(cast tx $HASH --rpc-url $RPC --json 2>&1 | jq -c '{from,to,chainId,nonce,gasPrice,maxFeePerGas,input:(.input[0:10])}' 2>/dev/null || echo "not found")
+            RC=$(cast receipt $HASH --rpc-url $RPC --json 2>&1 | jq -c '{status,blockNumber,gasUsed}' 2>/dev/null || echo "no receipt")
+            echo "::notice title=chain $ID::tx=$TX receipt=$RC"
+          done
+          FROM=$(cast tx $HASH from --rpc-url https://testnet-rpc.monad.xyz 2>/dev/null || cast tx $HASH from --rpc-url https://rpc.monad.xyz 2>/dev/null || echo "")
+          if [ -n "$FROM" ]; then
+            USDC=0xe841dF0566e532822c50997e3084eF6fFB58ca5D
+            BAL=$(cast call $USDC 'balanceOf(address)(uint256)' $FROM --rpc-url https://testnet-rpc.monad.xyz 2>&1)
+            NT=$(cast nonce $FROM --rpc-url https://testnet-rpc.monad.xyz 2>&1); NM=$(cast nonce $FROM --rpc-url https://rpc.monad.xyz 2>&1)
+            MT=$(cast balance $FROM --ether --rpc-url https://testnet-rpc.monad.xyz 2>&1)
+            echo "::notice title=sender $FROM::testnet USDC=$BAL testnetNonce=$NT mainnetNonce=$NM testnetMON=$MT"
+          fi
+          echo "::notice title=testnet head::$(cast block-number --rpc-url https://testnet-rpc.monad.xyz 2>&1)"
