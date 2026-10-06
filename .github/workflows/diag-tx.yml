@@ -29,4 +29,19 @@ jobs:
             MT=$(cast balance $FROM --ether --rpc-url https://testnet-rpc.monad.xyz 2>&1)
             echo "::notice title=sender $FROM::testnet USDC=$BAL testnetNonce=$NT mainnetNonce=$NM testnetMON=$MT"
           fi
+          R=https://testnet-rpc.monad.xyz
+          USDC=0xe841dF0566e532822c50997e3084eF6fFB58ca5D
+          echo "::notice title=usdc totalSupply::$(cast call $USDC 'totalSupply()(uint256)' --rpc-url $R 2>&1)"
+          HEAD=$(cast block-number --rpc-url $R)
+          ZERO=0x0000000000000000000000000000000000000000000000000000000000000000
+          TOPIC=0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+          FOUND=""
+          for k in $(seq 0 59); do
+            TO=$((HEAD - k*1000)); FR=$((TO - 999))
+            OUT=$(timeout 20 cast logs --from-block $FR --to-block $TO --address $USDC $TOPIC $ZERO --rpc-url $R --json 2>&1)
+            if ! echo "$OUT" | jq -e . >/dev/null 2>&1; then echo "::notice title=logs error at $FR::$(echo $OUT | head -c 300)"; break; fi
+            M=$(echo "$OUT" | jq -r '.[] | "\(.blockNumber) to=0x\(.topics[2][26:]) amount=\(.data) tx=\(.transactionHash)"')
+            [ -n "$M" ] && FOUND="$FOUND | $M"
+          done
+          echo "::notice title=recent mints (last 60k blocks)::${FOUND:-none}"
           echo "::notice title=testnet head::$(cast block-number --rpc-url https://testnet-rpc.monad.xyz 2>&1)"
