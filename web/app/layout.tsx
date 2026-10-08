@@ -10,6 +10,7 @@ import { Footer } from "@/components/Footer";
 import { Atmosphere } from "@/components/fx/Atmosphere";
 import { SmoothScroll } from "@/components/fx/SmoothScroll";
 import { Toasts } from "@/components/Toasts";
+import { WalletNetworkCheck } from "@/components/WalletNetworkCheck";
 import { Nav } from "@/components/Nav";
 
 const DESCRIPTION =
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <Providers>
           <Nav />
+          <WalletNetworkCheck />
           <main id="content" tabIndex={-1} className="relative outline-none">
             {children}
           </main>

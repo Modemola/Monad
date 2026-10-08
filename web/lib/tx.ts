@@ -2,9 +2,15 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState, useSyncExternalStore } from "react";
-import { BaseError, ContractFunctionRevertedError, UserRejectedRequestError, WaitForTransactionReceiptTimeoutError } from "viem";
+import {
+  BaseError,
+  ContractFunctionRevertedError,
+  TransactionNotFoundError,
+  UserRejectedRequestError,
+  WaitForTransactionReceiptTimeoutError,
+} from "viem";
 import { useChainId, useConfig, useWriteContract } from "wagmi";
-import { waitForTransactionReceipt } from "wagmi/actions";
+import { getTransaction, waitForTransactionReceipt } from "wagmi/actions";
 
 import { anvil, monadTestnet } from "./chains";
 
@@ -111,6 +117,33 @@ export function explorerTx(chainId: number, hash: `0x${string}`): string | undef
   return undefined;
 }
 
+class NeverSeenError extends Error {}
+
+/// Rejects if the chain this app reads has still not heard of the transaction after half a minute.
+///
+/// A wallet sends through its own RPC. When that RPC is a different node — a stale copy of the
+/// testnet, or another network on the same chain id — the wallet reports success, the hash it
+/// returns exists nowhere the app can see, and the receipt wait would sit at "pending" until it
+/// timed out. Monad includes a transaction within a second or two, so thirty seconds of silence is
+/// conclusive. Never settles once the transaction has been seen.
+function neverSeen(config: Parameters<typeof getTransaction>[0], hash: `0x${string}`, chainId: number): Promise<never> {
+  return new Promise((_, reject) => {
+    const started = Date.now();
+    const poll = async () => {
+      try {
+        await getTransaction(config, { hash, chainId });
+        return; // seen: leave the receipt wait to finish the job
+      } catch (error) {
+        // Only an explicit "no such transaction" counts; a flaky RPC is not evidence of anything.
+        const missing = error instanceof TransactionNotFoundError;
+        if (missing && Date.now() - started > 30_000) return reject(new NeverSeenError());
+        setTimeout(poll, 2_000);
+      }
+    };
+    setTimeout(poll, 2_000);
+  });
+}
+
 // ---------------------------------------------------------------------------
 // The hook every write goes through.
 // ---------------------------------------------------------------------------
@@ -146,13 +179,16 @@ export function useTx() {
         // Monad blocks every 400 ms, so a healthy transaction lands in a second or two. Poll once a
         // second, ride out a rate-limited or flaky RPC, and give up waiting after two minutes with
         // something the visitor can act on, instead of "pending" forever.
-        const receipt = await waitForTransactionReceipt(config, {
-          hash,
-          chainId,
-          pollingInterval: 1_000,
-          retryCount: 20,
-          timeout: 120_000,
-        });
+        const receipt = await Promise.race([
+          waitForTransactionReceipt(config, {
+            hash,
+            chainId,
+            pollingInterval: 1_000,
+            retryCount: 20,
+            timeout: 120_000,
+          }),
+          neverSeen(config, hash, chainId),
+        ]);
         if (receipt.status !== "success") throw new Error("The transaction reverted on chain.");
 
         updateToast(id, { status: "success", detail: copy.success ?? "Confirmed" });
@@ -162,7 +198,9 @@ export function useTx() {
         return receipt;
       } catch (error) {
         const message =
-          error instanceof WaitForTransactionReceiptTimeoutError
+          error instanceof NeverSeenError
+            ? "Your wallet sent this, but Monad testnet never received it: the wallet's Monad Testnet network is using a different RPC. Set it to https://testnet-rpc.monad.xyz (chain ID 10143) in the wallet's network settings, then try again."
+            : error instanceof WaitForTransactionReceiptTimeoutError
             ? "Not confirmed after two minutes. Check your wallet's activity: if it is still pending, speed it up or cancel it and try again; if it was dropped, simply retry. Make sure the wallet is on Monad Testnet."
             : explainError(error);
         updateToast(id, { status: "error", detail: message });
